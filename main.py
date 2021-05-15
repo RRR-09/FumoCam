@@ -374,7 +374,7 @@ def server_spawn():
     sleep(0.15)
 
 
-def run_javascript_in_browser(url, js_code):
+def run_javascript_in_browser(url, js_code, esc_before_entering):
     executable_name = "chrome.exe"
     browser_path = os.path.join("C:\\", "Program Files (x86)", "Google", "Chrome", "Application", executable_name)
     if not os.path.exists(browser_path):
@@ -398,12 +398,15 @@ def run_javascript_in_browser(url, js_code):
     winsound.Beep(80, 50)
     pyautogui.write(js_code)
     sleep(12)
-    log("Running JS (4s)...")
+    log("Running JS (6s)...")
     winsound.Beep(70, 100)
-    pyautogui.press("esc")
-    sleep(0.2)
+    if esc_before_entering:
+        pyautogui.press("esc")
+        sleep(0.3)
     pyautogui.press("enter")
-    sleep(4)
+    sleep(0.3)
+    pyautogui.press("enter")
+    sleep(6)
     log("Closing Browser...")
     winsound.Beep(70, 100)
     kill_process(executable_name)
@@ -491,18 +494,8 @@ def check_if_should_change_servers(current_server_id="ERROR"):
 def get_current_server_id():
     instances_url = f"https://www.roblox.com/games/{globals.Roblox.game_id}/Become-Fumo#!/game-instances"
     file_name = f"{time.time()}.txt"
-    check_js = """var gameID = "ERROR";
-    try { 
-        avatar = $(".rbx-game-server-item-container").first().find("[src*='""" + globals.Roblox.avatar_id + """']")
-        gameID = $(avatar).parents("[data-gameid]").attr("data-gameid") 
-    } finally {
-        const a = document.createElement("a");
-        const file = new Blob([gameID], {type: "text/plain"});
-        a.href= URL.createObjectURL(file);
-        a.download = '""" + file_name + """';
-        a.click();URL.revokeObjectURL(a.href);
-    }"""
-    run_javascript_in_browser(instances_url, check_js)
+    check_js = """var gameID = "ERROR"; try { gameID = $(".rbx-game-server-item-container").first().find("[src*='""" + globals.Roblox.avatar_id + """']").parents("[data-gameid]").attr("data-gameid") } finally { const a = document.createElement("a"); const file = new Blob([gameID], {type: "text/plain"}); a.href= URL.createObjectURL(file); a.download = '""" + file_name + """'; a.click();URL.revokeObjectURL(a.href); }"""
+    run_javascript_in_browser(instances_url, check_js, False)
     log("Opening Output File...")
     winsound.Beep(70, 100)
     file_path = os.path.join(Path.home(), "Downloads", file_name)
