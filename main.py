@@ -873,8 +873,7 @@ def teleport(location_name, no_log=False):
         cfg.current_location = location_name
     log("", no_log)
     log_process("", no_log)
-    if cfg.current_emote != "":
-        send_chat(cfg.current_emote)
+    send_chat(cfg.current_emote)
     return True
 
 
@@ -954,11 +953,11 @@ def goto(target):
     end
     workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     """)
-    winsound.Beep(90, 300)
-    sleep(1)
-    if cfg.current_emote != "":
-        send_chat(cfg.current_emote)
 
+    sleep(10)  # Initial Teleport
+    winsound.Beep(90, 300)
+    sleep(3)  # Skybox check
+    send_chat(cfg.current_emote)
     log("")
     log_process("")
     return True
