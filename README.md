@@ -1,6 +1,9 @@
 # FumoCam
-The framework for an interactive 24/7 livestream of an in-game bot, and objective proof that Occam's Razor is incorrect.
+A 24/7, interactive, in-game Twitch bot with 400+ followers. Also, proof that Occam's Razor is incorrect because my solutions are definitely not the best.
 
+Twitch: https://www.twitch.tv/becomefumocam
+
+# Instructions and Notes
 Requires injector to be extracted into the project at the "resources/injector" path. You can find the injector here: https://github.com/RusinR/FumoCam-Injector/releases/
 
 Writeup pending.
