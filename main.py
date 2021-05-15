@@ -937,9 +937,18 @@ def goto(target):
         if (string.lower(current_player.Name) == "{target.lower()}") then
             game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("[Teleporting to player '" .. current_player.Name .."'!]" , "All")
             wait(10)
+            local original_pos = game.Players.LocalPlayer.Character.PrimaryPart.Position
             local player_pos = current_player.Character.PrimaryPart.Position
             game.Players.LocalPlayer.Character:MoveTo(player_pos)
-            game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("[Hello! Someone on T witch asked me to teleport to you.]" , "All")
+            wait(2)
+            local current_pos = game.Players.LocalPlayer.Character.PrimaryPart.Position
+            if (current_pos.y > 65) then
+                game.Players.LocalPlayer.Character:MoveTo(original_pos)
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("[Could not teleport to player! (Would get stuck on roof of world)]" , "All")
+                break
+            else 
+                game:GetService("ReplicatedStorage").DefaultChatSystemChatEvents.SayMessageRequest:FireServer("[Hello! Someone on T witch asked me to teleport to you.]" , "All")
+            end
             break
         end
     end
