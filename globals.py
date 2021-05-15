@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # pip3.9 install python-dotenv
 load_dotenv()
 
 

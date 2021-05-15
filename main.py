@@ -9,12 +9,10 @@ from time import sleep
 from traceback import format_exc
 import winsound
 
-import cv2  # pip3.9 install opencv-python
 import irc.bot  # pip3.9 install irc
 from mss import mss  # pip3.9 install mss
 # multiprocess is a fork that uses Dill instead of Pickle (which caused exceptions)
 import multiprocess  # pip3.9 install multiprocess
-# pygetwindow allows additional functionality in pyautogui
 import pyautogui  # pip3.9 install pyautogui
 import pydirectinput  # pip3.9 install pydirectinput
 # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
@@ -43,17 +41,6 @@ def read_output_log(file_name):
     except Exception:
         print(format_exc())
         return f"ERROR: {format_exc()}"
-
-
-def screen_to_cv2():
-    global screen_res
-    third_width = round(screen_res["width"] / 3)
-    mon = {'top': 0, 'left': third_width, 'width': third_width, 'height': screen_res["height"]}
-    with mss() as sct:
-        img = sct.grab(mon)
-    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    img = cv2.putText(img, "SCAN FOR CHARACTER", (5, 25), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 0), 1, cv2.LINE_AA)
-    cv2.imshow("characters", img)
 
 
 def take_screenshot():

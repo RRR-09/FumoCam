@@ -30,8 +30,8 @@ if not is_admin:
 from time import sleep
 from globals import output_log
 from os import path, getcwd
-import psutil  # pip install psutil
-import clr  # pip install wheel; pip install pythonnet
+import psutil  # pip3.9 install psutil
+import clr  # pip3.9 install wheel; pip3.9 install pythonnet
 
 clr.AddReference(path.join(getcwd(), "resources", "OpenHardwareMonitorLib.dll"))
 import OpenHardwareMonitor.Hardware
