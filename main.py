@@ -973,13 +973,11 @@ def spectate_random():
         -- fisher-yates
         local output = { }
         local random = math.random
-     
         for index = 1, #array do
             local offset = index - 1
             local value = array[index]
             local randomIndex = offset*random()
             local flooredIndex = randomIndex - randomIndex%1
-     
             if flooredIndex == offset then
                 output[#output + 1] = value
             else
@@ -987,7 +985,6 @@ def spectate_random():
                 output[flooredIndex + 1] = value
             end
         end
-     
         return output
     end
     local player_list = game.Players:GetPlayers()
@@ -1013,7 +1010,6 @@ def anti_gravity():
     inject_lua("""
     -- The factor by which gravity will be counteracted
 local MOON_GRAVITY = 0.5
- 
 local function setGravity(part, g)
     local antiGravity = part:FindFirstChild("AntiGravity")
     if g == 1 then
@@ -1032,11 +1028,9 @@ local function setGravity(part, g)
         antiGravity.Force = Vector3.new(0, part:GetMass() * workspace.Gravity * (1 - g), 0)
     end
 end
- 
 local function moonGravity(part)
     setGravity(part, 0.001)
 end
- 
 local function recursiveMoonGravity(object)
     if object:IsA("BasePart") then
         moonGravity(object)
@@ -1045,13 +1039,11 @@ local function recursiveMoonGravity(object)
         recursiveMoonGravity(child)
     end
 end
- 
 local function onDescendantAdded(object)
     if object:IsA("BasePart") then
         moonGravity(object)
     end
 end
- 
 recursiveMoonGravity(workspace)
 workspace.DescendantAdded:Connect(onDescendantAdded)""")
 
