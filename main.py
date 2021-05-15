@@ -1120,8 +1120,8 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             cfg.action_queue.append(cmd)
         elif cmd == "spectate":
             cfg.action_queue.append("spectate")
-        elif cmd == "zoom_in" or cmd == "zoom_out":
-            zoom_direction = "i" if cmd == "zoom_in" else "o"
+        elif cmd == "zoomin" or cmd == "zoomout":
+            zoom_direction = "i" if cmd == "zoomin" else "o"
             zoom_time = 0.05
             try:
                 number = float(args[0])
