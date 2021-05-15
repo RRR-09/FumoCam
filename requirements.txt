@@ -1,5 +1,7 @@
 certifi==2020.12.5
+cffi==1.14.5
 chardet==4.0.0
+clr-loader==0.1.6
 dill==0.3.3
 idna==2.10
 irc==19.0.1
@@ -13,6 +15,9 @@ more-itertools==8.7.0
 MouseInfo==0.1.3
 mss==6.1.0
 multiprocess==0.70.11.1
+numpy==1.20.3
+opencv-python==4.5.2.52
+Pillow==8.2.0
 psutil==5.8.0
 PyAutoGUI==0.9.52
 pycparser==2.20
