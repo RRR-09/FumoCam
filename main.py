@@ -417,7 +417,7 @@ def run_javascript_in_browser(url, js_code, esc_before_entering):
 
 def join_target_server(instance_id):
     join_js_code = f"Roblox.GameLauncher.joinGameInstance({globals.Roblox.game_id}, \"{instance_id}\")"
-    run_javascript_in_browser(globals.Roblox.game_instances_url, join_js_code)
+    run_javascript_in_browser(globals.Roblox.game_instances_url, join_js_code, True)
 
 
 def get_best_server():
