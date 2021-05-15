@@ -50,6 +50,7 @@ class Roblox:
     game_id = 6238705697
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     injector_file_path = os.path.join("resources", "injector")
+    next_possible_teleport = 0
     teleport_locations = {
         "bonfire": {
             "pos": "-48.0837212, -3.39721847, 9.8922472",
