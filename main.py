@@ -770,7 +770,7 @@ def inject_lua(lua_code, attempts=0):
 def load_exploit():
     print("loading exploit")
     original_directory = os.getcwd()
-    injector_folder = os.path.join("resources", "Injector", "bin", "release")
+    injector_folder = os.path.join(globals.Roblox.injector_file_path)
     os.chdir(injector_folder)
 
     potential_names = [
