@@ -24,13 +24,23 @@ class Roblox:
         "This bot is live on T witch! Go to the roblox profile for a link or Google",
         '"BecomeFumoCam"!'
     ]
-    avatar_id = "d20920201dc57c8502a910185c3076ad"
-    censored_words = [
+    avatar_id = "d20920201dc57c8502a910185c3076ad"  # Fumocam 2
+    # avatar_id = "abf177b3d6d7f87381f59e50ee08ad99" Fumocam 1
+    censored_words = [  # todo: Attempt to inject into chat censor API
         "gay",
         "nigger",
-        "nheggar"
+        "nheggar",
+        "ninggrer",
+        "fhucqing",
+        "simp",
+        "s!mp",
+        "jjgay",
+        "niggaHomosexual",
     ]
     character_select_image_path = os.path.join("resources", "character_select.png")
+    
+    character_select_scroll_up_amount = 10
+    character_select_screen_height_to_click = 0.40
     comedy_phrases = [
         "Peak comedy incoming",
         "This is going to be funny",
@@ -45,13 +55,24 @@ class Roblox:
         "Orbital fumocam",
         "It's no trebuchet but it'll do"
     ]
-    current_location = "mikoroof"
+    current_location = "tree"
     current_emote = "/e dance3"
+    event_timer_running = False
+    disable_collisions_on_spawn = True
     game_id = 6238705697
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     injector_file_path = os.path.join("resources", "injector")
+    injector_attempts = 0
+    injector_disabled = False
     next_possible_teleport = 0
+    player_token = "BD7F4C1D8063321CDFE702866B105EFB"
     teleport_locations = {
+        "treehouse": {
+            "pos": "36.4470062, 41.9251442, 47.5567894",
+            "rot": "0, math.rad(0), 0",
+            "cam": "math.rad(24), math.rad(155), 0",
+            "friendly_name": "Treehouse",
+        },
         "bonfire": {
             "pos": "-48.0837212, -3.39721847, 9.8922472",
             "rot": "0, math.rad(153), 0",
@@ -111,7 +132,7 @@ class Roblox:
 
 class OBS:
     output_folder = "output"
-    event_time = "2021-05-02 03:44:00PM"
+    event_time = "2021-06-09 12:05:00AM"
     event_end_time = "2021-05-03 10:23:18PM"
 
 
