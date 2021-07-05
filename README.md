@@ -1,5 +1,5 @@
 # FumoCam
-A 24/7, interactive, in-game Twitch bot with 500+ followers. Also, proof that Occam's Razor is incorrect because my solutions are definitely not the best.
+A 24/7, interactive, in-game Twitch bot with 600+ followers.
 
 Twitch: https://www.twitch.tv/becomefumocam
 
