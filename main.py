@@ -18,7 +18,7 @@ import pydirectinput  # pip3.9 install pydirectinput
 # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
 import requests  # pip3.9 install requests
 
-screen_res = {
+screen_res = {  # todo: Don't use globals, make class-based
     "width": pyautogui.size()[0],
     "height": pyautogui.size()[1],
     "x_multi": pyautogui.size()[0] / 2560,
@@ -55,6 +55,7 @@ def take_screenshot():
 
 
 def kill_process(executable="RobloxPlayerBeta.exe", force=False):
+    # todo: taskkill.exe can fail, how can we kill the thing that should kill? https://i.imgur.com/jd01ZOv.png
     process_call = ["taskkill"]
     if force:
         process_call.append("/F")
@@ -74,7 +75,7 @@ def force_get_best_server():
     return found_best_server["id"]
 
 
-def twitch_main():
+def twitch_main():   # todo: Move to seperate file
     username = globals.Twitch.username
     client_id = os.getenv("TWITCH_CLIENT_ID")
     token = os.getenv("TWITCH_MAIN_OAUTH")
@@ -192,10 +193,10 @@ def send_chat(message):
     check_active()
     pyautogui.press('/')
     sleep(0.1)
-    for word in globals.Roblox.censored_words:
+    for word in globals.Roblox.censored_words:  # todo: More effective censoring
         if word in message:
             message = message.replace(word, "*" * len(word))
-    pyautogui.write(message)
+    pyautogui.write(message)  # todo: investigate long messages only partially coming through
     sleep(0.5)
     pydirectinput.press('enter')
 
@@ -355,6 +356,7 @@ def server_spawn():
 
 
 def run_javascript_in_browser(url, js_code, esc_before_entering):
+    # todo: Move to selenium once I figure out how generate and use cookies in a reproducible+easy way
     executable_name = "chrome.exe"
     kill_process(executable_name, force=True)
     browser_path = os.path.join("C:\\", "Program Files (x86)", "Google", "Chrome", "Application", executable_name)
@@ -478,7 +480,7 @@ def check_if_should_change_servers(current_server_id="N/A"):
     return False, f"[WARN] Could not poll Roblox servers. Is Roblox down?"
 
 
-def get_current_server_id_new():
+def get_current_server_id():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{globals.Roblox.game_id}/servers/Public?sortOrder=Asc&limit=10"
     try:
@@ -550,7 +552,7 @@ def discord_log(message, author, author_avatar, author_url):
                 print(f"[Logged Screenshot] {message}")
 
 
-def notify_admin(message):
+def notify_admin(message):  # todo: Seperate always-running process
     webhook_url = os.getenv("DISCORD_WEBHOOK_DEV_CHANNEL")
     webhook_data = {
         "content": f"<@{os.getenv('DISCORD_OWNER_ID')}>\n{message}",
@@ -573,11 +575,11 @@ def check_for_better_server():
     output_log("change_server_status_text", "")
 
     log_process("Checking for better server")
-    current_server_id = get_current_server_id_new()
+    current_server_id = get_current_server_id()
     while current_server_id == "ERROR":
         log_process("Failed! Retrying better server check")
         sleep(5)
-        current_server_id = get_current_server_id_new()
+        current_server_id = get_current_server_id()
     if current_server_id == "N/A":
         log_process("Could not find FumoCam in any servers")
         globals.Roblox.action_queue.append("handle_crash")
@@ -595,11 +597,11 @@ def check_for_better_server():
         if "Could not find FumoCam" in change_server_status_text:
             for i in range(2):
                 log(f"Rechecking (attempt {i + 1}/3")
-                current_server_id = get_current_server_id_new()
+                current_server_id = get_current_server_id()
                 while current_server_id == "":
                     log_process("Retrying get current server check")
                     sleep(5)
-                    current_server_id = get_current_server_id_new()
+                    current_server_id = get_current_server_id()
                 should_change_servers, change_server_status_text = check_if_should_change_servers(current_server_id)
                 if "Could not find FumoCam" not in change_server_status_text:
                     break
@@ -706,7 +708,7 @@ def exploit_window_checker(ret_value, potential_names):
                 break
 
 
-def inject_lua(lua_code, attempts=0):
+def inject_lua(lua_code, attempts=0):  # todo: Move to seperate file
     if globals.Roblox.injector_disabled:
         log("Advanced commands are currently broken, sorry!")
         sleep(5)
@@ -745,7 +747,7 @@ def inject_lua(lua_code, attempts=0):
     return True
 
 
-def load_exploit():
+def load_exploit():  # todo: Move to seperate file
     print("loading exploit")
     if globals.Roblox.injector_disabled:
         log("Advanced commands are currently broken, sorry!")
@@ -803,7 +805,7 @@ def load_exploit():
     return non_fatal_error
 
 
-def test_teleport(location_name):
+def test_teleport(location_name):  # todo: Move tests to new file
     winsound.Beep(40, 600)
     winsound.Beep(70, 400)
     chosen_location = globals.Roblox.teleport_locations[location_name]
@@ -858,6 +860,7 @@ def teleport(location_name, no_log=False):
     winsound.Beep(70, 400)
     chosen_location = cfg.teleport_locations[location_name]
     pos, rot, cam_rot = chosen_location["pos"], chosen_location["rot"], chosen_location["cam"]
+    # todo: Probably best to write LUA in seperate files
     # noinspection LongLine
     inject_lua(f"""game.Players.LocalPlayer.Character:MoveTo(Vector3.new({pos}))
     game.Players.LocalPlayer.Character.PrimaryPart.CFrame = CFrame.new(game.Players.LocalPlayer.Character.PrimaryPart.Position) * CFrame.Angles({rot})
@@ -874,6 +877,7 @@ def teleport(location_name, no_log=False):
             sleep(1)
         return_location = cfg.teleport_locations[cfg.current_location]
         pos, rot, cam_rot = return_location["pos"], return_location["rot"], return_location["cam"]
+        # todo: Probably best to write LUA in seperate files
         # noinspection LongLine
         inject_lua(f"""game.Players.LocalPlayer.Character:MoveTo(Vector3.new({pos}))
     game.Players.LocalPlayer.Character.PrimaryPart.CFrame = CFrame.new(game.Players.LocalPlayer.Character.PrimaryPart.Position) * CFrame.Angles({rot})
@@ -887,13 +891,15 @@ def teleport(location_name, no_log=False):
     return True
 
 
-def print_pos():
+def print_pos():  # todo: Move tests to new file
+    # todo: Probably best to write LUA in seperate files
     inject_lua(f"""
     print("\\n\\n")
     print("Position:",game.Players.LocalPlayer.Character.PrimaryPart.Position)""")
 
 
-def test_cam():
+def test_cam():  # todo: Move tests to new file
+    # todo: Probably best to write LUA in seperate files
     inject_lua(f"""
     print("\\n\\n")
     print("Position:", game.Players.LocalPlayer.Character.PrimaryPart.Position)
@@ -939,6 +945,7 @@ def goto(target):
     cfg.next_possible_teleport = time.time() + 30
     winsound.Beep(40, 600)
     winsound.Beep(70, 400)
+    # todo: Probably best to write LUA in seperate files
     # noinspection LongLine
     inject_lua(f"""
     local player_list = game.Players:GetPlayers()
@@ -969,7 +976,7 @@ def goto(target):
     sleep(10)  # Initial Teleport
     winsound.Beep(90, 300)
     sleep(3)  # Skybox check
-    jump() # If knocked over, clear sitting effect
+    jump()  # If knocked over, clear sitting effect
     send_chat(cfg.current_emote)
     log("")
     log_process("")
@@ -977,7 +984,6 @@ def goto(target):
 
 
 def spectate_random():
-
     if globals.Roblox.injector_disabled:
         log(f"Cannot spectate, injector functionality is currently broken!")
         return False
@@ -993,6 +999,7 @@ def spectate_random():
     log("Spectating up to 10 random players")
     send_chat("[Spectating players! Won't be able to see nearby chat. Be right back!]")
 
+    # todo: Probably best to write LUA in seperate files
     inject_lua("""
     local function shuffle(array)
         -- fisher-yates
@@ -1031,49 +1038,7 @@ def spectate_random():
     log("")
 
 
-def anti_gravity():
-    inject_lua("""
-    -- The factor by which gravity will be counteracted
-local MOON_GRAVITY = 0.5
-local function setGravity(part, g)
-    local antiGravity = part:FindFirstChild("AntiGravity")
-    if g == 1 then
-        -- Standard gravity; destroy any gravity-changing force
-        if antiGravity then
-            antiGravity:Destroy()
-        end 
-    else
-        -- Non-standard gravity: create and change gravity-changing force
-        if not antiGravity then
-            antiGravity = Instance.new("BodyForce")
-            antiGravity.Name = "AntiGravity"
-            antiGravity.Archivable = false
-            antiGravity.Parent = part
-        end
-        antiGravity.Force = Vector3.new(0, part:GetMass() * workspace.Gravity * (1 - g), 0)
-    end
-end
-local function moonGravity(part)
-    setGravity(part, 0.001)
-end
-local function recursiveMoonGravity(object)
-    if object:IsA("BasePart") then
-        moonGravity(object)
-    end
-    for _, child in pairs(object:GetChildren()) do
-        recursiveMoonGravity(child)
-    end
-end
-local function onDescendantAdded(object)
-    if object:IsA("BasePart") then
-        moonGravity(object)
-    end
-end
-recursiveMoonGravity(workspace)
-workspace.DescendantAdded:Connect(onDescendantAdded)""")
-
-
-class TwitchBot(irc.bot.SingleServerIRCBot):
+class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
     def __init__(self, username, client_id, token, channel):
         self.client_id = client_id
         self.token = token
@@ -1092,7 +1057,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         print(f"Connecting to {server} on port {port}...")
         irc.bot.SingleServerIRCBot.__init__(self, [(server, port, f"oauth:{token}")], username, username)
 
-    def on_welcome(self, c, e):
+    def on_welcome(self, c, _):
         print('Joining ' + self.channel)
         c.cap('REQ', ':twitch.tv/membership')
         c.cap('REQ', ':twitch.tv/tags')
@@ -1100,7 +1065,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
         c.join(self.channel)
         print('Joined ' + self.channel)
 
-    def on_pubmsg(self, c, e):
+    def on_pubmsg(self, _, e):
         author = "Twitch"
         for tag in e.tags:
             if tag["key"] == "display-name":
@@ -1119,9 +1084,9 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             self.do_command(e, cmd, args, author)
         return
 
-    def do_command(self, e, cmd, args, author):
+    @staticmethod
+    def do_command(_, cmd, args, author):
         cfg = globals.Roblox
-        c = self.connection
         is_dev = author.lower() in globals.Twitch.admins
         is_owner = author.lower() == "scary08rblx"
         if cmd == "rejoin" and is_dev:
@@ -1235,7 +1200,7 @@ def commands_loop():
             sleep(10)
 
 
-def do_process_queue():
+def do_process_queue():  # todo: Investigate beneifts of multithreading over singlethreaded/async
     cfg = globals.Roblox
     if len(cfg.action_queue) > 0:
         action = cfg.action_queue[0]
@@ -1341,7 +1306,7 @@ def main():
     print("Done Main")
 
 
-def test_character_select(click_mouse=True):
+def test_character_select(click_mouse=True):  # todo: Move tests to new file
     check_active()
     sleep(1)
     click_character_in_menu(click_mouse=click_mouse)
