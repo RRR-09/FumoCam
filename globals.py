@@ -14,7 +14,7 @@ def output_log(file_name, message):
 class Twitch:
     channel_name = "becomefumocam"
     username = "BecomeFumoBot"
-    admins = ["becomefumocam"]
+    admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
 
 
 class Roblox:
