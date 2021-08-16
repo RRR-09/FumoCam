@@ -5,7 +5,6 @@ from traceback import format_exc
 import pyautogui  # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
 import pydirectinput
 import time
-import mss
 import subprocess
 import requests
 import math
