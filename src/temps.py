@@ -1,40 +1,17 @@
-def run_as_admin():
-    from sys import executable as a_executable, argv as a_argv
-    from ctypes import windll as a_windll
-    from traceback import format_exc as a_fe
+from utilities import run_as_admin
 
-    try:
-        is_not_admin = not (a_windll.shell32.IsUserAnAdmin())
-    except Exception:
-        is_not_admin = True
-    if is_not_admin:
-        print("Packages missing, auto-installing.")
-        print("Administrator access required. Acquiring...")
-        try:
-            run_path = ""
-            for i, item in enumerate(a_argv[0:]):
-                run_path += f'"{item}"'
-            a_windll.shell32.ShellExecuteW(None, "runas", a_executable, run_path, None, 1)
-            return False
-        except Exception:
-            print(a_fe())
-    else:
-        print("Administrator access acquired.")
-        return True
-
-
-is_admin = run_as_admin()
-if not is_admin:
-    print("NOT ADMIN, EXITING")
-    exit()
+run_as_admin()  # Do not run any of the below code until we are admin
 from time import sleep
-from globals import output_log
-from os import path, getcwd
+from utilities import output_log
+from os import path
+from config import RESOURCES_PATH
 import psutil  # pip3.9 install psutil
+# noinspection PyPackageRequirements
 import clr  # pip3.9 install wheel; pip3.9 install pythonnet
 
-clr.AddReference(path.join(getcwd(), "resources", "OpenHardwareMonitorLib.dll"))
-import OpenHardwareMonitor.Hardware
+clr.AddReference(path.join(RESOURCES_PATH, "OpenHardwareMonitorLib.dll"))
+# noinspection PyUnresolvedReferences
+import OpenHardwareMonitor.Hardware  # Ignore "No module found named...", is imported dynamically by above line
 
 
 def get_temps(computer):

@@ -1,14 +1,18 @@
 import os
 from dotenv import load_dotenv  # pip3.9 install python-dotenv
+from pyautogui import size as get_monitor_size
+from mss import mss
+from pathlib import Path
+
 load_dotenv()
-
-
-def output_log(file_name, message):
-    if not os.path.exists(OBS.output_folder):
-        os.mkdir(OBS.output_folder)
-    file_path = os.path.join(OBS.output_folder, f"{file_name}.txt")
-    with open(file_path, "w") as f:
-        f.write(str(message))
+RESOURCES_PATH = Path.cwd().parent / "resources"
+SCREEN_RES = {  # todo: Don't use globals, make class-based
+    "width": get_monitor_size()[0],
+    "height": get_monitor_size()[1],
+    "x_multi": get_monitor_size()[0] / 2560,
+    "y_multi": get_monitor_size()[1] / 1440,
+}
+MONITOR_SIZE = mss().monitors[0]
 
 
 class Twitch:
@@ -17,7 +21,17 @@ class Twitch:
     admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
 
 
-class Roblox:
+class OBS:
+    output_folder = Path.cwd().parent / "output"
+    event_time = "2021-06-09 12:05:00AM"
+    event_end_time = "2021-05-03 10:23:18PM"
+
+
+class Discord:
+    webhook_username = "BecomeFumoCam"
+
+
+class MainBotConfig:
     action_queue = []
     action_running = False
     advertisement = [
@@ -37,10 +51,11 @@ class Roblox:
         "jjgay",
         "niggaHomosexual",
     ]
-    character_select_image_path = os.path.join("resources", "character_select.png")
-    
+    character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
+
     character_select_scroll_up_amount = 10
     character_select_screen_height_to_click = 0.20
+    chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message
     comedy_phrases = [
         "Peak comedy incoming",
         "This is going to be funny",
@@ -63,22 +78,22 @@ class Roblox:
     game_id_nil = 7137029060
     game_id_hinamizawa = 6601613056
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
-    injector_file_path = os.path.join("resources", "injector")
+    injector_file_path = os.path.join(RESOURCES_PATH, "injector")
     injector_attempts = 0
     injector_disabled = False
-    injector_recheck_seconds = 30*60
+    injector_recheck_seconds = 30 * 60
     max_attempts_character_selection = 30
     max_attempts_sit_button = 3
     next_possible_teleport = 0
     player_token = "BD7F4C1D8063321CDFE702866B105EFB"
     seconds_per_tour_location = 7
-    sit_button_position = (0.79,0.89)
+    sit_button_position = (0.79, 0.89)
     teleport_locations = {
         # "velvet": {
-            # "pos": "-3404.589, -82.86, 26.134",
-            # "rot": "0, math.rad(0), 0",
-            # "cam": "math.rad(20), math.rad(120), 0",
-            # "friendly_name": "Velvet Room",
+        # "pos": "-3404.589, -82.86, 26.134",
+        # "rot": "0, math.rad(0), 0",
+        # "cam": "math.rad(20), math.rad(120), 0",
+        # "friendly_name": "Velvet Room",
         # },
         "easteregg": {
             "pos": "24.709, 10.702, 80.479",
@@ -195,13 +210,8 @@ class Roblox:
             "friendly_name": "'funny' Statue",
         },
     }
+    tick_rate = 0.25
+    tick_rate_blocked = 0.1
 
 
-class OBS:
-    output_folder = "output"
-    event_time = "2021-06-09 12:05:00AM"
-    event_end_time = "2021-05-03 10:23:18PM"
-
-
-class Discord:
-    webhook_username = "BecomeFumoCam"
+CFG = MainBotConfig()  # Instantiate the config for use between files
