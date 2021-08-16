@@ -1,6 +1,5 @@
 import math
 import os
-from pathlib import Path
 import random
 import subprocess
 import threading
@@ -18,6 +17,8 @@ import pydirectinput  # pip3.9 install pydirectinput
 # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
 import requests  # pip3.9 install requests
 
+import globals  # globals.py
+import spawn_detection
 screen_res = {  # todo: Don't use globals, make class-based
     "width": pyautogui.size()[0],
     "height": pyautogui.size()[1],
@@ -26,8 +27,6 @@ screen_res = {  # todo: Don't use globals, make class-based
 }
 
 monitor_size = mss().monitors[0]
-import globals  # globals.py
-import spawn_detection
 
 output_log = globals.output_log
 
@@ -298,6 +297,7 @@ def click_character_select_button():
     alt_tab_click()
     winsound.Beep(100, 50)
 
+
 def click_character_in_menu(click_mouse=True):
     log("Scrolling to bottom of list")
     for i in range(18):
@@ -346,10 +346,10 @@ def click_sit_button():
         ratio_x, ratio_y = globals.Roblox.sit_button_position
         x = round(screen_res["width"] * ratio_x)
         y = round(screen_res["height"] * ratio_y)
-        pydirectinput.moveTo(x,y)
+        pydirectinput.moveTo(x, y)
         alt_tab_click()
         winsound.Beep(100, 50)
-    except:
+    except Exception:
         log("Could not find sit button on screen?")
         sleep(5)
     log_process("")
@@ -656,7 +656,7 @@ def check_for_better_server():
             log_process("Could not find FumoCam in any servers")
             globals.Roblox.action_queue.append("handle_crash")
             return False
-        else: #other world easter egg
+        else:  # other world easter egg
             log("Successfully failed! Could not find FumoCam in the realms of the living.")
             winsound.Beep(60, 2000)
             log("S#c%e!s%u^l& f!i@e%! &o#l* ^o$ f!n& @u$o%a& *n !h# $e^l!s #f ^$e #i!i$g.")
@@ -709,14 +709,6 @@ def zoom_camera(zoom_obj):
 
 def turn_camera(direction_obj):
     direction = direction_obj["turn_camera_direction"]
-    #inverted_direction = direction_obj["turn_camera_direction"]
-    # if inverted_direction == "left":
-        # direction = "right"
-    # elif inverted_direction == "right":
-        # direction = "left"
-    # else:
-        # direction = inverted_direction
-        # print(f"Could not invert camera direction '{inverted_direction}'!")
     turn_time = direction_obj["turn_camera_time"]
     check_active()
     sleep(0.5)
@@ -774,7 +766,6 @@ def clock_loop():
 def exploit_window_checker(ret_value, potential_names):
     from time import sleep
     import pyautogui
-    import pydirectinput
     searching_for_window = True
     while searching_for_window:
         sleep(1)
@@ -889,32 +880,33 @@ def load_exploit(force=False):  # todo: Move to seperate file
 
 
 def injector_failed_loop():
-    globals.Roblox.next_injector_check = time.time()
+    gr = globals.Roblox
+    gr.next_injector_check = time.time()
     while True:
-        if globals.Roblox.next_injector_check <= time.time():  # Time to recheck
-            globals.Roblox.next_injector_check = time.time() + globals.Roblox.injector_recheck_seconds
-            while globals.Roblox.action_running or globals.Roblox.action_queue:  # We have a queue or we're doing something
+        if gr.next_injector_check <= time.time():  # Time to recheck
+            gr.next_injector_check = time.time() + gr.injector_recheck_seconds
+            while gr.action_running or gr.action_queue:  # We have a queue or we're doing something
                 sleep(0.5)  # Wait for any running action to finish
-            globals.Roblox.action_running = True
+            gr.action_running = True
             log_process(f"Attempting to hook into Roblox")
             log("Re-attempting process connection...")
-            output_log("injector_failure", "INJECTOR FAILED\nTP, Goto, Spectate, Tour offline Use !move\nAttempting again now...")
+            output_log("injector_failure", "INJECTOR FAILED\nTP, Goto, Spectate, Tour offline Use !move\nAttempting "
+                                           "again now...")
             loaded_exploit = load_exploit(force=True)
             log_process(f"")
             log("")
             if loaded_exploit:
-                output_log("injector_failure","")
+                output_log("injector_failure", "")
                 return True
             globals.Roblox.action_running = False
-        time_remaining = round(globals.Roblox.next_injector_check-time.time())
+        time_remaining = round(gr.next_injector_check-time.time())
         friendly_time_remaining = f"{math.floor(time_remaining/60):02}:{time_remaining%60:02}"
-        output_log("injector_failure", f"INJECTOR FAILED\nTP, Goto, Spectate, Tour offline. Use !move\nAttempting again in {friendly_time_remaining}")
+        output_log("injector_failure", f"INJECTOR FAILED\nTP, Goto, Spectate, Tour offline. Use !move\nAttempting "
+                                       f"again in {friendly_time_remaining}")
         sleep(1)
 
 
 def silent_teleport(location_name):  # todo: Move tests to new file
-    #winsound.Beep(40, 600)
-    #winsound.Beep(70, 400)
     chosen_location = globals.Roblox.teleport_locations[location_name]
     pos, rot, cam_rot = chosen_location["pos"], chosen_location["rot"], chosen_location["cam"]
     # noinspection LongLine
@@ -922,7 +914,6 @@ def silent_teleport(location_name):  # todo: Move tests to new file
     game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Vector3.new({pos}), game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector))
     game.Players.LocalPlayer.Character.PrimaryPart.CFrame = CFrame.new(game.Players.LocalPlayer.Character.PrimaryPart.Position) * CFrame.Angles({rot})
     workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position) * CFrame.Angles({cam_rot})""")
-    #winsound.Beep(90, 300)
 
 
 def jump():
@@ -1111,6 +1102,8 @@ def goto(target):
     log("")
     log_process("")
     return True
+
+
 def anti_gravity():
     inject_lua("""
     -- The factor by which gravity will be counteracted
@@ -1153,7 +1146,6 @@ recursiveMoonGravity(workspace)
 workspace.DescendantAdded:Connect(onDescendantAdded)""")
 
 
-
 def silent_goto(target):
     inject_lua(f"""
     local player_list = game.Players:GetPlayers()
@@ -1190,7 +1182,6 @@ def silent_getpos(target):
     end
     workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     """)    
-
 
 
 def spectate_target(target):
@@ -1349,7 +1340,7 @@ class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
             move_time = 1
             try:
                 number = float(args[1])
-                if number <= 5 and number > 0:
+                if 5 >= number > 0:
                     move_time = number
             except Exception:
                 pass
@@ -1364,13 +1355,13 @@ class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
             jump_time = 0.3
             try:
                 number = float(args[0])
-                if number <= 1 and number > 0:
+                if 1 >= number > 0:
                     forward_time = number
             except Exception:
                 pass
             try:
                 number = float(args[1])
-                if number <= 1 and number > 0:
+                if 1 >= number > 0:
                     jump_time = number
             except Exception:
                 pass
@@ -1571,7 +1562,7 @@ def commands_loop():
             sleep(5)
 
 
-def do_process_queue():  # todo: Investigate beneifts of multithreading over singlethreaded/async
+def do_process_queue():  # todo: Investigate benefits of multithreading over single-threaded/async
     cfg = globals.Roblox
     if len(cfg.action_queue) > 0:
         action = cfg.action_queue[0]
@@ -1703,7 +1694,7 @@ def do_process_queue():  # todo: Investigate beneifts of multithreading over sin
                 sleep(5)
                 log_process("")
                 log("")
-            valid_keys = {"w":"Forward","a":"Left","s":"Backwards","d":"Right"}
+            valid_keys = {"w": "Forward", "a": "Left", "s": "Backwards", "d": "Right"}
             key = action["move_key"].lower()
             if key not in valid_keys.keys():
                 log(f"Not a valid movement! ({','.join(valid_keys)})")
@@ -1795,12 +1786,4 @@ def test_character_select(click_mouse=True):  # todo: Move tests to new file
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     main()
-    #test_character_select(click_mouse=True)
-    # load_exploit()
-    # change_characters()
-    #respawn_character()
-    #spectate_target("scary08")
-    #test_cam()
-    #silent_teleport("easteregg")
-    #silent_getpos("scary08")
-    #anti_gravity()
+    # test_character_select(click_mouse=True)
