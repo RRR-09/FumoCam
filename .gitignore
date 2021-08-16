@@ -1,6 +1,7 @@
 # Project Files
 output/
 /resources/injector/
+/resources/EasyExploits.dll
 
 # .idea folder
 .idea/
