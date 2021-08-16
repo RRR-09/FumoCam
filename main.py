@@ -103,7 +103,8 @@ def handle_join_new_server(crash=False):
     output_log("change_server_status_text", "")
 
     log_process(f"{process_name} - Handling Spawn")
-    server_spawn()
+    if not server_spawn():
+        return False
 
     log_process(f"{process_name} - Detecting Location")
     spawn_detection.main()
@@ -297,7 +298,6 @@ def click_character_select_button():
     alt_tab_click()
     winsound.Beep(100, 50)
 
-
 def click_character_in_menu(click_mouse=True):
     log("Scrolling to bottom of list")
     for i in range(18):
@@ -320,7 +320,8 @@ def click_character_in_menu(click_mouse=True):
 
 
 def get_character_select_button_pos():
-    while True:
+    character_select_button = None
+    for i in range(globals.Roblox.max_attempts_character_selection):
         winsound.Beep(40, 50)
         try:
             print("TryingToFind")
@@ -336,6 +337,24 @@ def get_character_select_button_pos():
     return character_select_button
 
 
+def click_sit_button():
+    log_process("Clicking Sit button")
+    check_active()
+    sleep(0.5)
+    winsound.Beep(150, 100)
+    try:
+        ratio_x, ratio_y = globals.Roblox.sit_button_position
+        x = round(screen_res["width"] * ratio_x)
+        y = round(screen_res["height"] * ratio_y)
+        pydirectinput.moveTo(x,y)
+        alt_tab_click()
+        winsound.Beep(100, 50)
+    except:
+        log("Could not find sit button on screen?")
+        sleep(5)
+    log_process("")
+    
+
 def change_characters():
     check_active()
     sleep(1)
@@ -348,11 +367,19 @@ def change_characters():
 
 def server_spawn():
     sleep(5)
+    log("Loading into game")
+    if get_character_select_button_pos() is None:
+        log("Failed to load into game.")
+        sleep(5)
+        notify_admin("Failed to load into game")
+        globals.Roblox.action_queue.append("handle_crash")
+        return False
     if globals.Roblox.disable_collisions_on_spawn:
         toggle_collisions()
     change_characters()
     pydirectinput.moveTo(1, 1)
     alt_tab_click()
+    return True
 
 
 def run_javascript_in_browser(url, js_code, esc_before_entering):
@@ -480,6 +507,48 @@ def check_if_should_change_servers(current_server_id="N/A"):
     return False, f"[WARN] Could not poll Roblox servers. Is Roblox down?"
 
 
+def check_if_in_nil_world():
+    current_server_id = "N/A"
+    url = f"https://games.roblox.com/v1/games/{globals.Roblox.game_id_nil}/servers/Public?sortOrder=Asc&limit=10"
+    try:
+        response = requests.get(url)
+    except Exception:
+        print(format_exc())
+        return "ERROR"
+    if response.status_code == 200:
+        response_result = response.json()
+        servers = response_result["data"]
+        for server in servers:
+            if globals.Roblox.player_token in server["playerTokens"]:
+                current_server_id = server["id"]
+                break
+        if current_server_id != "ERROR":
+            print(current_server_id)
+        return current_server_id
+    return "ERROR"
+
+
+def check_if_in_hinamizawa_world():
+    current_server_id = "N/A"
+    url = f"https://games.roblox.com/v1/games/{globals.Roblox.game_id_hinamizawa}/servers/Public?sortOrder=Asc&limit=10"
+    try:
+        response = requests.get(url)
+    except Exception:
+        print(format_exc())
+        return "ERROR"
+    if response.status_code == 200:
+        response_result = response.json()
+        servers = response_result["data"]
+        for server in servers:
+            if globals.Roblox.player_token in server["playerTokens"]:
+                current_server_id = server["id"]
+                break
+        if current_server_id != "ERROR":
+            print(current_server_id)
+        return current_server_id
+    return "ERROR"
+
+
 def get_current_server_id():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{globals.Roblox.game_id}/servers/Public?sortOrder=Asc&limit=10"
@@ -581,9 +650,22 @@ def check_for_better_server():
         sleep(5)
         current_server_id = get_current_server_id()
     if current_server_id == "N/A":
-        log_process("Could not find FumoCam in any servers")
-        globals.Roblox.action_queue.append("handle_crash")
-        return False
+        nil_world_id = check_if_in_nil_world()
+        hinamizawa_world_id = check_if_in_hinamizawa_world()
+        if nil_world_id == "N/A" and hinamizawa_world_id == "N/A":
+            log_process("Could not find FumoCam in any servers")
+            globals.Roblox.action_queue.append("handle_crash")
+            return False
+        else: #other world easter egg
+            log("Successfully failed! Could not find FumoCam in the realms of the living.")
+            winsound.Beep(60, 2000)
+            log("S#c%e!s%u^l& f!i@e%! &o#l* ^o$ f!n& @u$o%a& *n !h# $e^l!s #f ^$e #i!i$g.")
+            winsound.Beep(50, 2000)
+            log("!#@%&!@%%^^& $!#@&%! &@#!* ^*$ @!$& @^$@%a& *$ !@# $#^%!@ #@ ^$% #@!%$#.")
+            winsound.Beep(40, 2000)
+            log_process("")
+            log("")
+            return True
     should_change_servers, change_server_status_text = check_if_should_change_servers(current_server_id)
     log(change_server_status_text)
     output_log("change_server_status_text", change_server_status_text)
@@ -626,16 +708,16 @@ def zoom_camera(zoom_obj):
 
 
 def turn_camera(direction_obj):
-    inverted_direction = direction_obj["turn_camera_direction"]
+    direction = direction_obj["turn_camera_direction"]
+    #inverted_direction = direction_obj["turn_camera_direction"]
+    # if inverted_direction == "left":
+        # direction = "right"
+    # elif inverted_direction == "right":
+        # direction = "left"
+    # else:
+        # direction = inverted_direction
+        # print(f"Could not invert camera direction '{inverted_direction}'!")
     turn_time = direction_obj["turn_camera_time"]
-    if inverted_direction == "left":
-        direction = "right"
-    elif inverted_direction == "right":
-        direction = "left"
-    else:
-        direction = inverted_direction
-        print(f"Could not invert camera direction '{inverted_direction}'!")
-
     check_active()
     sleep(0.5)
     pydirectinput.keyDown(direction)
@@ -747,9 +829,9 @@ def inject_lua(lua_code, attempts=0):  # todo: Move to seperate file
     return True
 
 
-def load_exploit():  # todo: Move to seperate file
+def load_exploit(force=False):  # todo: Move to seperate file
     print("loading exploit")
-    if globals.Roblox.injector_disabled:
+    if globals.Roblox.injector_disabled and not force:
         log("Advanced commands are currently broken, sorry!")
         sleep(5)
         log("")
@@ -793,10 +875,11 @@ def load_exploit():  # todo: Move to seperate file
         setfflag("AbuseReportScreenshotPercentage", "0")""")
     else:
         kill_process("chrome.exe")
-        globals.Roblox.injector_disabled = True           
-        notify_admin(f"Injector has been patched, navigate to location manually")
-        log("Warning: Injector failed, this can happen every 7 days.\nPlease wait for dev to manually relocate.")
-        output_log("injector_failure", "INJECTOR FAILED\nAdvanced commands may not work")
+        globals.Roblox.injector_disabled = True
+        if not force:  # We're not forcing a check from an existing injector failed loop
+            notify_admin(f"Injector has been patched, navigate to location manually")
+            threading.Thread(target=injector_failed_loop).start()
+        log("Warning: Injector failed, this can happen every 7 days.\nYou can try moving the cam with !move.")
         sleep(10)
         log("")
         return False
@@ -805,16 +888,41 @@ def load_exploit():  # todo: Move to seperate file
     return non_fatal_error
 
 
-def test_teleport(location_name):  # todo: Move tests to new file
-    winsound.Beep(40, 600)
-    winsound.Beep(70, 400)
+def injector_failed_loop():
+    globals.Roblox.next_injector_check = time.time()
+    while True:
+        if globals.Roblox.next_injector_check <= time.time():  # Time to recheck
+            globals.Roblox.next_injector_check = time.time() + globals.Roblox.injector_recheck_seconds
+            while globals.Roblox.action_running or globals.Roblox.action_queue:  # We have a queue or we're doing something
+                sleep(0.5)  # Wait for any running action to finish
+            globals.Roblox.action_running = True
+            log_process(f"Attempting to hook into Roblox")
+            log("Re-attempting process connection...")
+            output_log("injector_failure", "INJECTOR FAILED\nTP, Goto, Spectate, Tour offline Use !move\nAttempting again now...")
+            loaded_exploit = load_exploit(force=True)
+            log_process(f"")
+            log("")
+            if loaded_exploit:
+                output_log("injector_failure","")
+                return True
+            globals.Roblox.action_running = False
+        time_remaining = round(globals.Roblox.next_injector_check-time.time())
+        friendly_time_remaining = f"{math.floor(time_remaining/60):02}:{time_remaining%60:02}"
+        output_log("injector_failure", f"INJECTOR FAILED\nTP, Goto, Spectate, Tour offline. Use !move\nAttempting again in {friendly_time_remaining}")
+        sleep(1)
+
+
+def silent_teleport(location_name):  # todo: Move tests to new file
+    #winsound.Beep(40, 600)
+    #winsound.Beep(70, 400)
     chosen_location = globals.Roblox.teleport_locations[location_name]
     pos, rot, cam_rot = chosen_location["pos"], chosen_location["rot"], chosen_location["cam"]
     # noinspection LongLine
-    inject_lua(f"""game.Players.LocalPlayer.Character:MoveTo(Vector3.new({pos}))
+    inject_lua(f"""
+    game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Vector3.new({pos}), game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector))
     game.Players.LocalPlayer.Character.PrimaryPart.CFrame = CFrame.new(game.Players.LocalPlayer.Character.PrimaryPart.Position) * CFrame.Angles({rot})
     workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position) * CFrame.Angles({cam_rot})""")
-    winsound.Beep(90, 300)
+    #winsound.Beep(90, 300)
 
 
 def jump():
@@ -823,6 +931,26 @@ def jump():
     pydirectinput.keyDown('space')
     sleep(0.25)
     pydirectinput.keyUp('space')
+
+
+def respawn_character():
+    check_active()
+    log_process("Respawning")
+    send_chat("[Respawning!]")
+    sleep(0.75)
+    pydirectinput.keyDown('esc')
+    sleep(0.1)
+    pydirectinput.keyUp('esc')
+    sleep(0.5)
+    pydirectinput.keyDown('r')
+    sleep(0.1)
+    pydirectinput.keyUp('r')
+    sleep(0.5)
+    pydirectinput.keyDown('enter')
+    sleep(0.1)
+    pydirectinput.keyUp('enter')
+    sleep(0.5)
+    log_process("")
 
 
 def teleport(location_name, no_log=False):
@@ -862,7 +990,8 @@ def teleport(location_name, no_log=False):
     pos, rot, cam_rot = chosen_location["pos"], chosen_location["rot"], chosen_location["cam"]
     # todo: Probably best to write LUA in seperate files
     # noinspection LongLine
-    inject_lua(f"""game.Players.LocalPlayer.Character:MoveTo(Vector3.new({pos}))
+    jump()
+    inject_lua(f"""game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Vector3.new({pos}), game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector))
     game.Players.LocalPlayer.Character.PrimaryPart.CFrame = CFrame.new(game.Players.LocalPlayer.Character.PrimaryPart.Position) * CFrame.Angles({rot})
     workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position) * CFrame.Angles({cam_rot})""")
     if is_comedy:
@@ -879,7 +1008,7 @@ def teleport(location_name, no_log=False):
         pos, rot, cam_rot = return_location["pos"], return_location["rot"], return_location["cam"]
         # todo: Probably best to write LUA in seperate files
         # noinspection LongLine
-        inject_lua(f"""game.Players.LocalPlayer.Character:MoveTo(Vector3.new({pos}))
+        inject_lua(f"""game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(Vector3.new({pos}), game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector))
     game.Players.LocalPlayer.Character.PrimaryPart.CFrame = CFrame.new(game.Players.LocalPlayer.Character.PrimaryPart.Position) * CFrame.Angles({rot})
     workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position) * CFrame.Angles({cam_rot})""")
     else:
@@ -947,6 +1076,7 @@ def goto(target):
     winsound.Beep(70, 400)
     # todo: Probably best to write LUA in seperate files
     # noinspection LongLine
+    jump()
     inject_lua(f"""
     local player_list = game.Players:GetPlayers()
     for i=1,#player_list do
@@ -981,6 +1111,105 @@ def goto(target):
     log("")
     log_process("")
     return True
+def anti_gravity():
+    inject_lua("""
+    -- The factor by which gravity will be counteracted
+local MOON_GRAVITY = 0.5
+local function setGravity(part, g)
+    local antiGravity = part:FindFirstChild("AntiGravity")
+    if g == 1 then
+        -- Standard gravity; destroy any gravity-changing force
+        if antiGravity then
+            antiGravity:Destroy()
+        end 
+    else
+        -- Non-standard gravity: create and change gravity-changing force
+        if not antiGravity then
+            antiGravity = Instance.new("BodyForce")
+            antiGravity.Name = "AntiGravity"
+            antiGravity.Archivable = false
+            antiGravity.Parent = part
+        end
+        antiGravity.Force = Vector3.new(0, part:GetMass() * workspace.Gravity * (1 - g), 0)
+    end
+end
+local function moonGravity(part)
+    setGravity(part, 0.0005)
+end
+local function recursiveMoonGravity(object)
+    if object:IsA("BasePart") then
+        moonGravity(object)
+    end
+    for _, child in pairs(object:GetChildren()) do
+        recursiveMoonGravity(child)
+    end
+end
+local function onDescendantAdded(object)
+    if object:IsA("BasePart") then
+        moonGravity(object)
+    end
+end
+recursiveMoonGravity(workspace)
+workspace.DescendantAdded:Connect(onDescendantAdded)""")
+
+
+
+def silent_goto(target):
+    inject_lua(f"""
+    local player_list = game.Players:GetPlayers()
+    for i=1,#player_list do
+        local current_player = player_list[i]
+        if (string.lower(current_player.Name) == "{target.lower()}") then
+            local original_pos = game.Players.LocalPlayer.Character.PrimaryPart.Position
+            local player_pos = current_player.Character.PrimaryPart.Position
+            game.Players.LocalPlayer.Character:SetPrimaryPartCFrame(CFrame.new(player_pos), game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame.LookVector)
+            
+            
+            break
+        end
+    end
+    workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    """)
+    
+    
+def silent_getpos(target):
+    inject_lua(f"""
+    local player_list = game.Players:GetPlayers()
+    for i=1,#player_list do
+        local current_player = player_list[i]
+        if (string.lower(current_player.Name) == "{target.lower()}") then
+            local original_pos = game.Players.LocalPlayer.Character.PrimaryPart.Position
+            local player_pos = current_player.Character.PrimaryPart.Position
+            print("Target:", current_player.Name)
+            print("\\n\\n")
+            print("Position:", current_player.Character.PrimaryPart.Position)
+            print("Angles:",  current_player.PrimaryPart.Rotation)
+            
+            break
+        end
+    end
+    workspace.CurrentCamera.CameraSubject = game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    """)    
+
+
+
+def spectate_target(target):
+
+    # todo: Probably best to write LUA in seperate files
+    inject_lua(f"""
+    local player_list = game.Players:GetPlayers()
+    for i=1,#player_list do
+        local current_player = player_list[i]
+        if (string.lower(current_player.Name) == "{target.lower()}") then
+            pcall(function()
+                print(current_player.Name)
+                print(current_player.Character:FindFirstChildOfClass("Humanoid"))
+                workspace.CurrentCamera.CameraSubject = current_player.Character:FindFirstChildOfClass("Humanoid")
+            end)
+            break
+        end
+    end
+    """)
 
 
 def spectate_random():
@@ -1095,6 +1324,8 @@ class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
             cfg.action_queue.append(cmd)
         elif cmd == "spectate":
             cfg.action_queue.append("spectate")
+        elif cmd == "tour":
+            cfg.action_queue.append("tour")
         elif cmd == "zoomin" or cmd == "zoomout":
             zoom_direction = "i" if cmd == "zoomin" else "o"
             zoom_time = 0.05
@@ -1109,11 +1340,46 @@ class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
             turn_time = 0.1
             try:
                 number = float(args[0])
-                if number <= 1:
+                if number <= 2:
                     turn_time = number
             except Exception:
                 pass
             cfg.action_queue.append({"turn_camera_direction": cmd, "turn_camera_time": turn_time})
+        elif cmd == "move":
+            move_time = 1
+            try:
+                number = float(args[1])
+                if number <= 5 and number > 0:
+                    move_time = number
+            except Exception:
+                pass
+            try:
+                cfg.action_queue.append({"movement": cmd, "move_key": args[0], "move_time": move_time, "override": is_dev})
+            except Exception:
+                log_process("Manual Movement")
+                log("Command invalid! Check you're typing it right.")
+                sleep(3)
+        elif cmd == "leap":
+            forward_time = 0.4
+            jump_time = 0.3
+            try:
+                number = float(args[0])
+                if number <= 1 and number > 0:
+                    forward_time = number
+            except Exception:
+                pass
+            try:
+                number = float(args[1])
+                if number <= 1 and number > 0:
+                    jump_time = number
+            except Exception:
+                pass
+            try:
+                cfg.action_queue.append({"leap": cmd, "forward_time": forward_time, "jump_time": jump_time, "override": is_dev})
+            except Exception:
+                log_process("Leap")
+                log("Command invalid! Check you're typing it right.")
+                sleep(3)
         elif cmd == "tp":
             location = ""
             if len(args) > 0:
@@ -1134,6 +1400,20 @@ class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
             notify_admin(f"{author}: {msg}")
             sleep(5)
             log("")
+        elif cmd == "click":
+            cfg.action_queue.append("click")
+        elif cmd == "sit":
+            cfg.action_queue.append("sit")
+        elif cmd == "use":
+            cfg.action_queue.append("use")
+        elif cmd == "grief":
+            cfg.action_queue.append("grief")
+        elif cmd == "respawn":
+            cfg.action_queue.append("respawn")
+        elif cmd == "jump":
+            cfg.action_queue.append("jump")
+        elif cmd == "respawn":
+            cfg.action_queue.append("respawn")
         elif cmd == "m":
             msg = " ".join(args)
             if msg.startswith("[") or msg.startswith("/w"):  # Whisper functionality
@@ -1153,6 +1433,36 @@ class TwitchBot(irc.bot.SingleServerIRCBot):  # todo: Move to seperate file?
                 cfg.action_queue.append({"chat_with_name": [f"{author}:", msg]})
 
 
+def world_tour():
+    interval = globals.Roblox.seconds_per_tour_location
+    locations = globals.Roblox.teleport_locations
+    send_chat(f"[Going on tour. Try and keep up! I'll be back here in {len(locations)*interval} seconds.]")
+    log_process("World Tour")
+    sleep(5)
+    locations_list = list(locations.keys())
+    for index in range(len(locations_list)): 
+        if globals.Roblox.injector_disabled:
+            break
+        location_key = locations_list[index]
+        location = locations[location_key]
+        log(f"Touring {location['friendly_name']} ({index+1}/{len(locations_list)})")
+        globals.Roblox.next_possible_teleport = 0
+        jump()
+        silent_teleport(location_key)
+        sleep(interval)
+        
+    if globals.Roblox.injector_disabled:
+        crashed = do_crash_check()
+        if crashed or "Roblox" not in pyautogui.getAllTitles():
+            globals.Roblox.action_queue.append("handle_crash")
+    globals.Roblox.next_possible_teleport = 0
+    teleport(globals.Roblox.current_location, no_log=True)
+    globals.Roblox.next_possible_teleport = time.time() + 30
+    log("")
+    log_process("")
+    send_chat(f"[I'm back from my tour!]")
+
+
 def commands_loop():
     cfg = globals.Roblox
     commands_list = [
@@ -1161,16 +1471,25 @@ def commands_loop():
             "help": "Sends \"Your Message\" in-game"
         },
         {
+            "help": f"Teleport. \n({', '.join(cfg.teleport_locations)})",
             "command": "!tp LocationName",
-            "help": f"Teleport. \n({', '.join(cfg.teleport_locations)})"
+            "injector_status_required": True,
+            "time": 20
         },
         {
             "command": "!goto PlayerName",
-            "help": "Teleports to a player by that name."
+            "help": "Teleports to a player by that name.",
+            "injector_status_required": True
         },
         {
             "command": "!spectate",
-            "help": "Spectates up to 10 random players."
+            "help": "Spectates up to 10 random players.",
+            "injector_status_required": True
+        },
+        {
+            "command": "!tour",
+            "help": "Goes on a tour to all known locations.",
+            "injector_status_required": True
         },
         {
             "command": "!left 0.2 or !right 0.2",
@@ -1181,23 +1500,75 @@ def commands_loop():
             "help": "Zoom camera in or out for 0.1s"
         },
         {
+            "command": "!sit",
+            "help": "Clicks the sit button"
+        },
+        {
             "command": "!dev Your Message",
             "help": "EMERGENCY ONLY, Sends \"Your Message\" to devs discord account"
         },
+        {
+            "command": "!move w 5",
+            "help": "Moves forwards for 5 seconds",
+            "injector_status_required": False
+        },
+        {
+            "command": "!leap 0.7 0.5",
+            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s",
+            "injector_status_required": False
+        },
+        {
+            "command": "!jump",
+            "help": "Jumps. Helpful if stuck on something.",
+            "injector_status_required": False
+        },
+        {
+            "command": "!grief",
+            "help": "Toggles anti-grief.",
+            "injector_status_required": False
+        },
+        {
+            "command": "!respawn",
+            "help": "Respawns. Helpful if completely stuck.",
+            "injector_status_required": False
+        },
+        {
+            "command": "!use",
+            "help": "Presses \"e\".",
+            "injector_status_required": False
+        },
+        {
+            "command": "!sit",
+            "help": "Clicks the sit button.",
+            "injector_status_required": False
+        },
     ]
     while True:
-        for command in commands_list:
+        new_commands_list = []
+        for cmd in commands_list:
+            if "injector_status_required" in cmd:
+                # If the injector needs to be ON for this but its OFF
+                if cmd["injector_status_required"] and globals.Roblox.injector_disabled:
+                    continue
+                # If the injector needs to be OFF for this but its ON
+                if not cmd["injector_status_required"] and not globals.Roblox.injector_disabled:
+                    continue
+            new_commands_list.append(cmd)
+        for command in new_commands_list:
             output_log("commands_help_label", "")
             output_log("commands_help_title", "")
             output_log("commands_help_desc", "")
 
             sleep(0.25)
-            current_command_in_list = f"{(commands_list.index(command) + 1)}/{len(commands_list)}"
+            current_command_in_list = f"{(new_commands_list.index(command) + 1)}/{len(new_commands_list)}"
             output_log("commands_help_label", f"TWITCH CHAT COMMANDS [{current_command_in_list}]")
             output_log("commands_help_title", command["command"])
             sleep(0.1)
             output_log("commands_help_desc", command["help"])
-            sleep(10)
+            if "time" in command:
+                sleep(int(command["time"]))
+                continue
+            sleep(5)
 
 
 def do_process_queue():  # todo: Investigate beneifts of multithreading over singlethreaded/async
@@ -1271,6 +1642,115 @@ def do_process_queue():  # todo: Investigate beneifts of multithreading over sin
             spectate_random()
             check_active()
             cfg.action_running = False
+        elif action == "tour":
+            cfg.action_running = True
+            world_tour()
+            check_active()
+            cfg.action_running = False
+        elif action == "click":
+            cfg.action_running = True
+            alt_tab_click()
+            cfg.action_running = False
+        elif action == "sit":
+            cfg.action_running = True
+            click_sit_button()
+            cfg.action_running = False
+        elif action == "use":
+            cfg.action_running = True
+            log_process("Pressing Use (e)")
+            if not globals.Roblox.injector_disabled:
+                log("Manual control not allowed when injector is working!")
+                sleep(5)
+            else:
+                check_active()
+                pydirectinput.keyDown("e")
+                sleep(1)
+                pydirectinput.keyUp("e")
+            log_process("")
+            log("")
+            cfg.action_running = False
+        elif action == "grief":
+            cfg.action_running = True
+            if not globals.Roblox.injector_disabled:
+                log("Anti-Grief toggling not allowed when injector is working!")
+                sleep(5)
+            else:
+                toggle_collisions()
+                pydirectinput.moveTo(1, 1)
+                alt_tab_click()
+            log_process("")
+            log("")
+            cfg.action_running = False
+        elif action == "respawn":
+            cfg.action_running = True
+            if not globals.Roblox.injector_disabled:
+                log("Respawning character not allowed when injector is working!")
+                sleep(5)
+            else:
+                respawn_character()
+            log_process("")
+            log("")
+            cfg.action_running = False
+        elif action == "jump":
+            cfg.action_running = True
+            jump()
+            cfg.action_running = False
+        elif "movement" in action:
+            cfg.action_running = True
+            log_process("Manual Movement")
+            if not globals.Roblox.injector_disabled and not action["override"]:
+                log("Manual movement not allowed when injector is working!")
+                sleep(5)
+                log_process("")
+                log("")
+            valid_keys = {"w":"Forward","a":"Left","s":"Backwards","d":"Right"}
+            key = action["move_key"].lower()
+            if key not in valid_keys.keys():
+                log(f"Not a valid movement! ({','.join(valid_keys)})")
+                sleep(5)
+                log("")
+                log_process("")
+                cfg.action_running = False
+                cfg.action_queue.pop(0)
+                return False
+            time_to_press = action["move_time"]
+            log(f"Moving {valid_keys[key]} for {time_to_press}s")
+            check_active()
+            sleep(0.75)
+            pydirectinput.keyDown(key)
+            sleep(time_to_press)
+            pydirectinput.keyUp(key)            
+            log("")
+            log_process("")
+            cfg.action_running = False
+        elif "leap" in action:
+            cfg.action_running = True
+            log_process("Leap Forward")
+            if not globals.Roblox.injector_disabled and not action["override"]:
+                log("Manual movement not allowed when injector is working!")
+                sleep(5)
+                log_process("")
+                log("")
+            time_forward = action["forward_time"]
+            time_jump = action["jump_time"]
+            log(f"Moving forward for {time_forward}s and jumping for {time_jump}s")
+            check_active()
+            sleep(0.75)
+            pydirectinput.keyDown("w")
+            pydirectinput.keyDown("space")
+            if time_forward > time_jump:
+                sleep(time_jump)
+                pydirectinput.keyUp("space")
+                sleep(time_forward-time_jump)
+                pydirectinput.keyUp("w")
+            else:
+                sleep(time_forward)
+                pydirectinput.keyUp("w")
+                sleep(time_jump-time_forward)
+                pydirectinput.keyUp("space")
+            log("")
+            log_process("")
+            cfg.action_running = False
         else:
             print("queue failed")
 
@@ -1283,7 +1763,7 @@ def process_queue_loop():
         if globals.Roblox.action_running:
             continue
         do_process_queue()
-        sleep(1)
+        sleep(0.25)
 
 
 def main():
@@ -1315,6 +1795,12 @@ def test_character_select(click_mouse=True):  # todo: Move tests to new file
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     main()
+    #test_character_select(click_mouse=True)
     # load_exploit()
-    # test_character_select(click_mouse=False)
     # change_characters()
+    #respawn_character()
+    #spectate_target("scary08")
+    #test_cam()
+    #silent_teleport("easteregg")
+    #silent_getpos("scary08")
+    #anti_gravity()

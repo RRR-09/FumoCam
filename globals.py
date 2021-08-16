@@ -40,7 +40,7 @@ class Roblox:
     character_select_image_path = os.path.join("resources", "character_select.png")
     
     character_select_scroll_up_amount = 10
-    character_select_screen_height_to_click = 0.40
+    character_select_screen_height_to_click = 0.20
     comedy_phrases = [
         "Peak comedy incoming",
         "This is going to be funny",
@@ -55,18 +55,85 @@ class Roblox:
         "Orbital fumocam",
         "It's no trebuchet but it'll do"
     ]
-    current_location = "tree"
+    current_location = "easteregg"
     current_emote = "/e dance3"
     event_timer_running = False
     disable_collisions_on_spawn = True
     game_id = 6238705697
+    game_id_nil = 7137029060
+    game_id_hinamizawa = 6601613056
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     injector_file_path = os.path.join("resources", "injector")
     injector_attempts = 0
     injector_disabled = False
+    injector_recheck_seconds = 30*60
+    max_attempts_character_selection = 30
+    max_attempts_sit_button = 3
     next_possible_teleport = 0
     player_token = "BD7F4C1D8063321CDFE702866B105EFB"
+    seconds_per_tour_location = 7
+    sit_button_position = (0.79,0.89)
     teleport_locations = {
+        # "velvet": {
+            # "pos": "-3404.589, -82.86, 26.134",
+            # "rot": "0, math.rad(0), 0",
+            # "cam": "math.rad(20), math.rad(120), 0",
+            # "friendly_name": "Velvet Room",
+        # },
+        "easteregg": {
+            "pos": "24.709, 10.702, 80.479",
+            "rot": "math.rad(180), math.rad(-51), math.rad(180)",
+            "cam": "math.rad(10), math.rad(50), 0",
+            "friendly_name": "Fumocam Easter Egg",
+        },
+        "tree2": {
+            "pos": "-67.394, 12.613, -224.721",
+            "rot": "math.rad(0), math.rad(45), math.rad(0)",
+            "cam": "math.rad(30), math.rad(-135), 0",
+            "friendly_name": "Trees near Train",
+        },
+        "lobster": {
+            "pos": "0.227, -12, -52.868",
+            "rot": "math.rad(-180), math.rad(45), math.rad(180)",
+            "cam": "math.rad(-30), math.rad(-35), 0",
+            "friendly_name": "Lobster Room",
+        },
+        "funky": {
+            "pos": "-52.267967224121, 1, 60.158397674561",
+            "rot": "0, math.rad(90), 0",
+            "cam": "math.rad(8), math.rad(-90), 0",
+            "friendly_name": "Funky Room",
+        },
+        "secret": {
+            "pos": "-46.992160797119, -3.3972184658051, -60.269630432129",
+            "rot": "0, math.rad(45), 0",
+            "cam": "math.rad(20), math.rad(-125), 0",
+            "friendly_name": "Secret Chair Room",
+        },
+        "miko2": {
+            "pos": "16.568878173828, -0.59699988365173, -108.66677856445",
+            "rot": "0, math.rad(0), 0",
+            "cam": "math.rad(20), math.rad(120), 0",
+            "friendly_name": "Miko Borgar Interior",
+        },
+        "jungle2": {
+            "pos": "39.32, 8.6, -156.57",
+            "rot": "0, math.rad(180), 0",
+            "cam": "math.rad(0), math.rad(0), 0",
+            "friendly_name": "Jungle",
+        },
+        "jungle1": {
+            "pos": "33.164390563965, 26.33, -179.29165649414",
+            "rot": "0, math.rad(-47), 0",
+            "cam": "math.rad(20), math.rad(141), 0",
+            "friendly_name": "Jungle Tree",
+        },
+        "train": {
+            "pos": "-57.425586700439, 5.3103098869324, -157.5",
+            "rot": "0, math.rad(180), 0",
+            "cam": "math.rad(-10), math.rad(0), 0",
+            "friendly_name": "Train Station",
+        },
         "treehouse": {
             "pos": "36.4470062, 41.9251442, 47.5567894",
             "rot": "0, math.rad(0), 0",
@@ -91,7 +158,7 @@ class Roblox:
             "cam": "math.rad(0), math.rad(-90), 0",
             "friendly_name": "Comedy Machine, wee",
         },
-        "miko": {
+        "miko1": {
             "pos": "-20.65061, -3.39721847, -109.600708",
             "rot": "0, math.rad(90), 0",
             "cam": "math.rad(-8.9949), math.rad(-51.2586), 0",
