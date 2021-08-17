@@ -183,7 +183,6 @@ def queue_movement(action):  # todo: Simplify
         log("")
         log_process("")
         CFG.action_running = False
-        CFG.action_queue.pop(0)
         return False
     time_to_press = action["move_time"]
     log(f"Moving {valid_keys[key]} for {time_to_press}s")
