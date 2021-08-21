@@ -196,7 +196,7 @@ def run_javascript_in_browser(url, js_code, esc_before_entering):
     log("Closing dialogues (if present)...")
     Beep(50, 20)
     pyautogui.press("esc")
-    sleep(1)
+    sleep(2)
     log("Opening JS injector (6s)...")
     Beep(60, 50)
     pyautogui.hotkey('ctrl', 'shift', 'j')
