@@ -1,4 +1,4 @@
-from health import click_character_in_menu
+from health import click_character_in_menu, change_characters
 from injector import *
 
 
@@ -32,6 +32,12 @@ def test_character_select(click_mouse=True):  # Character select OCR still needs
     click_character_in_menu(click_mouse=click_mouse)
 
 
+def test_character_select_full(click_mouse=True):
+    check_active()
+    sleep(1)
+    change_characters()
+
+
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
-    test_character_select(click_mouse=True)
+    test_character_select_full(click_mouse=True)
