@@ -254,14 +254,10 @@ def click_character_select_button():
 
 
 def click_character_in_menu(click_mouse=True):
-    log("Scrolling to bottom of list")
-    for i in range(18):
+    sleep(0.5)
+    log(f"Scrolling down {CFG.character_select_scroll_down_amount} times")
+    for i in range(CFG.character_select_scroll_down_amount):
         pyautogui.scroll(-1)
-        Beep(40, 25)
-        sleep(0.05)
-    log(f"Scrolling up {CFG.character_select_scroll_up_amount} times")
-    for i in range(CFG.character_select_scroll_up_amount):
-        pyautogui.scroll(1)
         Beep(40, 25)
         sleep(0.05)
     log("Clicking Momiji")
