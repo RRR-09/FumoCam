@@ -126,7 +126,6 @@ def load_exploit(force=False):
         kill_process("chrome.exe")
         CFG.injector_disabled = True
         if not force:  # We're not forcing a check from an existing injector failed loop
-            notify_admin(f"Injector has been patched, navigate to location manually")
             threading.Thread(target=injector_failed_loop).start()
         log("Warning: Injector failed, this can happen every 7 days.\nYou can try moving the cam with !move.")
         sleep(10)
