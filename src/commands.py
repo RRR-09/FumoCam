@@ -1,4 +1,5 @@
 from actions import *
+from health import change_characters
 
 
 def click_sit_button():
@@ -45,19 +46,7 @@ def respawn_character():
     check_active()
     log_process("Respawning")
     send_chat("[Respawning!]")
-    sleep(0.75)
-    pydirectinput.keyDown('esc')
-    sleep(0.1)
-    pydirectinput.keyUp('esc')
-    sleep(0.5)
-    pydirectinput.keyDown('r')
-    sleep(0.1)
-    pydirectinput.keyUp('r')
-    sleep(0.5)
-    pydirectinput.keyDown('enter')
-    sleep(0.1)
-    pydirectinput.keyUp('enter')
-    sleep(0.5)
+    change_characters(respawn=True)
     log_process("")
 
 
@@ -81,6 +70,8 @@ def goto(target):
     CFG.next_possible_teleport = time.time() + 30
     Beep(40, 600)
     Beep(70, 400)
+    # todo: Probably best to write LUA in separate files
+    # noinspection LongLine
     jump()
     inject_lua_file("goto_player", target=target.lower())
 

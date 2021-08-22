@@ -253,17 +253,24 @@ def click_character_select_button():
     Beep(100, 50)
 
 
-def click_character_in_menu(click_mouse=True):
+def scroll_to_character_in_menu():
     sleep(0.5)
     log(f"Scrolling down {CFG.character_select_scroll_down_amount} times")
     for i in range(CFG.character_select_scroll_down_amount):
         pyautogui.scroll(-1)
         Beep(40, 25)
         sleep(0.05)
-    log("Clicking Momiji")
+    log("")
+
+
+def click_character_in_menu(click_mouse=True, click_random=False):
+    character_name = "Momiji" if not click_random else "a random character"
+    log(f"Clicking {character_name}")
     Beep(250, 100)
     button_x, button_y = round(pyautogui.size()[0] * 0.5), round(
         SCREEN_RES["height"] * CFG.character_select_screen_height_to_click)  # Toggle Collisions button
+    if click_random:
+        button_y += int(SCREEN_RES["height"]*0.05)
     pydirectinput.moveTo(button_x, button_y)
     alt_tab_click(click_mouse=click_mouse)
     Beep(100, 50)
@@ -288,11 +295,18 @@ def get_character_select_button_pos():
     return character_select_button
 
 
-def change_characters():
+def change_characters(respawn=False):
     check_active()
     sleep(1)
     log("Opening character select")
     click_character_select_button()
+    if respawn:
+        click_character_in_menu(click_random=True)
+        respawn_delay = 12
+        log(f"Waiting for {respawn_delay} seconds (or else clicking our character won't work)")
+        sleep(respawn_delay)
+    else:
+        scroll_to_character_in_menu()
     click_character_in_menu()
     log("Closing character select")
     click_character_select_button()
