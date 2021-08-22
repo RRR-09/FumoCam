@@ -270,7 +270,7 @@ def click_character_in_menu(click_mouse=True, click_random=False):
     button_x, button_y = round(pyautogui.size()[0] * 0.5), round(
         SCREEN_RES["height"] * CFG.character_select_screen_height_to_click)  # Toggle Collisions button
     if click_random:
-        button_y += int(SCREEN_RES["height"]*0.05)
+        button_y += int(SCREEN_RES["height"]*0.075)
     pydirectinput.moveTo(button_x, button_y)
     alt_tab_click(click_mouse=click_mouse)
     Beep(100, 50)
@@ -300,6 +300,7 @@ def change_characters(respawn=False):
     sleep(1)
     log("Opening character select")
     click_character_select_button()
+    sleep(0.5)
     if respawn:
         click_character_in_menu(click_random=True)
         respawn_delay = 12
