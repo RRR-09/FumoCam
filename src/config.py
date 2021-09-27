@@ -53,7 +53,7 @@ class MainBotConfig:
     ]
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
 
-    character_select_scroll_down_amount = 20
+    character_select_scroll_down_amount = 21
     character_select_screen_height_to_click = 0.10
     chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message
     comedy_phrases = [
@@ -80,7 +80,7 @@ class MainBotConfig:
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     injector_file_path = os.path.join(RESOURCES_PATH, "injector")
     injector_attempts = 0
-    injector_disabled = False
+    injector_disabled = True
     injector_recheck_seconds = 30 * 60
     max_attempts_character_selection = 30
     max_attempts_sit_button = 3
