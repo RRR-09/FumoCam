@@ -234,7 +234,7 @@ def do_process_queue():  # todo: Investigate benefits of multithreading over sin
             CFG.action_running = True
             do_anti_afk()
             CFG.action_running = False
-        elif action == "anti-afk-advert":
+        elif action == "advert":
             CFG.action_running = True
             do_advert()
             CFG.action_running = False
