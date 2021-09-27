@@ -106,8 +106,8 @@ def load_exploit(force=False):
     except subprocess.TimeoutExpired:
         pass
     except Exception:
-        notify_admin(f"Error occurred with injector:\n```{format_exc()}```")
-        log("Warning: Injector failed, this happens every 24h. Please wait for dev.")
+        #notify_admin(f"Error occurred with injector:\n```{format_exc()}```")
+        log("Warning: Injector has been temporarily removed.")
         non_fatal_error = False
         sleep(10)
         log("")
