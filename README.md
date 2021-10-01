@@ -1,5 +1,5 @@
 # FumoCam
-A 24/7, interactive, in-game Twitch bot with over 900 followers.
+A 24/7, interactive, in-game Twitch bot with over 1000 followers.
 
 Writeup pending.
 
