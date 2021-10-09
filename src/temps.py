@@ -1,6 +1,6 @@
 from utilities import run_as_admin
 
-run_as_admin()  # Do not run any of the below code until we are admin
+
 from time import sleep
 from utilities import output_log
 from os import path
@@ -12,7 +12,7 @@ import clr  # pip3.9 install wheel; pip3.9 install pythonnet
 clr.AddReference(path.join(RESOURCES_PATH, "OpenHardwareMonitorLib.dll"))
 # noinspection PyUnresolvedReferences
 import OpenHardwareMonitor.Hardware  # Ignore "No module found named...", is imported dynamically by above line
-
+run_as_admin()
 
 def get_temps(computer):
     cpu_temp = -1

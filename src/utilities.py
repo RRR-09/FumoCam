@@ -8,7 +8,7 @@ import time
 import subprocess
 import requests
 import math
-
+import psutil
 
 def check_admin_and_run():
     from sys import executable as a_executable, argv as a_argv
@@ -104,6 +104,13 @@ def check_active(title="Roblox", title_ending=None):
         title_active = title_ending is None and active_window.title == title
         title_ending_active = title_ending is not None and active_window.title.endswith(title_ending)
         if title_active or title_ending_active:
+            if title == "Roblox" and active_window.height != pyautogui.size()[1]:
+                print(active_window)
+                while active_window.height != pyautogui.size()[1]:
+                    pydirectinput.press("f11")
+                    print("Maximizing window with F11")
+                    sleep(0.3)
+                check_active(title)
             print(f"{active_window.title} already active")
             return
     for window in pyautogui.getAllWindows():
@@ -195,14 +202,15 @@ def get_english_timestamp(time_var):
     return "{}d:{}h:{}m:{}s".format(days, hours, minutes, seconds)
 
 
-def do_crash_check():
+def do_crash_check(do_notify=True):
     crashed = False
     for window in pyautogui.getAllWindows():
         if window.title == "Crash" or window.title == "Roblox Crash" or window.title == "Crashed":
             crashed = True
             window.close()
     if crashed:
-        notify_admin("Roblox Crash")
+        if do_notify:
+            notify_admin("Roblox Crash")
         CFG.action_queue.append("handle_crash")
     return crashed
 
@@ -256,3 +264,7 @@ def discord_log(message, author, author_avatar, author_url):
                 print(error)
             else:
                 print(f"[Logged Screenshot] {message}")
+
+
+def is_process_running(name):
+    return len([proc for proc in psutil.process_iter() if proc.name() == "RobloxPlayerBeta.exe"]) > 0

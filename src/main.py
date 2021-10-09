@@ -48,27 +48,6 @@ def loop_help():
             "help": "Sends \"Your Message\" in-game"
         },
         {
-            "help": f"Teleport. \n({', '.join(CFG.teleport_locations)})",
-            "command": "!tp LocationName",
-            "injector_status_required": True,
-            "time": 20
-        },
-        {
-            "command": "!goto PlayerName",
-            "help": "Teleports to a player by that name.",
-            "injector_status_required": True
-        },
-        {
-            "command": "!spectate",
-            "help": "Spectates up to 10 random players.",
-            "injector_status_required": True
-        },
-        {
-            "command": "!tour",
-            "help": "Goes on a tour to all known locations.",
-            "injector_status_required": True
-        },
-        {
             "command": "!left 0.2 or !right 0.2",
             "help": "Turn camera left or right for 0.2s"
         },
@@ -86,58 +65,41 @@ def loop_help():
         },
         {
             "command": "!move w 5",
-            "help": "Moves forwards for 5 seconds",
-            "injector_status_required": False
+            "help": "Moves forwards for 5 seconds"
         },
         {
             "command": "!leap 0.7 0.5",
-            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s",
-            "injector_status_required": False
+            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s"
         },
         {
             "command": "!jump",
-            "help": "Jumps. Helpful if stuck on something.",
-            "injector_status_required": False
+            "help": "Jumps. Helpful if stuck on something."
         },
         {
             "command": "!grief",
-            "help": "Toggles anti-grief.",
-            "injector_status_required": False
+            "help": "Toggles anti-grief."
         },
         {
             "command": "!respawn",
-            "help": "Respawns. Helpful if completely stuck.",
-            "injector_status_required": False
+            "help": "Respawns. Helpful if completely stuck."
         },
         {
             "command": "!use",
-            "help": "Presses \"e\".",
-            "injector_status_required": False
+            "help": "Presses \"e\"."
         },
         {
             "command": "!sit",
-            "help": "Clicks the sit button.",
-            "injector_status_required": False
+            "help": "Clicks the sit button."
         },
     ]
     while True:
-        new_commands_list = []
-        for cmd in commands_list:
-            if "injector_status_required" in cmd:
-                # If the injector needs to be ON for this but its OFF
-                if cmd["injector_status_required"] and CFG.injector_disabled:
-                    continue
-                # If the injector needs to be OFF for this but its ON
-                if not cmd["injector_status_required"] and not CFG.injector_disabled:
-                    continue
-            new_commands_list.append(cmd)
-        for command in new_commands_list:
+        for command in commands_list:
             output_log("commands_help_label", "")
             output_log("commands_help_title", "")
             output_log("commands_help_desc", "")
 
             sleep(0.25)
-            current_command_in_list = f"{(new_commands_list.index(command) + 1)}/{len(new_commands_list)}"
+            current_command_in_list = f"{(commands_list.index(command) + 1)}/{len(commands_list)}"
             output_log("commands_help_label", f"TWITCH CHAT COMMANDS [{current_command_in_list}]")
             output_log("commands_help_title", command["command"])
             sleep(0.1)
@@ -146,15 +108,6 @@ def loop_help():
                 sleep(int(command["time"]))
                 continue
             sleep(5)
-
-
-def loop_spectate():
-    while True:
-        sleep(15 * 60)
-        if CFG.injector_disabled:
-            continue
-        CFG.next_possible_teleport = 0
-        CFG.action_queue.append("spectate")
 
 
 def loop_timer():
@@ -170,11 +123,6 @@ def loop_timer():
 def queue_movement(action):  # todo: Simplify
     CFG.action_running = True
     log_process("Manual Movement")
-    if not CFG.injector_disabled and not action["override"]:
-        log("Manual movement not allowed when injector is working!")
-        sleep(5)
-        log_process("")
-        log("")
     valid_keys = {"w": "Forward", "a": "Left", "s": "Backwards", "d": "Right"}
     key = action["move_key"].lower()
     if key not in valid_keys.keys():
@@ -199,11 +147,6 @@ def queue_movement(action):  # todo: Simplify
 def queue_leap(action):  # todo: Simplify
     CFG.action_running = True
     log_process("Leap Forward")
-    if not CFG.injector_disabled and not action["override"]:
-        log("Manual movement not allowed when injector is working!")
-        sleep(5)
-        log_process("")
-        log("")
     time_forward = action["forward_time"]
     time_jump = action["jump_time"]
     log(f"Moving forward for {time_forward}s and jumping for {time_jump}s")
@@ -310,36 +253,24 @@ def do_process_queue():  # todo: Investigate benefits of multithreading over sin
         elif action == "use":
             CFG.action_running = True
             log_process("Pressing Use (e)")
-            if not CFG.injector_disabled:
-                log("Manual control not allowed when injector is working!")
-                sleep(5)
-            else:
-                check_active()
-                pydirectinput.keyDown("e")
-                sleep(1)
-                pydirectinput.keyUp("e")
+            check_active()
+            pydirectinput.keyDown("e")
+            sleep(1)
+            pydirectinput.keyUp("e")
             log_process("")
             log("")
             CFG.action_running = False
         elif action == "grief":
             CFG.action_running = True
-            if not CFG.injector_disabled:
-                log("Anti-Grief toggling not allowed when injector is working!")
-                sleep(5)
-            else:
-                toggle_collisions()
-                pydirectinput.moveTo(1, 1)
-                alt_tab_click()
+            toggle_collisions()
+            pydirectinput.moveTo(1, 1)
+            alt_tab_click()
             log_process("")
             log("")
             CFG.action_running = False
         elif action == "respawn":
             CFG.action_running = True
-            if not CFG.injector_disabled:
-                log("Respawning character not allowed when injector is working!")
-                sleep(5)
-            else:
-                respawn_character()
+            respawn_character()
             log_process("")
             log("")
             CFG.action_running = False
@@ -369,17 +300,15 @@ def main():
     log_process("")
     log("")
     output_log("change_server_status_text", "")
-    output_log("injector_failure", "")
     crashed = do_crash_check()
     if crashed or "Roblox" not in pyautogui.getAllTitles():
-        CFG.action_queue.append("handle_crash")
-        do_process_queue()
+       CFG.action_queue.append("handle_crash")
+       do_process_queue()
     else:
-        check_active()
-        load_exploit()
+       check_active()
     print("Starting Threads")
     thread_functions = [loop_process_queue, loop_check_better_server, twitch_main, loop_anti_afk, loop_help, loop_timer,
-                        loop_clock, loop_crash_check, loop_spectate]
+                        loop_clock, loop_crash_check]
     for thread_function in thread_functions:
         threading.Thread(target=thread_function).start()
     print("Done Main")

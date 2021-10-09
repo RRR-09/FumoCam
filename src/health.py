@@ -1,6 +1,7 @@
 from actions import *
 from spawn_detection import main as cv_detect_spawn
-
+from selenium import webdriver
+import json
 
 def force_get_best_server():
     found_best_server = False
@@ -107,7 +108,10 @@ def get_current_server_id():
         return "ERROR"
     if response.status_code == 200:
         response_result = response.json()
+        print(response_result)
         servers = response_result["data"]
+        if len(servers) == 0:
+            return "ERROR"
         for server in servers:
             if CFG.player_token in server["playerTokens"]:
                 current_server_id = server["id"]
@@ -152,7 +156,6 @@ def check_for_better_server():
     output_log("change_server_status_text", change_server_status_text)
     if not should_change_servers:
         log("PASS! Current server has sufficient players")
-        sleep(5)
         log("")
         log_process("")
         return True
@@ -222,9 +225,55 @@ def run_javascript_in_browser(url, js_code, esc_before_entering):
     log("")
 
 
+def open_roblox_with_selenium_browser(js_code):
+
+    log("Opening Roblox via Browser...")
+    Beep(40, 25)
+    with open(CFG.browser_cookies_path, 'r', encoding='utf-8') as f:
+        cookies = json.load(f)
+    
+    options = webdriver.ChromeOptions()
+    options.add_argument(f"--user-data-dir={CFG.browser_profile_path}")
+    driver = webdriver.Chrome(options=options, executable_path=CFG.browser_driver_path)
+    driver.get(CFG.game_instances_url)
+    
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+    driver.refresh()
+    driver.execute_script(js_code);
+    
+    sleep_time = 0.25
+    success = False
+    log("Verifying Roblox has opened...")
+    for i in range(int(CFG.max_seconds_browser_launch/sleep_time)):
+        crashed = do_crash_check(do_notify=False)
+        active = is_process_running(CFG.game_executable_name)
+        if not crashed and active:
+            success = True
+            break
+        sleep(sleep_time)
+        Beep(40, 25)
+    try:
+        driver.quit()       
+        kill_process(CFG.browser_driver_executable_name)
+        kill_process(CFG.browser_executable_name)
+    except:
+        print(format_exc())
+        
+    if not success:
+        log("Failed to launch game. Notifying Dev...")
+        notify_admin("Failed to launch game")
+        sleep(5)
+        log("")
+        return False
+    log("")
+    return True
+
+
 def join_target_server(instance_id):
     join_js_code = f"Roblox.GameLauncher.joinGameInstance({CFG.game_id}, \"{instance_id}\")"
-    run_javascript_in_browser(CFG.game_instances_url, join_js_code, True)
+    success = open_roblox_with_selenium_browser(join_js_code)
+    return success
 
 
 def get_best_server():
@@ -259,7 +308,7 @@ def scroll_to_character_in_menu():
     for i in range(CFG.character_select_scroll_down_amount):
         pyautogui.scroll(-1)
         Beep(40, 25)
-        sleep(0.1)
+        sleep(CFG.character_select_scroll_speed)
     log("")
 
 
@@ -322,6 +371,7 @@ def server_spawn():
         notify_admin("Failed to load into game")
         CFG.action_queue.append("handle_crash")
         return False
+    sleep(1)
     if CFG.disable_collisions_on_spawn:
         toggle_collisions()
     change_characters()
@@ -344,26 +394,20 @@ def handle_join_new_server(crash=False):
     sleep(1)
 
     log_process(f"{process_name} - Joining Server")
-    join_target_server(server_id)
+    success = join_target_server(server_id)
+    if not success:
+        return False
     output_log("change_server_status_text", "")
 
     log_process(f"{process_name} - Handling Spawn")
     if not server_spawn():
         return False
 
-    log_process(f"{process_name} - Detecting Location")
-    cv_detect_spawn()
-
-    log_process(f"{process_name} - Hooking into Roblox")
-    log("Establishing process connection...")
-    load_exploit()
-
-    log_process(f"{process_name} - Returning to Default Position")
-    log("Initiating Teleport")
-    teleport(CFG.current_location, no_log=True)
+    #log_process(f"{process_name} - Detecting Location")
+    #cv_detect_spawn()
 
     log_process("")
-    log("Complete. Please use '!dev Error' if not relocated properly.")
-    sleep(10)
+    log("Complete. Please use '!dev Error' if we're not in-game.")
+    sleep(5)
     log_process("")
     log("")

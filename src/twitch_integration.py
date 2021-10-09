@@ -56,10 +56,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             CFG.action_queue.append("handle_crash")
         elif (cmd == "handle_join_new_server" or cmd == "handle_crash") and is_dev:
             CFG.action_queue.append(cmd)
-        elif cmd == "spectate":
-            CFG.action_queue.append("spectate")
-        elif cmd == "tour":
-            CFG.action_queue.append("tour")
         elif cmd == "zoomin" or cmd == "zoomout":
             zoom_direction = "i" if cmd == "zoomin" else "o"
             zoom_time = 0.05
@@ -113,21 +109,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             except Exception:
                 log_process("Leap")
                 log("Command invalid! Check you're typing it right.")
-                sleep(3)
-        elif cmd == "tp":
-            location = ""
-            if len(args) > 0:
-                location = args[0]
-            if is_dev:
-                CFG.next_possible_teleport = 0
-            CFG.action_queue.append({"tp": location})
-        elif cmd == "goto":
-            player_name = ""
-            if len(args) > 0:
-                player_name = args[0]
-            if is_dev:
-                CFG.next_possible_teleport = 0
-            CFG.action_queue.append({"goto": player_name})
         elif cmd == "dev":
             log("Sending warning to dev...")
             msg = " ".join(args)
@@ -146,8 +127,6 @@ class TwitchBot(irc.bot.SingleServerIRCBot):
             CFG.action_queue.append("respawn")
         elif cmd == "jump":
             CFG.action_queue.append("jump")
-        elif cmd == "respawn":
-            CFG.action_queue.append("respawn")
         elif cmd == "m":
             msg = " ".join(args)
             if msg.startswith("[") or msg.startswith("/w"):  # Whisper functionality
@@ -174,3 +153,6 @@ def twitch_main():
     channel = Twitch.channel_name
     bot = TwitchBot(username, client_id, token, channel)
     bot.start()
+
+if __name__ == "__main__":
+    twitch_main()
