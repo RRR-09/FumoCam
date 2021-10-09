@@ -1,7 +1,6 @@
 # Project Files
 output/
-/resources/injector/
-/resources/EasyExploits.dll
+resources/.browser_profile
 
 # .idea folder
 .idea/
