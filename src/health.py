@@ -306,7 +306,7 @@ def scroll_to_character_in_menu():
     sleep(0.5)
     log(f"Scrolling down {CFG.character_select_scroll_down_amount} times")
     for i in range(CFG.character_select_scroll_down_amount):
-        pyautogui.scroll(-1)
+        pyautogui.scroll(CFG.character_select_scroll_down_scale)
         Beep(40, 25)
         sleep(CFG.character_select_scroll_speed)
     log("")
