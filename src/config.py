@@ -77,6 +77,7 @@ class MainBotConfig:
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 5
     player_token = "BD7F4C1D8063321CDFE702866B105EFB"
+    respawn_character_select_offset = -0.1
     sit_button_position = (0.79, 0.89)
     tick_rate = 0.25
     tick_rate_blocked = 0.1
