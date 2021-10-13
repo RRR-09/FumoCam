@@ -129,6 +129,7 @@ class MainBotConfig:
     max_seconds_browser_launch = 5
     player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
     #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
+    respawn_character_select_offset = -0.1    
     sit_button_position = (0.79, 0.89)
 
 
