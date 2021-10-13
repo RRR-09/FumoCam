@@ -255,15 +255,18 @@ class TwitchBot(commands.Bot):
     
 @routines.routine(minutes=10, wait_first=True)
 async def routine_anti_afk():
+    print("[Subroutine] AntiAFK")
     await CFG.add_action_queue("anti-afk")
     CFG.anti_afk_runs += 1 
     if CFG.anti_afk_runs % 3 == 0:
         await CFG.add_action_queue("advert")
+        print("[Subroutine] Queued Advert")
         CFG.anti_afk_runs = 0
 
 
 @routines.routine(minutes=5)
 async def routine_check_better_server():
+    print("[Subroutine] Better Server Check")
     await CFG.add_action_queue("check_for_better_server")
 
 
@@ -274,7 +277,6 @@ async def routine_clock():
 
 @routines.routine(seconds=5, wait_first=True)
 async def routine_crash_check():
-    
     crashed = await do_crash_check()
     if crashed:
         print("[Routine] Crash detected")   

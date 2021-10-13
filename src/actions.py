@@ -14,6 +14,7 @@ async def send_chat(message):
     pyautogui.write(message)  # todo: investigate long messages only partially coming through
     await async_sleep(0.25)
     pydirectinput.press('enter')
+    await async_sleep(0.5)
 
 
 async def turn_camera(direction_obj):

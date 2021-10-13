@@ -54,32 +54,25 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
     if len(CFG.action_queue) == 0 or CFG.action_running:
         return
     print(CFG.action_queue)
+    CFG.action_running = True
     while len(CFG.action_queue) > 0:
         action = CFG.action_queue[0]
         if action == "anti-afk":
-            CFG.action_running = True
             await do_anti_afk()
-            CFG.action_running = False
         elif action == "advert":
-            CFG.action_running = True
             await do_advert()
-            CFG.action_running = False
         elif "turn_camera_direction" in action:
-            CFG.action_running = True
             turn_direction = action['turn_camera_direction']
             turn_time = action['turn_camera_time']
             log_process(f"{turn_direction.upper()} for {turn_time}s")
             await turn_camera(action)
             log_process("")
-            CFG.action_running = False
         elif "zoom_camera_direction" in action:
-            CFG.action_running = True
             zoom_direction = "in" if action['zoom_camera_direction'] == "i" else "out"
             zoom_time = action['zoom_camera_time']
             log_process(f"Zooming {zoom_direction} for {zoom_time}s")
             await zoom_camera(action)
             log_process("")
-            CFG.action_running = False
         elif action == "check_for_better_server":
             crashed = await do_crash_check()
             if not crashed:
@@ -98,23 +91,14 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             for message in action["chat"]:
                 await send_chat(message)
         elif action == "handle_crash":
-            CFG.action_running = True
             await handle_join_new_server(crash=True)
-            CFG.action_running = False
         elif action == "handle_join_new_server":
-            CFG.action_running = True
             await handle_join_new_server()
-            CFG.action_running = False
         elif action == "click":
-            CFG.action_running = True
             await alt_tab_click()
-            CFG.action_running = False
         elif action == "sit":
-            CFG.action_running = True
             await click_sit_button()
-            CFG.action_running = False
         elif action == "use":
-            CFG.action_running = True
             log_process("Pressing Use (e)")
             await check_active()
             pydirectinput.keyDown("e")
@@ -122,25 +106,18 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             pydirectinput.keyUp("e")
             log_process("")
             log("")
-            CFG.action_running = False
         elif action == "grief":
-            CFG.action_running = True
             await toggle_collisions()
             pydirectinput.moveTo(1, 1)
             await alt_tab_click(click_mouse=False)
             log_process("")
             log("")
-            CFG.action_running = False
         elif action == "respawn":
-            CFG.action_running = True
             await respawn_character()
             log_process("")
             log("")
-            CFG.action_running = False
         elif action == "jump":
-            CFG.action_running = True
             await jump()
-            CFG.action_running = False
         elif "movement" in action:
             await queue_movement(action)
         elif "leap" in action:
@@ -148,8 +125,8 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
-
-
+    await async_sleep(0.1)
+    CFG.action_running = False
 async def add_action_queue(item):
     CFG.action_queue.append(item)
     await do_process_queue()

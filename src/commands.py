@@ -31,5 +31,5 @@ async def zoom_camera(zoom_obj):
     zoom_time = zoom_obj["zoom_camera_time"]
     await check_active()
     pydirectinput.keyDown(zoom_direction)
-    await async_sleep(zoom_time)
+    await async_sleep(zoom_time/4)
     pydirectinput.keyUp(zoom_direction)
