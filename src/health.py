@@ -3,18 +3,19 @@ from spawn_detection import main as cv_detect_spawn
 from selenium import webdriver
 import json
 
-def force_get_best_server():
+
+async def force_get_best_server():
     found_best_server = False
     while not found_best_server:
-        found_best_server = get_best_server()
+        found_best_server = await get_best_server()
         if found_best_server:
             break
-        sleep(5)
+        await async_sleep(5)
         log("Failed to find best server, retrying...")
     return found_best_server["id"]
 
 
-def check_if_should_change_servers(current_server_id="N/A"):
+async def check_if_should_change_servers(current_server_id="N/A"):
     original_current_server_id = current_server_id
     log("Querying Roblox API for server list")
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
@@ -32,9 +33,7 @@ def check_if_should_change_servers(current_server_id="N/A"):
             current_server = {"id": "", "maxPlayers": 100, "playing": 0, "fps": 59, "ping": 100}
         else:
             current_server = {"id": current_server_id, "maxPlayers": 100, "playing": 0, "fps": 59, "ping": 100}
-        print(current_server)
         for server in servers:
-            print(server)
             if current_server["id"] == server["id"]:
                 current_server = server
             elif "playing" in server and server["playing"] > highest_player_server["playing"]:
@@ -56,7 +55,7 @@ def check_if_should_change_servers(current_server_id="N/A"):
     return False, f"[WARN] Could not poll Roblox servers. Is Roblox down?"
 
 
-def check_if_in_nil_world():
+async def check_if_in_nil_world():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id_nil}/servers/Public?sortOrder=Asc&limit=10"
     try:
@@ -77,7 +76,7 @@ def check_if_in_nil_world():
     return "ERROR"
 
 
-def check_if_in_hinamizawa_world():
+async def check_if_in_hinamizawa_world():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id_hinamizawa}/servers/Public?sortOrder=Asc&limit=10"
     try:
@@ -98,7 +97,7 @@ def check_if_in_hinamizawa_world():
     return "ERROR"
 
 
-def get_current_server_id():
+async def get_current_server_id():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
     try:
@@ -122,24 +121,24 @@ def get_current_server_id():
     return "ERROR"
 
 
-def check_for_better_server():
-    last_check_time = time.time()
+async def check_for_better_server():
+    last_check_time = time()
     output_log("last_check_for_better_server", last_check_time)
     previous_status_text = read_output_log("change_server_status_text")
     output_log("change_server_status_text", "")
 
     log_process("Checking for better server")
-    current_server_id = get_current_server_id()
+    current_server_id = await get_current_server_id()
     while current_server_id == "ERROR":
         log_process("Failed! Retrying better server check")
-        sleep(5)
-        current_server_id = get_current_server_id()
+        await async_sleep(5)
+        current_server_id = await get_current_server_id()
     if current_server_id == "N/A":
-        nil_world_id = check_if_in_nil_world()
-        hinamizawa_world_id = check_if_in_hinamizawa_world()
+        nil_world_id = await check_if_in_nil_world()
+        hinamizawa_world_id = await check_if_in_hinamizawa_world()
         if nil_world_id == "N/A" and hinamizawa_world_id == "N/A":
             log_process("Could not find FumoCam in any servers")
-            CFG.action_queue.append("handle_crash")
+            await CFG.add_action_queue("handle_crash")
             return False
         else:  # other world easter egg
             log("Successfully failed! Could not find FumoCam in the realms of the living.")
@@ -151,7 +150,7 @@ def check_for_better_server():
             log_process("")
             log("")
             return True
-    should_change_servers, change_server_status_text = check_if_should_change_servers(current_server_id)
+    should_change_servers, change_server_status_text = await check_if_should_change_servers(current_server_id)
     log(change_server_status_text)
     output_log("change_server_status_text", change_server_status_text)
     if not should_change_servers:
@@ -163,74 +162,33 @@ def check_for_better_server():
         if "Could not find FumoCam" in change_server_status_text:
             for i in range(2):
                 log(f"Rechecking (attempt {i + 1}/3")
-                current_server_id = get_current_server_id()
+                current_server_id = await get_current_server_id()
                 while current_server_id == "":
                     log_process("Retrying get current server check")
-                    sleep(5)
-                    current_server_id = get_current_server_id()
-                should_change_servers, change_server_status_text = check_if_should_change_servers(current_server_id)
+                    await async_sleep(5)
+                    current_server_id = await get_current_server_id()
+                should_change_servers, change_server_status_text = await check_if_should_change_servers(current_server_id)
                 if "Could not find FumoCam" not in change_server_status_text:
                     break
             if should_change_servers:
                 notify_admin(change_server_status_text)
-                CFG.action_queue.append("handle_join_new_server")
+                await CFG.add_action_queue("handle_join_new_server")
         else:
-            CFG.action_queue.append("handle_join_new_server")
+            await CFG.add_action_queue("handle_join_new_server")
     log("")
     log_process("")
 
 
-def run_javascript_in_browser(url, js_code, esc_before_entering):
-    # todo: Move to selenium once I figure out how generate and use cookies in a reproducible+easy way
-    executable_name = "chrome.exe"
-    kill_process(executable_name, force=True)
-    browser_path = os.path.join("C:\\", "Program Files (x86)", "Google", "Chrome", "Application", executable_name)
-    if not os.path.exists(browser_path):
-        browser_path = os.path.join("C:\\", "Program Files", "Google", "Chrome", "Application", executable_name)
-    open_args = f"{url}"
-    args = [browser_path, open_args]
-    log("Launching Browser...")
-    Beep(40, 25)
-    log("Launched. Loading (8s)...")
-    subprocess.Popen(args)
-    sleep(7)
-    check_active(title_ending="Google Chrome")
-    sleep(2)
-    log("Closing dialogues (if present)...")
-    Beep(50, 20)
-    pyautogui.press("esc")
-    sleep(2)
-    log("Opening JS injector (6s)...")
-    Beep(60, 50)
-    pyautogui.hotkey('ctrl', 'shift', 'j')
-    sleep(6)
-    log("Injecting JS (12s)...")
-    Beep(80, 50)
-    pyautogui.write(js_code)
-    sleep(12)
-    log("Running JS (6s)...")
-    Beep(70, 100)
-    if esc_before_entering:
-        pyautogui.press("esc")
-        sleep(0.3)
-    pyautogui.press("enter")
-    sleep(0.3)
-    pyautogui.press("enter")
-    sleep(6)
-    log("Closing Browser...")
-    Beep(70, 100)
-    kill_process(executable_name)
-    sleep(2)
-    Beep(70, 100)
-    log("")
-
-
-def open_roblox_with_selenium_browser(js_code):
-
+async def open_roblox_with_selenium_browser(js_code):
     log("Opening Roblox via Browser...")
     Beep(40, 25)
-    with open(CFG.browser_cookies_path, 'r', encoding='utf-8') as f:
-        cookies = json.load(f)
+    try:
+        with open(CFG.browser_cookies_path, 'r', encoding='utf-8') as f:
+            cookies = json.load(f)
+    except FileNotFoundError:
+        print("COOKIES PATH NOT FOUND, INITIALIZE WITH TEST FIRST")
+        log("")
+        return False
     
     options = webdriver.ChromeOptions()
     options.add_argument(f"--user-data-dir={CFG.browser_profile_path}")
@@ -246,12 +204,12 @@ def open_roblox_with_selenium_browser(js_code):
     success = False
     log("Verifying Roblox has opened...")
     for i in range(int(CFG.max_seconds_browser_launch/sleep_time)):
-        crashed = do_crash_check(do_notify=False)
+        crashed = await do_crash_check(do_notify=False)
         active = is_process_running(CFG.game_executable_name)
         if not crashed and active:
             success = True
             break
-        sleep(sleep_time)
+        await async_sleep(sleep_time)
         Beep(40, 25)
     try:
         driver.quit()       
@@ -263,20 +221,20 @@ def open_roblox_with_selenium_browser(js_code):
     if not success:
         log("Failed to launch game. Notifying Dev...")
         notify_admin("Failed to launch game")
-        sleep(5)
+        await async_sleep(5)
         log("")
         return False
     log("")
     return True
 
 
-def join_target_server(instance_id):
+async def join_target_server(instance_id):
     join_js_code = f"Roblox.GameLauncher.joinGameInstance({CFG.game_id}, \"{instance_id}\")"
-    success = open_roblox_with_selenium_browser(join_js_code)
+    success = await open_roblox_with_selenium_browser(join_js_code)
     return success
 
 
-def get_best_server():
+async def get_best_server():
     server_obj = {"id": "", "maxPlayers": 100, "playing": 0, "fps": 59, "ping": 100}
     highest_player_count_server = server_obj
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
@@ -293,26 +251,26 @@ def get_best_server():
     return highest_player_count_server
 
 
-def click_character_select_button():
-    sleep(0.5)
+async def click_character_select_button():
+    await async_sleep(0.5)
     Beep(150, 100)
-    button_x, button_y = get_character_select_button_pos()
+    button_x, button_y = await get_character_select_button_pos()
     pydirectinput.moveTo(button_x, button_y)
-    alt_tab_click()
+    await alt_tab_click()
     Beep(100, 50)
 
 
-def scroll_to_character_in_menu():
-    sleep(0.5)
+async def scroll_to_character_in_menu():
+    await async_sleep(0.5)
     log(f"Scrolling down {CFG.character_select_scroll_down_amount} times")
     for i in range(CFG.character_select_scroll_down_amount):
         pyautogui.scroll(CFG.character_select_scroll_down_scale)
         Beep(40, 25)
-        sleep(CFG.character_select_scroll_speed)
+        await async_sleep(CFG.character_select_scroll_speed)
     log("")
 
 
-def click_character_in_menu(click_mouse=True, click_random=False):
+async def click_character_in_menu(click_mouse=True, click_random=False):
     character_name = "Momiji" if not click_random else "a random character"
     log(f"Clicking {character_name}")
     Beep(250, 100)
@@ -321,12 +279,12 @@ def click_character_in_menu(click_mouse=True, click_random=False):
     if click_random:
         button_y += int(SCREEN_RES["height"]*CFG.respawn_character_select_offset)
     pydirectinput.moveTo(button_x, button_y)
-    alt_tab_click(click_mouse=click_mouse)
+    await alt_tab_click(click_mouse=click_mouse)
     Beep(100, 50)
-    sleep(0.5)
+    await async_sleep(0.5)
 
 
-def get_character_select_button_pos():
+async def get_character_select_button_pos():
     character_select_button = None
     for i in range(CFG.max_attempts_character_selection):
         Beep(40, 50)
@@ -340,47 +298,47 @@ def get_character_select_button_pos():
         if character_select_button is not None:
             character_select_button = pyautogui.center(character_select_button)
             break
-        sleep(1)
+        await async_sleep(1)
     return character_select_button
 
 
-def change_characters(respawn=False):
-    check_active()
-    sleep(1)
+async def change_characters(respawn=False):
+    await check_active()
+    await async_sleep(1)
     log("Opening character select")
-    click_character_select_button()
-    sleep(0.5)
+    await click_character_select_button()
+    await async_sleep(0.5)
     if respawn:
-        click_character_in_menu(click_random=True)
+        await click_character_in_menu(click_random=True)
         respawn_delay = 12
         log(f"Waiting for {respawn_delay} seconds (or else clicking our character won't work)")
-        sleep(respawn_delay)
+        await async_sleep(respawn_delay)
     else:
-        scroll_to_character_in_menu()
-    click_character_in_menu()
+        await scroll_to_character_in_menu()
+    await click_character_in_menu()
     log("Closing character select")
-    click_character_select_button()
+    await click_character_select_button()
 
 
-def server_spawn():
-    sleep(5)
+async def server_spawn():
+    await async_sleep(5)
     log("Loading into game")
-    if get_character_select_button_pos() is None:
+    if await get_character_select_button_pos() is None:
         log("Failed to load into game.")
-        sleep(5)
+        await async_sleep(5)
         notify_admin("Failed to load into game")
-        CFG.action_queue.append("handle_crash")
+        await CFG.add_action_queue("handle_crash")
         return False
-    sleep(1)
+    await async_sleep(1)
     if CFG.disable_collisions_on_spawn:
-        toggle_collisions()
-    change_characters()
+        await toggle_collisions()
+    await change_characters()
     pydirectinput.moveTo(1, 1)
-    alt_tab_click()
+    await alt_tab_click()
     return True
 
 
-def handle_join_new_server(crash=False):
+async def handle_join_new_server(crash=False):
     process_name = "Automatic Relocation System"
     action = "Detected more optimal server. Relocating."
     if crash:
@@ -388,19 +346,18 @@ def handle_join_new_server(crash=False):
         action = "Detected Roblox Crash. Recovering."
     log_process(process_name)
     log(action)
-    CFG.next_possible_teleport = 0
     kill_process(force=True)
-    server_id = force_get_best_server()
-    sleep(1)
+    server_id = await force_get_best_server()
+    await async_sleep(1)
 
     log_process(f"{process_name} - Joining Server")
-    success = join_target_server(server_id)
+    success = await join_target_server(server_id)
     if not success:
         return False
     output_log("change_server_status_text", "")
 
     log_process(f"{process_name} - Handling Spawn")
-    if not server_spawn():
+    if not await server_spawn():
         return False
 
     #log_process(f"{process_name} - Detecting Location")
@@ -408,6 +365,6 @@ def handle_join_new_server(crash=False):
 
     log_process("")
     log("Complete. Please use '!dev Error' if we're not in-game.")
-    sleep(5)
+    await async_sleep(5)
     log_process("")
     log("")

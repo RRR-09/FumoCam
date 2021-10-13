@@ -1,10 +1,10 @@
 from config import *
 import os
-from time import sleep
+from time import sleep,time,strftime,strptime,mktime
+from asyncio import sleep as async_sleep
 from traceback import format_exc
 import pyautogui  # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
 import pydirectinput
-import time
 import subprocess
 import requests
 import math
@@ -78,11 +78,11 @@ def read_output_log(file_name):
         return f"ERROR: {format_exc()}"
 
 
-def take_screenshot():
-    file_name = f"{time.time()}.png"
+async def take_screenshot():
+    file_name = f"{time()}.png"
     with mss() as sct:
-        check_active()
-        sleep(0.25)
+        await check_active()
+        await async_sleep(0.25)
         sct.shot(mon=-1, output=file_name)
     return file_name
 
@@ -97,8 +97,8 @@ def kill_process(executable="RobloxPlayerBeta.exe", force=False):
     subprocess.call(process_call)
 
 
-def check_active(title="Roblox", title_ending=None):
-    print("check")
+async def check_active(title="Roblox", title_ending=None):
+    print(f"[check_active] {title} | {title_ending}")
     active_window = pyautogui.getActiveWindow()
     if active_window is not None:
         title_active = title_ending is None and active_window.title == title
@@ -109,8 +109,8 @@ def check_active(title="Roblox", title_ending=None):
                 while active_window.height != pyautogui.size()[1]:
                     pydirectinput.press("f11")
                     print("Maximizing window with F11")
-                    sleep(0.3)
-                check_active(title)
+                    await async_sleep(0.3)
+                await check_active(title)
             print(f"{active_window.title} already active")
             return
     for window in pyautogui.getAllWindows():
@@ -137,16 +137,17 @@ def check_active(title="Roblox", title_ending=None):
                 print(f"Maximized {window.title}")
             except Exception:
                 print(f"ERROR IN MAXIMIZING {window.title}")
-            sleep(0.3)
+            print("[check_active] Switched - Waiting")
+            await async_sleep(0.3)
+            print("[check_active] Switched - Done Waiting")
             if title_ending is not None:
-                check_active(title_ending=title_ending)
+                await check_active(title_ending=title_ending)
                 print("Recurse")
             elif title == "Roblox" and window.height != pyautogui.size()[1]:
                 while window.height != pyautogui.size()[1]:
                     pydirectinput.press("f11")
                     print("Maximizing window with F11")
-                    sleep(0.3)
-                check_active(title)
+                await check_active(title)
 
 
 def notify_admin(message):  # todo: Seperate always-running process
@@ -164,16 +165,16 @@ def notify_admin(message):  # todo: Seperate always-running process
         print(f"[Dev Notified] {message}")
 
 
-def alt_tab_click(click_mouse=True):
+async def alt_tab_click(click_mouse=True):
     """
     Even pydirectinput cant click normally.
     This is a work-around that actually clicks in the area the cursor was moved.
     """
     alt_tab_duration = 0.3
     pyautogui.hotkey('alt', 'tab')
-    sleep(alt_tab_duration)
+    await async_sleep(alt_tab_duration)
     pyautogui.hotkey('alt', 'tab')
-    sleep(alt_tab_duration)
+    await async_sleep(alt_tab_duration)
     if click_mouse:
         pydirectinput.mouseDown()
         pydirectinput.mouseUp()
@@ -202,7 +203,7 @@ def get_english_timestamp(time_var):
     return "{}d:{}h:{}m:{}s".format(days, hours, minutes, seconds)
 
 
-def do_crash_check(do_notify=True):
+async def do_crash_check(do_notify=True):
     crashed = False
     for window in pyautogui.getAllWindows():
         if window.title == "Crash" or window.title == "Roblox Crash" or window.title == "Crashed":
@@ -211,17 +212,16 @@ def do_crash_check(do_notify=True):
     if crashed:
         if do_notify:
             notify_admin("Roblox Crash")
-        CFG.action_queue.append("handle_crash")
+        await CFG.add_action_queue("handle_crash")
     return crashed
 
 
-def discord_log(message, author, author_avatar, author_url):
+async def discord_log(message, author, author_avatar, author_url):
     screenshot_filename = None
     if not CFG.action_running:
-        screenshot_filename = take_screenshot()
+        screenshot_filename = await take_screenshot()
     webhook_urls = [
         os.getenv("DISCORD_WEBHOOK_CHAT_CHANNEL"),
-        os.getenv("DISCORD_WEBHOOK_CHAT_CHANNEL_FUNKY")
     ]
 
     webhook_data = {

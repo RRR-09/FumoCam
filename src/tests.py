@@ -3,7 +3,8 @@ from actions import toggle_collisions
 from commands import click_sit_button, respawn_character
 from utilities import *
 import pyautogui
-
+from twitch_integration import twitch_main
+import asyncio
 
 def test_character_select(click_mouse=True):  # Character select OCR still needs work; guess coordinates and test
     check_active()
@@ -72,8 +73,9 @@ def test_loading_cookies_for_browser():
         driver.add_cookie(cookie)
     driver.refresh()
     driver.execute_script("""Roblox.GameLauncher.joinGameInstance(6238705697, "099cf062-e26f-4ace-b627-6ebfa2295270")""");
-    driver.quit()
     input("\n\n\nPress Enter to close\n\n\n\n")
+    driver.quit()
+    
        
     kill_process(CFG.browser_driver_executable_name)
     kill_process(CFG.browser_executable_name)
@@ -84,16 +86,26 @@ def test_check_for_better_server():
 
 
 def test_get_current_server_id():
-    print(get_current_server_id())
+    
+    print(asyncio.get_event_loop().run_until_complete(get_current_server_id()))
+
+
+def test_twitch():
+    twitch_main()
+
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
-    test_get_current_server_id()
+    
+    #test_get_cookies_for_browser()
+    #test_twitch()
+    
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()
     #click_sit_button()
     #test_respawn()
     #test_join_target_server()
+    test_get_current_server_id()
     #test_get_cookies_for_browser()
     #test_loading_cookies_for_browser()

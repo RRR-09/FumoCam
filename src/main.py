@@ -1,192 +1,75 @@
 from health import *  # Optimized import, contains all other src files down the line of dependency
 from twitch_integration import *
 
-
-def rel_coord(x, y):
-    return round(x * SCREEN_RES["x_multi"]), round(y * SCREEN_RES["y_multi"])
-
-
-def loop_anti_afk():
-    seconds_in_minute = 60
-    afk_minutes = 10
-    delay_duration = seconds_in_minute * afk_minutes
-    while True:
-        sleep(delay_duration)
-        CFG.action_queue.append("anti-afk")
-        sleep(delay_duration)
-        CFG.action_queue.append("anti-afk")
-        sleep(delay_duration)
-        CFG.action_queue.append("anti-afk")
-        CFG.action_queue.append("advert")
-
-
-def loop_check_better_server():
-    while True:
-        CFG.action_queue.append("check_for_better_server")
-        sleep(5 * 60)
-
-
-def loop_clock():
-    while True:
-        output_log("clock", time.strftime("%Y-%m-%d \n%I:%M:%S%p EST"))
-        sleep(1)
-
-
-def loop_crash_check():
-    while True:
-        crashed = do_crash_check()
-        if crashed:
-            CFG.action_queue.append("handle_crash")
-            sleep(60)
-        sleep(5)
-
-
-def loop_help():
-    commands_list = [
-        {
-            "command": "!m Your Message",
-            "help": "Sends \"Your Message\" in-game"
-        },
-        {
-            "command": "!left 0.2 or !right 0.2",
-            "help": "Turn camera left or right for 0.2s"
-        },
-        {
-            "command": "!zoomin 0.1 or !zoomout 0.1",
-            "help": "Zoom camera in or out for 0.1s"
-        },
-        {
-            "command": "!sit",
-            "help": "Clicks the sit button"
-        },
-        {
-            "command": "!dev Your Message",
-            "help": "EMERGENCY ONLY, Sends \"Your Message\" to devs discord account"
-        },
-        {
-            "command": "!move w 5",
-            "help": "Moves forwards for 5 seconds"
-        },
-        {
-            "command": "!leap 0.7 0.5",
-            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s"
-        },
-        {
-            "command": "!jump",
-            "help": "Jumps. Helpful if stuck on something."
-        },
-        {
-            "command": "!grief",
-            "help": "Toggles anti-grief."
-        },
-        {
-            "command": "!respawn",
-            "help": "Respawns. Helpful if completely stuck."
-        },
-        {
-            "command": "!use",
-            "help": "Presses \"e\"."
-        },
-        {
-            "command": "!sit",
-            "help": "Clicks the sit button."
-        },
-    ]
-    while True:
-        for command in commands_list:
-            output_log("commands_help_label", "")
-            output_log("commands_help_title", "")
-            output_log("commands_help_desc", "")
-
-            sleep(0.25)
-            current_command_in_list = f"{(commands_list.index(command) + 1)}/{len(commands_list)}"
-            output_log("commands_help_label", f"TWITCH CHAT COMMANDS [{current_command_in_list}]")
-            output_log("commands_help_title", command["command"])
-            sleep(0.1)
-            output_log("commands_help_desc", command["help"])
-            if "time" in command:
-                sleep(int(command["time"]))
-                continue
-            sleep(5)
-
-
-def loop_timer():
-    event_time_struct = time.strptime(OBS.event_time, "%Y-%m-%d %I:%M:%S%p")
-    # event_end_time_struct = time.strptime(OBS.event_end_time, "%Y-%m-%d %I:%M:%S%p")
-    while CFG.event_timer_running:
-        seconds_since_event = time.time() - time.mktime(event_time_struct)
-        english_time_since_event = get_english_timestamp(seconds_since_event)
-        output_log("time_since_event", english_time_since_event)
-        sleep(1)
-
-
-def queue_movement(action):  # todo: Simplify
+async def queue_movement(action):  # todo: Simplify
     CFG.action_running = True
     log_process("Manual Movement")
     valid_keys = {"w": "Forward", "a": "Left", "s": "Backwards", "d": "Right"}
     key = action["move_key"].lower()
     if key not in valid_keys.keys():
         log(f"Not a valid movement! ({','.join(valid_keys)})")
-        sleep(5)
+        await async_sleep(5)
         log("")
         log_process("")
         CFG.action_running = False
         return False
     time_to_press = action["move_time"]
     log(f"Moving {valid_keys[key]} for {time_to_press}s")
-    check_active()
-    sleep(0.75)
+    await check_active()
+    #await async_sleep(0.75)
     pydirectinput.keyDown(key)
-    sleep(time_to_press)
+    await async_sleep(time_to_press)
     pydirectinput.keyUp(key)
     log("")
     log_process("")
     CFG.action_running = False
 
 
-def queue_leap(action):  # todo: Simplify
+async def queue_leap(action):  # todo: Simplify
     CFG.action_running = True
     log_process("Leap Forward")
     time_forward = action["forward_time"]
     time_jump = action["jump_time"]
     log(f"Moving forward for {time_forward}s and jumping for {time_jump}s")
-    check_active()
-    sleep(0.75)
+    await check_active()
+    #await async_sleep(0.75)
     pydirectinput.keyDown("w")
     pydirectinput.keyDown("space")
     if time_forward > time_jump:
-        sleep(time_jump)
+        await async_sleep(time_jump)
         pydirectinput.keyUp("space")
-        sleep(time_forward - time_jump)
+        await async_sleep(time_forward - time_jump)
         pydirectinput.keyUp("w")
     else:
-        sleep(time_forward)
+        await async_sleep(time_forward)
         pydirectinput.keyUp("w")
-        sleep(time_jump - time_forward)
+        await async_sleep(time_jump - time_forward)
         pydirectinput.keyUp("space")
     log("")
     log_process("")
     CFG.action_running = False
 
 
-def do_process_queue():  # todo: Investigate benefits of multithreading over single-threaded/async
-    if len(CFG.action_queue) > 0:
+async def do_process_queue():  # todo: Investigate benefits of multithreading over single-threaded/async
+    if len(CFG.action_queue) == 0 or CFG.action_running:
+        return
+    print(CFG.action_queue)
+    while len(CFG.action_queue) > 0:
         action = CFG.action_queue[0]
-        print(CFG.action_queue)
         if action == "anti-afk":
             CFG.action_running = True
-            do_anti_afk()
+            await do_anti_afk()
             CFG.action_running = False
         elif action == "advert":
             CFG.action_running = True
-            do_advert()
+            await do_advert()
             CFG.action_running = False
         elif "turn_camera_direction" in action:
             CFG.action_running = True
             turn_direction = action['turn_camera_direction']
             turn_time = action['turn_camera_time']
             log_process(f"{turn_direction.upper()} for {turn_time}s")
-            turn_camera(action)
+            await turn_camera(action)
             log_process("")
             CFG.action_running = False
         elif "zoom_camera_direction" in action:
@@ -194,124 +77,103 @@ def do_process_queue():  # todo: Investigate benefits of multithreading over sin
             zoom_direction = "in" if action['zoom_camera_direction'] == "i" else "out"
             zoom_time = action['zoom_camera_time']
             log_process(f"Zooming {zoom_direction} for {zoom_time}s")
-            zoom_camera(action)
+            await zoom_camera(action)
             log_process("")
             CFG.action_running = False
         elif action == "check_for_better_server":
-            crashed = do_crash_check()
+            crashed = await do_crash_check()
             if not crashed:
-                check_for_better_server()
-                check_active()
+                await check_for_better_server()
+                await check_active()
             else:
                 CFG.action_queue.insert(0, "handle_crash")
         elif "chat_with_name" in action:
             name = action["chat_with_name"][0]
-            send_chat(name)
-            sleep(len(name) * CFG.chat_name_sleep_factor)
+            await send_chat(name)
+            await async_sleep(len(name) * CFG.chat_name_sleep_factor)
             msgs = action["chat_with_name"][1:]
             for msg in msgs:
-                send_chat(msg)
+                await send_chat(msg)
         elif "chat" in action:
             for message in action["chat"]:
-                send_chat(message)
+                await send_chat(message)
         elif action == "handle_crash":
             CFG.action_running = True
-            handle_join_new_server(crash=True)
+            await handle_join_new_server(crash=True)
             CFG.action_running = False
         elif action == "handle_join_new_server":
             CFG.action_running = True
-            handle_join_new_server()
-            CFG.action_running = False
-        elif "tp" in action:
-            CFG.action_running = True
-            teleport(action["tp"])
-            check_active()
-            CFG.action_running = False
-        elif "goto" in action:
-            CFG.action_running = True
-            goto(action["goto"])
-            check_active()
-            CFG.action_running = False
-        elif action == "spectate":
-            CFG.action_running = True
-            spectate_random()
-            check_active()
-            CFG.action_running = False
-        elif action == "tour":
-            CFG.action_running = True
-            world_tour()
-            check_active()
+            await handle_join_new_server()
             CFG.action_running = False
         elif action == "click":
             CFG.action_running = True
-            alt_tab_click()
+            await alt_tab_click()
             CFG.action_running = False
         elif action == "sit":
             CFG.action_running = True
-            click_sit_button()
+            await click_sit_button()
             CFG.action_running = False
         elif action == "use":
             CFG.action_running = True
             log_process("Pressing Use (e)")
-            check_active()
+            await check_active()
             pydirectinput.keyDown("e")
-            sleep(1)
+            await async_sleep(1)
             pydirectinput.keyUp("e")
             log_process("")
             log("")
             CFG.action_running = False
         elif action == "grief":
             CFG.action_running = True
-            toggle_collisions()
+            await toggle_collisions()
             pydirectinput.moveTo(1, 1)
-            alt_tab_click()
+            await alt_tab_click(click_mouse=False)
             log_process("")
             log("")
             CFG.action_running = False
         elif action == "respawn":
             CFG.action_running = True
-            respawn_character()
+            await respawn_character()
             log_process("")
             log("")
             CFG.action_running = False
         elif action == "jump":
             CFG.action_running = True
-            jump()
+            await jump()
             CFG.action_running = False
         elif "movement" in action:
-            queue_movement(action)
+            await queue_movement(action)
         elif "leap" in action:
-            queue_leap(action)
+            await queue_leap(action)
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
 
 
-def loop_process_queue():
-    while True:
-        sleep(CFG.tick_rate_blocked)
-        if CFG.action_running:
-            continue
-        do_process_queue()
-        sleep(CFG.tick_rate)
+async def add_action_queue(item):
+    CFG.action_queue.append(item)
+    await do_process_queue()
 
+
+async def async_main():
+    print("[Async_Main] Start")
+    crashed = await do_crash_check()
+    if crashed or "Roblox" not in pyautogui.getAllTitles():
+       CFG.action_queue.append("handle_crash")
+       await do_process_queue()
+    else:
+       await check_active()
+    
 
 def main():
+    CFG.anti_afk = 0
     log_process("")
     log("")
     output_log("change_server_status_text", "")
-    crashed = do_crash_check()
-    if crashed or "Roblox" not in pyautogui.getAllTitles():
-       CFG.action_queue.append("handle_crash")
-       do_process_queue()
-    else:
-       check_active()
-    print("Starting Threads")
-    thread_functions = [loop_process_queue, loop_check_better_server, twitch_main, loop_anti_afk, loop_help, loop_timer,
-                        loop_clock, loop_crash_check]
-    for thread_function in thread_functions:
-        threading.Thread(target=thread_function).start()
-    print("Done Main")
+    CFG.anti_afk_runs = 0
+    CFG.add_action_queue = add_action_queue
+    CFG.async_main = async_main
+    twitch_main()
 
 
 if __name__ == "__main__":
