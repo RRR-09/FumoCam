@@ -170,7 +170,7 @@ async def alt_tab_click(click_mouse=True):
     Even pydirectinput cant click normally.
     This is a work-around that actually clicks in the area the cursor was moved.
     """
-    alt_tab_duration = 0.3
+    alt_tab_duration = 0.5
     pyautogui.hotkey('alt', 'tab')
     await async_sleep(alt_tab_duration)
     pyautogui.hotkey('alt', 'tab')

@@ -57,11 +57,12 @@ async def do_advert():
 
 async def toggle_collisions():
     await check_active()
-    await async_sleep(0.5)
+    await async_sleep(1)
     log("Opening Settings")
     Beep(150, 100)
     button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(SCREEN_RES["height"] * 0.95)  # Settings button
     pydirectinput.moveTo(button_x, button_y)
+    
     await alt_tab_click()
     Beep(100, 50)
 
