@@ -17,8 +17,9 @@ MONITOR_SIZE = mss().monitors[0]
 
 class Twitch:
     channel_name = "becomefumocam"
-    username = "BecomeFumoBot"
+    username = "BecomeFumoCamBot"
     admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
+    
 
 
 class OBS:
@@ -49,6 +50,56 @@ class MainBotConfig:
         "jjgay",
         "niggaHomosexual",
     ]
+    commands_list = [
+        {
+            "command": "!m Your Message",
+            "help": "Sends \"Your Message\" in-game"
+        },
+        {
+            "command": "!left 0.2 or !right 0.2",
+            "help": "Turn camera left or right for 0.2s"
+        },
+        {
+            "command": "!zoomin 0.1 or !zoomout 0.1",
+            "help": "Zoom camera in or out for 0.1s"
+        },
+        {
+            "command": "!sit",
+            "help": "Clicks the sit button"
+        },
+        {
+            "command": "!dev Your Message",
+            "help": "EMERGENCY ONLY, Sends \"Your Message\" to devs discord account"
+        },
+        {
+            "command": "!move w 5",
+            "help": "Moves forwards for 5 seconds"
+        },
+        {
+            "command": "!leap 0.7 0.5",
+            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s"
+        },
+        {
+            "command": "!jump",
+            "help": "Jumps. Helpful if stuck on something."
+        },
+        {
+            "command": "!grief",
+            "help": "Toggles anti-grief."
+        },
+        {
+            "command": "!respawn",
+            "help": "Respawns. Helpful if completely stuck."
+        },
+        {
+            "command": "!use",
+            "help": "Presses \"e\"."
+        },
+        {
+            "command": "!sit",
+            "help": "Clicks the sit button."
+        },
+    ]
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
     character_select_scroll_down_amount = 14
     character_select_scroll_down_scale = -200
@@ -76,10 +127,15 @@ class MainBotConfig:
     max_attempts_character_selection = 30
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 5
-    player_token = "BD7F4C1D8063321CDFE702866B105EFB"
+    player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
+    #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
     sit_button_position = (0.79, 0.89)
-    tick_rate = 0.25
-    tick_rate_blocked = 0.1
 
 
 CFG = MainBotConfig()  # Instantiate the config for use between files
+
+async def initial_add_action_queue(item):
+    print(f"Attempted to add action queue item too early!")
+    print(item)
+
+CFG.add_action_queue = initial_add_action_queue

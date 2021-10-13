@@ -1,88 +1,84 @@
 # General use commands used frequently by other commands
 import random
 from winsound import Beep
-import threading
 from utilities import *
 
 
-def send_chat(message):
-    check_active()
+async def send_chat(message):
+    await check_active()
     pyautogui.press('/')
-    sleep(0.1)
+    await async_sleep(0.1)
     for word in CFG.censored_words:  # todo: More effective censoring
         if word in message:
             message = message.replace(word, "*" * len(word))
     pyautogui.write(message)  # todo: investigate long messages only partially coming through
-    sleep(0.5)
+    await async_sleep(0.25)
     pydirectinput.press('enter')
 
 
-def turn_camera(direction_obj):
+async def turn_camera(direction_obj):
+    print("turning camera")
     direction = direction_obj["turn_camera_direction"]
     turn_time = direction_obj["turn_camera_time"]
-    check_active()
-    sleep(0.5)
+    await check_active()
     pydirectinput.keyDown(direction)
-    sleep(turn_time)
+    await async_sleep(turn_time)
     pydirectinput.keyUp(direction)
-    sleep(1)
+    await async_sleep(1)
 
 
-def jump():
-    check_active()
-    sleep(0.75)
+async def jump():
+    await check_active()
     pydirectinput.keyDown('space')
-    sleep(0.25)
+    await async_sleep(0.25)
     pydirectinput.keyUp('space')
 
 
-def do_anti_afk():
-    check_active()
-    sleep(0.5)
+async def do_anti_afk():
+    await check_active()
     pydirectinput.keyDown('left')
-    sleep(0.75)
+    await async_sleep(0.75)
     pydirectinput.keyUp('left')
-    sleep(1)
+    await async_sleep(1)
     pydirectinput.keyDown('right')
-    sleep(1.5)
+    await async_sleep(1.5)
     pydirectinput.keyUp('right')
-    sleep(1)
+    await async_sleep(1)
     pydirectinput.keyDown('left')
-    sleep(0.65)
+    await async_sleep(0.65)
     pydirectinput.keyUp('left')
 
 
-def do_advert():
-    print("DoAdvert")
+async def do_advert():
     for message in CFG.advertisement:
-        send_chat(message)
+        await send_chat(message)
 
 
-def toggle_collisions():
-    check_active()
+async def toggle_collisions():
+    await check_active()
+    await async_sleep(0.5)
     log("Opening Settings")
-    sleep(1)
     Beep(150, 100)
     button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(SCREEN_RES["height"] * 0.95)  # Settings button
     pydirectinput.moveTo(button_x, button_y)
-    alt_tab_click()
+    await alt_tab_click()
     Beep(100, 50)
 
     log("Toggling Collisions")
-    sleep(0.5)
+    await async_sleep(0.25)
     Beep(150, 100)
     button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(
         SCREEN_RES["height"] * 0.50)  # Toggle Collisions button
     pydirectinput.moveTo(button_x, button_y)
-    alt_tab_click()
+    await alt_tab_click()
     Beep(100, 50)
 
     log("Closing Settings")
-    sleep(0.25)
+    await async_sleep(0.25)
     Beep(150, 100)
     button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(
         SCREEN_RES["height"] * 0.30)  # Toggle Collisions button
     pydirectinput.moveTo(button_x, button_y)
-    alt_tab_click()
-    sleep(0.25)
+    await alt_tab_click()
+    await async_sleep(0.25)
     Beep(100, 50)

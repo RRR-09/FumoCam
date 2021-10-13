@@ -1,158 +1,312 @@
-import irc.bot
+from twitchio.ext import commands, routines
+from asyncio import create_task
 from commands import *
 
+class TwitchBot(commands.Bot):
+    def __init__(self, token, channel_name):
+        super().__init__(token=token, prefix='!', initial_channels=[channel_name])
 
-class TwitchBot(irc.bot.SingleServerIRCBot):
-    def __init__(self, username, client_id, token, channel):
-        self.client_id = client_id
-        self.token = token
-        self.channel = '#' + channel
-
-        # Get the channel id, we will need this for v5 API calls
-        url = f"https://api.twitch.tv/kraken/users?login={channel}"
-        headers = {"Client-ID": client_id, "Accept": "application/vnd.twitchtv.v5+json",
-                   "Authorization": f"oauth:{token}"}
-        r = requests.get(url, headers=headers).json()
-        self.channel_id = r["users"][0]["_id"]
-
-        # Create IRC bot connection
-        server = "irc.chat.twitch.tv"
-        port = 6667
-        print(f"Connecting to {server} on port {port}...")
-        irc.bot.SingleServerIRCBot.__init__(self, [(server, port, f"oauth:{token}")], username, username)
-
-    def on_welcome(self, c, _):
-        print('Joining ' + self.channel)
-        c.cap('REQ', ':twitch.tv/membership')
-        c.cap('REQ', ':twitch.tv/tags')
-        c.cap('REQ', ':twitch.tv/commands')
-        c.join(self.channel)
-        print('Joined ' + self.channel)
-
-    def on_pubmsg(self, _, e):
-        author = "Twitch"
-        for tag in e.tags:
-            if tag["key"] == "display-name":
-                author = tag["value"]
-        author = author[:13]
-        author_url = f"https://www.twitch.tv/{author.lower()}"
+    
+    async def event_ready(self):
+        print(f"[Twitch] Logged in as \"{self.nick}\"")
+        await CFG.async_main()
+        await self.run_subroutines()
+    
+    
+    async def event_message(self, message):
+        if message.echo:
+            return
+        msg_str = f"[Twitch] {message.author.display_name}: {message.content}"
+        
+        print(msg_str.encode("ascii","ignore").decode("ascii","ignore"))
+        
+        log_task = create_task(self.do_discord_log(message))
+        commands_task = create_task(self.handle_commands(message))
+        try:
+            await log_task
+        except:
+            print(format_exc())
+            notify_admin(f"```{format_exc()}```")
+        try:
+            await commands_task
+        except:
+            print(format_exc())
+            notify_admin(f"```{format_exc()}```")
+    
+    
+    async def do_discord_log(self, message):
+        author = message.author.display_name
+        author_url = f"https://www.twitch.tv/popout/becomefumocam/viewercard/{author.lower()}"
         author_avatar = "https://brand.twitch.tv/assets/images/black.png"
-        message = e.arguments[0]
-        discord_log(message, author, author_avatar, author_url)
-        # If a chat message starts with an exclamation point, try to run it as a command
-        if message[:1] == '!':
-            original_cmd = message.split(" ")
-            cmd = original_cmd[0].replace("!", "")
-            args = original_cmd[1:]
-            print(f"Received command: {cmd}")
-            self.do_command(e, cmd, args, author)
-        return
-
-    @staticmethod
-    def do_command(_, cmd, args, author):
-        is_dev = author.lower() in Twitch.admins
-        is_owner = author.lower() == "scary08rblx"
-        if cmd == "rejoin" and is_dev:
-            CFG.action_queue.append("handle_crash")
-        elif (cmd == "handle_join_new_server" or cmd == "handle_crash") and is_dev:
-            CFG.action_queue.append(cmd)
-        elif cmd == "zoomin" or cmd == "zoomout":
-            zoom_direction = "i" if cmd == "zoomin" else "o"
-            zoom_time = 0.05
+        message = message.content
+        await discord_log(message, author, author_avatar, author_url)
+    
+    
+    async def get_args(self, ctx):
+        msg = ctx.message.content
+        prefix = ctx.prefix
+        command_name = ctx.command.name
+        return msg.replace(f"{prefix}{command_name}","",1).strip().split()
+    
+    
+    async def is_dev(self, author):
+        return author.name.lower() in Twitch.admins
+    
+    
+    async def run_subroutines(self):
+        print("[Twitch] Initializing Subroutines")
+        subroutines = [routine_anti_afk, routine_check_better_server, routine_clock, routine_crash_check, routine_help]
+        for subroutine in subroutines:
+            print(f"[Routine] Starting subroutine: {subroutine._coro.__name__.replace('routine_','')}")
+            subroutine.start()
+    
+    # Basic Commands
+    @commands.command()
+    async def click(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def grief(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def jump(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def respawn(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def sit(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def use(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    # Complex commands/Commands with args
+    async def camera_turn_handler(self, turn_camera_direction, ctx):
+        turn_time = 0.1
+        max_turn_time = 2
+        args = await self.get_args(ctx)
+        if args:
             try:
                 number = float(args[0])
-                if number <= 1:
-                    zoom_time = number
-            except Exception:
-                pass
-            CFG.action_queue.append({"zoom_camera_direction": zoom_direction, "zoom_camera_time": zoom_time})
-        elif cmd == "left" or cmd == "right":
-            turn_time = 0.1
-            try:
-                number = float(args[0])
-                if number <= 2:
+                if max_turn_time >= number > 0:
                     turn_time = number
+                else:
+                    await ctx.send(f"[{args[0]} is too high/low! Please use a time between 0 and {max_turn_time}.]")
+                    return
             except Exception:
-                pass
-            CFG.action_queue.append({"turn_camera_direction": cmd, "turn_camera_time": turn_time})
-        elif cmd == "move":
-            move_time = 1
-            try:
-                number = float(args[1])
-                if 5 >= number > 0:
-                    move_time = number
-            except Exception:
-                pass
-            try:
-                CFG.action_queue.append({"movement": cmd, "move_key": args[0], "move_time": move_time, "override": is_dev})
-            except Exception:
-                log_process("Manual Movement")
-                log("Command invalid! Check you're typing it right.")
-                sleep(3)
-        elif cmd == "leap":
-            forward_time = 0.4
-            jump_time = 0.3
+                await ctx.send(f"[Error! Invalid number specified.]")
+                return
+        await CFG.add_action_queue({"turn_camera_direction": turn_camera_direction, "turn_camera_time": turn_time})
+    
+    
+    @commands.command()
+    async def left(self, ctx):
+        turn_camera_direction = "left"
+        await self.camera_turn_handler(turn_camera_direction, ctx)
+    
+    
+    @commands.command()
+    async def right(self, ctx):
+        turn_camera_direction = "right"
+        await self.camera_turn_handler(turn_camera_direction, ctx)
+    
+    
+    @commands.command()
+    async def dev(self, ctx):
+        args = await self.get_args(ctx)
+        if not args:
+            await ctx.send(f"[Specify a message, this command is for emergencies! (Please do not misuse it)]")
+            return
+        msg = " ".join(args)
+        notify_admin(f"{ctx.message.author.display_name}: {msg}")
+        await ctx.send(f"[Notified dev! As a reminder, this command is only for emergencies. If you were unaware of this and used the command by mistake, please write a message explaining that or you may be timed-out/banned.]")
+
+
+    @commands.command()
+    async def leap(self, ctx):
+        forward_time = 0.4
+        jump_time = 0.3
+        max_forward_time = 1
+        max_jump_time = 1
+        args = await self.get_args(ctx)
+        if len(args) > 0:
             try:
                 number = float(args[0])
-                if 1 >= number > 0:
+                if max_forward_time >= number > 0:
                     forward_time = number
+                else:
+                    await ctx.send(f"[{args[0]} is too high/low! Please use a time between 0 and {max_forward_time}.]")
+                    return
             except Exception:
-                pass
+                await ctx.send(f"[Error! Invalid number specified.]")
+                return
+        if len(args) > 1:
             try:
                 number = float(args[1])
-                if 1 >= number > 0:
+                if max_jump_time >= number > 0:
                     jump_time = number
+                else:
+                    await ctx.send(f"[{args[1]} is too high/low! Please use a time between 0 and {max_jump_time}.]")
+                    return
             except Exception:
-                pass
-            try:
-                CFG.action_queue.append({"leap": cmd, "forward_time": forward_time, "jump_time": jump_time, "override": is_dev})
-            except Exception:
-                log_process("Leap")
-                log("Command invalid! Check you're typing it right.")
-        elif cmd == "dev":
-            log("Sending warning to dev...")
-            msg = " ".join(args)
-            notify_admin(f"{author}: {msg}")
-            sleep(5)
-            log("")
-        elif cmd == "click":
-            CFG.action_queue.append("click")
-        elif cmd == "sit":
-            CFG.action_queue.append("sit")
-        elif cmd == "use":
-            CFG.action_queue.append("use")
-        elif cmd == "grief":
-            CFG.action_queue.append("grief")
-        elif cmd == "respawn":
-            CFG.action_queue.append("respawn")
-        elif cmd == "jump":
-            CFG.action_queue.append("jump")
-        elif cmd == "m":
-            msg = " ".join(args)
-            if msg.startswith("[") or msg.startswith("/w"):  # Whisper functionality
+                await ctx.send(f"[Error! Invalid number specified.]")
                 return
-            elif (msg.startswith("/mute") or msg.startswith("/unmute")) and is_dev:  # Make muting dev-only
-                CFG.action_queue.append({"chat": [msg]})
-            elif msg.startswith("/"):
-                if msg.startswith("/e"):
-                    CFG.current_emote = msg
-                CFG.action_queue.append({"chat": [msg]})
-            elif is_dev:  # Chat with CamDev Tag
-                print({"chat_with_name": ["[CamDev]:", msg]})
-                CFG.action_queue.append({"chat_with_name": ["[CamDev]:", msg]})
-            elif is_owner:  # Chat with BecomeFumo Owner Tag
-                CFG.action_queue.append({"chat_with_name": ["[BecomeFumoDev Scary08]:", msg]})
-            else:
-                CFG.action_queue.append({"chat_with_name": [f"{author}:", msg]})
+        await CFG.add_action_queue({"leap": "leap", "forward_time": forward_time, "jump_time": jump_time, "override": await self.is_dev(ctx.message.author)})
+
+    
+    @commands.command()  # Send message in-game
+    async def m(self, ctx):
+        args = await self.get_args(ctx)
+        if not args:
+            await ctx.send(f"[Please specify a message! (i.e. \"!m Hello World!\"]")
+            return
+            
+        msg = " ".join(args)
+        is_dev = await self.is_dev(ctx.message.author)
+        action_queue_item = {}
+        if msg.startswith("[") or msg.startswith("/w"):  # Whisper functionality
+            return
+        elif (msg.startswith("/mute") or msg.startswith("/unmute")) and is_dev:  # Make muting dev-only
+            action_queue_item = {"chat": [msg]}
+        elif msg.startswith("/"):
+            if msg.startswith("/e"):
+                CFG.current_emote = msg
+            action_queue_item = {"chat": [msg]}
+        elif is_dev:  # Chat with CamDev Tag
+            action_queue_item = {"chat_with_name": ["[CamDev]:", msg]}
+        else:
+            action_queue_item = {"chat_with_name": [f"{ctx.message.author.display_name}:", msg]}
+        await CFG.add_action_queue(action_queue_item)
+    
+    
+    @commands.command()
+    async def move(self, ctx):
+        move_time = 1
+        max_move_time = 5
+        valid_movement_keys = ["w","a","s","d"]
+        args = await self.get_args(ctx)
+        if not args or args[0].lower() not in valid_movement_keys:
+            await ctx.send(f"[Please specify a valid direction! (i.e. \"!move w\")]")
+            return
+        move_key = args[0].lower()
+        if len(args) > 1:
+            try:
+                number = float(args[1])
+                if max_move_time >= number > 0:
+                    move_time = number
+                else:
+                    await ctx.send(f"[{args[1]} is too high/low! Please use a time between 0 and {max_move_time}.]")
+                    return
+            except Exception:
+                await ctx.send(f"[Error! Invalid number specified.]")
+                return
+        await CFG.add_action_queue({"movement": "move", "move_key": move_key, "move_time": move_time, "override": await self.is_dev(ctx.message.author)})
+
+
+    @commands.command()
+    async def rejoin(self, ctx):
+        if await self.is_dev(ctx.author):
+            await CFG.add_action_queue("handle_crash")
+            await ctx.send(f"[@{ctx.author.name} Added restart to queue]")
+        else:
+            await ctx.send("[You do not have permission!]")
+    
+    
+    async def zoom_handler(self, zoom_direction, ctx):
+        zoom_time = 0.05
+        max_zoom_time = 1
+        args = await self.get_args(ctx)
+        if args:
+            try:
+                number = float(args[0])
+                if max_zoom_time >= number > 0:
+                    zoom_time = number
+                else:
+                    await ctx.send(f"[{args[0]} is too high/low! Please use a time between 0 and {max_zoom_time}.]")
+                    return
+            except Exception:
+                await ctx.send(f"[Error! Invalid number specified.]")
+                return
+        await CFG.add_action_queue({"zoom_camera_direction": zoom_direction, "zoom_camera_time": zoom_time})
+    
+    
+    @commands.command()
+    async def zoomin(self, ctx):
+        zoom_direction = "i"
+        await self.zoom_handler(zoom_direction, ctx)
+
+
+    @commands.command()
+    async def zoomout(self, ctx):
+        zoom_direction = "o"
+        await self.zoom_handler(zoom_direction, ctx)
+    
+    
+@routines.routine(minutes=10, wait_first=True)
+async def routine_anti_afk():
+    await CFG.add_action_queue("anti-afk")
+    CFG.anti_afk_runs += 1 
+    if CFG.anti_afk_runs % 3 == 0:
+        await CFG.add_action_queue("advert")
+        CFG.anti_afk_runs = 0
+
+
+@routines.routine(minutes=5)
+async def routine_check_better_server():
+    await CFG.add_action_queue("check_for_better_server")
+
+
+@routines.routine(seconds=1, wait_first=True)
+async def routine_clock():
+    output_log("clock", strftime("%Y-%m-%d \n%I:%M:%S%p EST"))
+
+
+@routines.routine(seconds=5, wait_first=True)
+async def routine_crash_check():
+    
+    crashed = await do_crash_check()
+    if crashed:
+        print("[Routine] Crash detected")   
+        await CFG.add_action_queue("handle_crash")
+        await async_sleep(60)
+
+
+@routines.routine(seconds=5)
+async def routine_help():
+    for command in CFG.commands_list:
+        output_log("commands_help_label", "")
+        output_log("commands_help_title", "")
+        output_log("commands_help_desc", "")
+
+        await async_sleep(0.25)
+        current_command_in_list = f"{(CFG.commands_list.index(command) + 1)}/{len(CFG.commands_list)}"
+        output_log("commands_help_label", f"TWITCH CHAT COMMANDS [{current_command_in_list}]")
+        output_log("commands_help_title", command["command"])
+        await async_sleep(0.1)
+        output_log("commands_help_desc", command["help"])
+        if "time" in command:
+            await async_sleep(int(command["time"]))
+            continue
+        await async_sleep(5)
 
 
 def twitch_main():
-    username = Twitch.username
-    client_id = os.getenv("TWITCH_CLIENT_ID")
-    token = os.getenv("TWITCH_MAIN_OAUTH")
+    token = os.getenv("TWITCH_BOT_TOKEN")
     channel = Twitch.channel_name
-    bot = TwitchBot(username, client_id, token, channel)
-    bot.start()
+    bot = TwitchBot(token, channel)
+    bot.run()
 
-if __name__ == "__main__":
+
+if __name__ == "__main__":  # Not supposed to run directly, but can be
     twitch_main()
