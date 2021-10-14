@@ -253,11 +253,12 @@ async def get_best_server():
 
 async def click_character_select_button():
     await async_sleep(0.5)
-    Beep(150, 100)
+    #Beep(150, 100)
     button_x, button_y = await get_character_select_button_pos()
     pydirectinput.moveTo(button_x, button_y)
     await alt_tab_click()
-    Beep(100, 50)
+    await async_sleep(0.5)
+    #Beep(100, 50)
 
 
 async def scroll_to_character_in_menu():
