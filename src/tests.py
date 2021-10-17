@@ -6,16 +6,16 @@ import pyautogui
 from twitch_integration import twitch_main
 import asyncio
 
-def test_character_select(click_mouse=True):  # Character select OCR still needs work; guess coordinates and test
-    check_active()
-    sleep(1)
-    click_character_in_menu(click_mouse=click_mouse)
+async def test_character_select(click_mouse=True):  # Character select OCR still needs work; guess coordinates and test
+    await check_active()
+    await async_sleep(1)
+    await click_character_in_menu(click_mouse=click_mouse)
 
 
-def test_character_select_full(click_mouse=True):
-    check_active()
-    sleep(1)
-    change_characters()
+async def test_character_select_full(click_mouse=True):
+    await check_active()
+    await async_sleep(1)
+    await change_characters()
     
 
 def test_toggle_collisions():
@@ -96,16 +96,16 @@ def test_twitch():
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
-    
+    asyncio.get_event_loop().run_until_complete(test_character_select_full())
     #test_get_cookies_for_browser()
     #test_twitch()
-    
+    #test_character_select()
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()
     #click_sit_button()
     #test_respawn()
     #test_join_target_server()
-    test_get_current_server_id()
+    #test_get_current_server_id()
     #test_get_cookies_for_browser()
     #test_loading_cookies_for_browser()
