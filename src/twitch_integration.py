@@ -1,6 +1,8 @@
 from twitchio.ext import commands, routines
 from asyncio import create_task
 from commands import *
+import traceback
+
 
 class TwitchBot(commands.Bot):
     def __init__(self, token, channel_name):
@@ -32,6 +34,14 @@ class TwitchBot(commands.Bot):
         except:
             print(format_exc())
             notify_admin(f"```{format_exc()}```")
+    
+    
+    async def event_command_error(self, ctx, error):
+        print(f'"{type(error)}"')
+        print(f'"{commands.errors.CommandNotFound}"')
+        if type(error) == commands.errors.CommandNotFound:
+            await ctx.send("[Not a valid command!]")
+        traceback.print_exception(type(error), error, error.__traceback__)
     
     
     async def do_discord_log(self, message):
