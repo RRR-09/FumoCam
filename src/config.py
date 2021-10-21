@@ -108,6 +108,8 @@ class MainBotConfig:
     
     chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message
     
+    crashed = False
+    
     browser_driver_executable_name = "chromedriver.exe"
     browser_driver_path = RESOURCES_PATH / browser_driver_executable_name
     browser_executable_name = "chrome.exe"
@@ -126,7 +128,7 @@ class MainBotConfig:
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     max_attempts_character_selection = 30
     max_attempts_sit_button = 3
-    max_seconds_browser_launch = 5
+    max_seconds_browser_launch = 20
     player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
     #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
     respawn_character_select_offset = -0.1    

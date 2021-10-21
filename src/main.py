@@ -53,9 +53,9 @@ async def queue_leap(action):  # todo: Simplify
 async def do_process_queue():  # todo: Investigate benefits of multithreading over single-threaded/async
     if len(CFG.action_queue) == 0 or CFG.action_running:
         return
-    print(CFG.action_queue)
     CFG.action_running = True
     while len(CFG.action_queue) > 0:
+        print(CFG.action_queue)
         action = CFG.action_queue[0]
         if action == "anti-afk":
             await do_anti_afk()
@@ -79,7 +79,7 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
                 await check_for_better_server()
                 await check_active()
             else:
-                CFG.action_queue.insert(0, "handle_crash")
+                CFG.action_queue.insert(1, "handle_crash")
         elif "chat_with_name" in action:
             name = action["chat_with_name"][0]
             await send_chat(name)
@@ -134,12 +134,12 @@ async def add_action_queue(item):
 
 async def async_main():
     print("[Async_Main] Start")
-    crashed = await do_crash_check()
-    if crashed or "Roblox" not in pyautogui.getAllTitles():
-       CFG.action_queue.append("handle_crash")
-       await do_process_queue()
-    else:
-       await check_active()
+    # crashed = await do_crash_check()
+    # if crashed or "Roblox" not in pyautogui.getAllTitles():
+       # CFG.action_queue.append("handle_crash")
+       # await do_process_queue()
+    # else:
+       # await check_active()
     
 
 def main():

@@ -42,6 +42,19 @@ def run_as_admin():
         exit()
 
 
+def error_log(error_msg, file_name="_errors"):
+    if not os.path.exists(OBS.output_folder):
+        os.mkdir(OBS.output_folder)
+    file_path = os.path.join(OBS.output_folder, f"{file_name}.txt")
+    if not os.path.exists(file_path):
+        with open(file_path, "w") as f:
+            f.write("")
+    entry_timestamp = strftime("%Y-%m-%d %I:%M:%S%p EST")
+    entry = f"[{entry_timestamp}]\n{error_msg}\n\n\n\n"
+    with open(file_path, "a") as f:
+        f.write(entry)
+
+
 def output_log(file_name, message):
     if not os.path.exists(OBS.output_folder):
         os.mkdir(OBS.output_folder)
@@ -204,15 +217,17 @@ def get_english_timestamp(time_var):
 
 
 async def do_crash_check(do_notify=True):
-    crashed = False
-    for window in pyautogui.getAllWindows():
-        if window.title == "Crash" or window.title == "Roblox Crash" or window.title == "Crashed":
-            crashed = True
-            window.close()
+    crashed = not(is_process_running(CFG.game_executable_name))
+    if not crashed:  # Check if still open, but hanged with seperate "crash" dialog
+        for window in pyautogui.getAllWindows():
+            if window.title == "Crash" or window.title == "Roblox Crash" or window.title == "Crashed":
+                crashed = True
+                window.close()        
     if crashed:
+        CFG.crashed = True
         if do_notify:
             notify_admin("Roblox Crash")
-        await CFG.add_action_queue("handle_crash")
+        #await CFG.add_action_queue("handle_crash")
     return crashed
 
 
@@ -267,4 +282,4 @@ async def discord_log(message, author, author_avatar, author_url):
 
 
 def is_process_running(name):
-    return len([proc for proc in psutil.process_iter() if proc.name() == "RobloxPlayerBeta.exe"]) > 0
+    return len([proc for proc in psutil.process_iter() if proc.name() == name]) > 0

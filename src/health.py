@@ -210,7 +210,6 @@ async def open_roblox_with_selenium_browser(js_code):
             success = True
             break
         await async_sleep(sleep_time)
-        Beep(40, 25)
     try:
         driver.quit()       
         kill_process(CFG.browser_driver_executable_name)
@@ -341,6 +340,7 @@ async def server_spawn():
 
 
 async def handle_join_new_server(crash=False):
+    CFG.crashed = True  # Just in case
     process_name = "Automatic Relocation System"
     action = "Detected more optimal server. Relocating."
     if crash:
@@ -368,5 +368,6 @@ async def handle_join_new_server(crash=False):
     log_process("")
     log("Complete. Please use '!dev Error' if we're not in-game.")
     await async_sleep(5)
+    CFG.crashed = False
     log_process("")
     log("")
