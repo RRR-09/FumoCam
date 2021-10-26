@@ -116,6 +116,10 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             await respawn_character()
             log_process("")
             log("")
+        elif action == "respawnforce":
+            await force_respawn_character()
+            log_process("")
+            log("")
         elif action == "jump":
             await jump()
         elif "movement" in action:

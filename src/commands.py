@@ -17,12 +17,32 @@ async def click_sit_button():
     log_process("")
 
 
-async def respawn_character():
+async def force_respawn_character():
     await check_active()
     await async_sleep(0.5)
-    log_process("Respawning")
+    log_process("Force-Respawning")
     await send_chat("[Respawning!]")
     await change_characters(respawn=True)
+    log_process("")
+
+
+async def respawn_character():
+    await check_active()
+    log_process("Respawning")
+    await send_chat("[Respawning!]")
+    await async_sleep(0.75)
+    pydirectinput.keyDown('esc')
+    await async_sleep(0.1)
+    pydirectinput.keyUp('esc')
+    await async_sleep(0.5)
+    pydirectinput.keyDown('r')
+    await async_sleep(0.1)
+    pydirectinput.keyUp('r')
+    await async_sleep(0.5)
+    pydirectinput.keyDown('enter')
+    await async_sleep(0.1)
+    pydirectinput.keyUp('enter')
+    await async_sleep(0.5)
     log_process("")
 
 

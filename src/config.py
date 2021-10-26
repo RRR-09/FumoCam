@@ -89,6 +89,10 @@ class MainBotConfig:
         },
         {
             "command": "!respawn",
+            "help": "Respawns using Roblox respawn. Use !respawnforce if completely stuck."
+        },
+        {
+            "command": "!respawnforce",
             "help": "Respawns. Helpful if completely stuck."
         },
         {
