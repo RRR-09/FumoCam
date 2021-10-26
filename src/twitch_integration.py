@@ -1,6 +1,7 @@
 from twitchio.ext import commands, routines
 from asyncio import create_task
 from commands import *
+from datetime import datetime
 import traceback
 
 
@@ -85,6 +86,11 @@ class TwitchBot(commands.Bot):
     
     @commands.command()
     async def jump(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def respawnforce(self, ctx):
         await CFG.add_action_queue(ctx.command.name)
     
     
@@ -294,6 +300,24 @@ async def routine_check_better_server():
 async def routine_clock():
     output_log("clock", strftime("%Y-%m-%d \n%I:%M:%S%p EST"))
 
+
+@routines.routine(time=datetime(year=1970,month=1,day=1,hour=3,minute=58))
+async def routine_reboot():
+    action_queue_item = {"chat": ["[System restart in 2 minutes]"]}
+    await CFG.add_action_queue(action_queue_item)
+    await async_sleep(60)
+    
+    action_queue_item = {"chat": ["[System restart in 1 minute]"]}
+    await CFG.add_action_queue(action_queue_item)
+    await async_sleep(60)
+    
+    log_process("System Shutdown")
+    log("Initiating shutdown sequence")
+    action_queue_item = {"chat": ["[System restarting]"]}
+    await CFG.add_action_queue(action_queue_item)
+    await async_sleep(10)
+    os.system("shutdown /f /r /t 0")
+ 
 
 @routines.routine(seconds=5, wait_first=True)
 async def routine_crash_check():
