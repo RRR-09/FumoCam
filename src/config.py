@@ -107,7 +107,7 @@ class MainBotConfig:
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
     character_select_scroll_down_amount = 12
     character_select_scroll_down_scale = -200
-    character_select_screen_height_to_click = 0.50
+    character_select_screen_height_to_click = 0.46
     character_select_scroll_speed = 0.2
     
     chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message
@@ -133,6 +133,7 @@ class MainBotConfig:
     max_attempts_character_selection = 30
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 20
+    max_attempts_better_server = 20
     player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
     #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
     respawn_character_select_offset = -0.1    
