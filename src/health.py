@@ -142,6 +142,7 @@ async def check_for_better_server():
     if current_server_id == "ERROR":        
         log_process(f"Failed to connect to Roblox API {CFG.max_attempts_better_server} times! Skipping...")
         await async_sleep(5)
+        log_process("")
         return True
     if current_server_id == "N/A":
         nil_world_id = await check_if_in_nil_world()
