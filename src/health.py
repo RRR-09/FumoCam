@@ -6,12 +6,15 @@ import json
 
 async def force_get_best_server():
     found_best_server = False
+    attempts = 0
+    log("Attempting to find best server to join...")
     while not found_best_server:
         found_best_server = await get_best_server()
         if found_best_server:
             break
+        attempts += 1
+        log(f"Attempt #{attempts} to find best server failed, retrying...")
         await async_sleep(5)
-        log("Failed to find best server, retrying...")
     return found_best_server["id"]
 
 
@@ -20,7 +23,7 @@ async def check_if_should_change_servers(current_server_id="N/A"):
     log("Querying Roblox API for server list")
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
     except Exception:
         return False, f"[WARN] Could not poll Roblox servers. Is Roblox down?"
     if response.status_code == 200:
@@ -59,7 +62,7 @@ async def check_if_in_nil_world():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id_nil}/servers/Public?sortOrder=Asc&limit=10"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
     except Exception:
         print(format_exc())
         return "ERROR"
@@ -80,7 +83,7 @@ async def check_if_in_hinamizawa_world():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id_hinamizawa}/servers/Public?sortOrder=Asc&limit=10"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
     except Exception:
         print(format_exc())
         return "ERROR"
@@ -101,7 +104,7 @@ async def get_current_server_id():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
     try:
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
     except Exception:
         print(format_exc())
         return "ERROR"
@@ -129,10 +132,17 @@ async def check_for_better_server():
 
     log_process("Checking for better server")
     current_server_id = await get_current_server_id()
-    while current_server_id == "ERROR":
-        log_process("Failed! Retrying better server check")
+    if current_server_id == "ERROR":
+        for i in range(CFG.max_attempts_better_server):
+            log_process(f"Attempt {i+1}/{CFG.max_attempts_better_server} failed! Retrying better server check...")
+            await async_sleep(5)
+            current_server_id = await get_current_server_id()
+            if current_server_id != "ERROR":
+                break
+    if current_server_id == "ERROR":        
+        log_process(f"Failed to connect to Roblox API {CFG.max_attempts_better_server} times! Skipping...")
         await async_sleep(5)
-        current_server_id = await get_current_server_id()
+        return True
     if current_server_id == "N/A":
         nil_world_id = await check_if_in_nil_world()
         hinamizawa_world_id = await check_if_in_hinamizawa_world()
@@ -237,7 +247,7 @@ async def get_best_server():
     server_obj = {"id": "", "maxPlayers": 100, "playing": 0, "fps": 59, "ping": 100}
     highest_player_count_server = server_obj
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
-    response = requests.get(url)
+    response = requests.get(url, timeout=10)
     if response.status_code == 200:
         response_result = response.json()
         servers = response_result["data"]
