@@ -5,6 +5,15 @@ Writeup pending.
 
 Twitch: https://www.twitch.tv/becomefumocam
 
+# Deprecated Software-Driven Input
+This has always been a project that aims to replicate a human as mechanically and programmatically as possible. Due to how the Windows scheduler works, there is no software that can be written, in any language, that adequately supports consistent input (for example, `!move w 1` always moving the exact same amount, no error margin).
+
+Linux could see negligible error margins, but still believed to have *some* error margin.
+
+Due to this, all precision keyboard and mouse input has been offloaded to an Arduino Leonardo that can receive a payload, emulate HID Keyboard + Mouse natively (no hacky workarounds), and have consistent timing due to the nature of how close-to-metal the code is running (in addition, is not tethered to any OS scheduler but directly to CPU clock).
+
+Obviously, this requires external hardware (Arduino Leonardo) that not everyone can get. You can view the old code that used software-driven input emulation on the [pre-arduino branch](https://github.com/RRR-09/FumoCam/tree/pre-arduino).
+
 # Unsupported Advanced Functionality 
 For advanced commands like teleportation, use of a third party Lua injector is required (alongside some code).
 
