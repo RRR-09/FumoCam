@@ -5,7 +5,7 @@ from config import *
 
 
 class ArduinoConfig:
-    port = "COM7"
+    port = "COM3"
     baudrate = 115200
     interface_timeout = 0.1
     interface = serial.Serial(port=port, baudrate=baudrate, timeout=interface_timeout)

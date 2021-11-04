@@ -110,6 +110,25 @@ class TwitchBot(commands.Bot):
     
     
     # Complex commands/Commands with args
+    async def camera_pitch_handler(self, pitch_camera_direction, ctx):
+        pitch = 45
+        max_pitch = 180
+        args = await self.get_args(ctx)
+        if args:
+            try:
+                number = float(args[0])
+                if max_pitch >= number > 0:
+                    turn_time = number
+                else:
+                    await ctx.send(f"[{args[0]} is too high/low! Please use an angle between 0 and {max_pitch}.]")
+                    return
+            except Exception:
+                await ctx.send(f"[Error! Invalid number specified.]")
+                return
+        await CFG.add_action_queue({"pitch_camera_direction": pitch_camera_direction, "pitch_camera_degrees": pitch})
+    
+        
+    # Complex commands/Commands with args
     async def camera_turn_handler(self, turn_camera_direction, ctx):
         turn_time = 45
         max_turn_time = 360
@@ -138,6 +157,18 @@ class TwitchBot(commands.Bot):
     async def right(self, ctx):
         turn_camera_direction = "right"
         await self.camera_turn_handler(turn_camera_direction, ctx)
+        
+        
+    @commands.command()
+    async def up(self, ctx):
+        pitch_camera_direction = "up"
+        await self.camera_pitch_handler(pitch_camera_direction, ctx)
+    
+    
+    @commands.command()
+    async def down(self, ctx):
+        pitch_camera_direction = "down"
+        await self.camera_pitch_handler(pitch_camera_direction, ctx)
     
     
     @commands.command()
@@ -191,6 +222,9 @@ class TwitchBot(commands.Bot):
             return
             
         msg = " ".join(args)
+        if len(msg) > 100:
+            await ctx.send(f"[In-game character limit is 100! Please shorten your message.]")
+            return
         is_dev = await self.is_dev(ctx.message.author)
         action_queue_item = {}
         if msg.startswith("[") or msg.startswith("/w"):  # Whisper functionality

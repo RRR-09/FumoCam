@@ -16,7 +16,7 @@ MONITOR_SIZE = mss().monitors[0]
 
 
 class Twitch:
-    channel_name = "becomefumocambeta"
+    channel_name = "becomefumocam"
     username = "BecomeFumoCamBot"
     admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
     
@@ -58,6 +58,10 @@ class MainBotConfig:
         {
             "command": "!left 90 or !right 360",
             "help": "Turn camera x degrees left or right"
+        },
+        {
+            "command": "!up 45 or !down 180",
+            "help": "Turn camera x degrees up or down"
         },
         {
             "command": "!zoomin 100 or !zoomout 100",
@@ -107,7 +111,7 @@ class MainBotConfig:
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
     character_select_scroll_down_amount = 12
     character_select_scroll_down_scale = -200
-    character_select_screen_height_to_click = 0.46
+    character_select_screen_height_to_click = 0.50
     character_select_scroll_speed = 0.2
     
     chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message

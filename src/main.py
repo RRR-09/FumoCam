@@ -54,6 +54,12 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             log_process(f"{turn_time} degrees {turn_direction.upper()}")            
             ACFG.look(direction=turn_direction, amount=turn_time)
             log_process("")
+        elif "pitch_camera_direction" in action:
+            pitch_direction = action['pitch_camera_direction']
+            pitch_degrees = action['pitch_camera_degrees']
+            log_process(f"Tilting {pitch_degrees} degrees {pitch_direction.upper()}")            
+            ACFG.pitch(amount=pitch_degrees, up=pitch_direction == "up")
+            log_process("")
         elif "zoom_camera_direction" in action:
             zoom_direction = "in" if action['zoom_camera_direction'] == "i" else "out"
             zoom_time = action['zoom_camera_time']
