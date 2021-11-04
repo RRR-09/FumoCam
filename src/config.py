@@ -68,16 +68,12 @@ class MainBotConfig:
             "help": "Zoom camera in or out 100%"
         },
         {
-            "command": "!sit",
-            "help": "Clicks the sit button"
-        },
-        {
             "command": "!dev Your Message",
             "help": "EMERGENCY ONLY, Sends \"Your Message\" to devs discord account"
         },
         {
             "command": "!move w 10",
-            "help": "Moves forwards for 5 seconds. (!move a, !move d, !move s)"
+            "help": "Moves forwards # FumoCam units. Max 10. (!move a, !move d, !move s)"
         },
         {
             "command": "!leap 0.7 0.5",
