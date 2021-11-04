@@ -107,7 +107,7 @@ class MainBotConfig:
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
     character_select_scroll_down_amount = 12
     character_select_scroll_down_scale = -200
-    character_select_screen_height_to_click = 0.46
+    character_select_screen_height_to_click = 0.50
     character_select_scroll_speed = 0.2
     
     chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message
