@@ -14,10 +14,10 @@ Due to this, all precision keyboard and mouse input has been offloaded to an Ard
 
 Obviously, this requires external hardware (Arduino Leonardo) that not everyone can get. You can view the old code that used software-driven input emulation on the [pre-arduino branch](https://github.com/RRR-09/FumoCam/tree/pre-arduino).
 
-# Unsupported Advanced Functionality 
+# Deprecated Exploit Functionality 
 For advanced commands like teleportation, use of a third party Lua injector is required (alongside some code).
 
-This can lead to system instability and is challenging to develop around, so it has been made obsolete.
+This can lead to system instability and is challenging to develop around, so it has been deprecated.
 
 You can view the old code that still supported injector commands on the [injector support branch](https://github.com/RRR-09/FumoCam/tree/injector-support).
 
