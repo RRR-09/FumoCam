@@ -54,6 +54,10 @@ void keyhold(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
     key = KEY_LEFT_ARROW;
   } else if (!strcmp(input_key, "KEY_RIGHT_ARROW")) {
     key = KEY_RIGHT_ARROW;
+  } else if (!strcmp(input_key, "KEY_ESC")) {
+    key = KEY_ESC;
+  } else if (!strcmp(input_key, "KEY_RETURN")) {
+    key = KEY_RETURN;
   }
   
   const double hold_seconds = payload["hold_time"];
@@ -91,21 +95,29 @@ void moveMouse(int amount_x, int amount_y, double move_speed) {
   if (move_x_times != 0 || last_move_x != 0){
     for (int i = 0; i < move_x_times; i++) {
       Mouse.move((left) ? -127 : 127, 0, 0);
-      smartDelay(move_speed);
+      delay(move_speed);
     }
     Mouse.move(last_move_x, 0, 0);
-    smartDelay(move_speed);
+    delay(move_speed);
   }
   if (move_y_times != 0 || last_move_y != 0){
     for (int i = 0; i < move_y_times; i++) {
       Mouse.move(0, (up) ? -127 : 127, 0);
-      smartDelay(move_speed);
+      delay(move_speed);
     }
     Mouse.move(0, last_move_y, 0);
-    smartDelay(move_speed);
+    delay(move_speed);
   }
-  smartDelay(move_speed);
+  delay(move_speed);
   Serial.print(";MouseDone;\n");
+}
+
+void scrollMouse(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
+  bool down = payload["down"];
+  int amount = payload["amount"];
+  char scroll_direction = (down) ? (char)-127 : (char)127;
+  Mouse.move(0, 0, scroll_direction);
+  Serial.print(";ScrollDone;\n");
 }
 
 void resetMouse(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
@@ -118,7 +130,7 @@ void resetMouse(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
 void moveMouseAction(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
   int amount_x = payload["x"];
   int amount_y = payload["y"];
-  const double move_speed = 0.02;
+  const double move_speed = 0.05;
   moveMouse(amount_x, amount_y, move_speed); // Reset to top left
 }
 
@@ -214,6 +226,8 @@ void loop() {
       leftClick();
     } else if (!strcmp(type, "leap")) {
       leap(parsed_payload);
+    } else if (!strcmp(type, "scrollMouse")) {
+      scrollMouse(parsed_payload);
     } else {
       Serial.print("Unknown type: ");
       Serial.print(type);

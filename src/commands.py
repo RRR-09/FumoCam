@@ -9,8 +9,10 @@ async def click_sit_button():
         ratio_x, ratio_y = CFG.sit_button_position
         x = round(SCREEN_RES["width"] * ratio_x)
         y = round(SCREEN_RES["height"] * ratio_y)
-        pydirectinput.moveTo(x, y)
-        await alt_tab_click()
+        ACFG.moveMouseAbsolute(x=x, y=y)
+        ACFG.left_click()
+        await async_sleep(0.25)
+        ACFG.resetMouse()
     except Exception:
         log("Could not find sit button on screen?")
         await async_sleep(5)
@@ -31,25 +33,10 @@ async def respawn_character():
     log_process("Respawning")
     await send_chat("[Respawning!]")
     await async_sleep(0.75)
-    pydirectinput.keyDown('esc')
-    await async_sleep(0.1)
-    pydirectinput.keyUp('esc')
+    ACFG.keyPress('KEY_ESC')
     await async_sleep(0.5)
-    pydirectinput.keyDown('r')
-    await async_sleep(0.1)
-    pydirectinput.keyUp('r')
+    ACFG.keyPress('r')
     await async_sleep(0.5)
-    pydirectinput.keyDown('enter')
-    await async_sleep(0.1)
-    pydirectinput.keyUp('enter')
+    ACFG.keyPress('KEY_RETURN')
     await async_sleep(0.5)
     log_process("")
-
-
-async def zoom_camera(zoom_obj):
-    zoom_direction = zoom_obj["zoom_camera_direction"]
-    zoom_time = zoom_obj["zoom_camera_time"]
-    await check_active()
-    pydirectinput.keyDown(zoom_direction)
-    await async_sleep(zoom_time/4)
-    pydirectinput.keyUp(zoom_direction)

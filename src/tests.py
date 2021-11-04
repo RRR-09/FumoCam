@@ -25,13 +25,15 @@ def test_character_select_full(click_mouse=True):
 def test_toggle_collisions():
     check_active()
     sleep(1)
-    toggle_collisions()
+    asyncio.get_event_loop().run_until_complete(toggle_collisions())
 
 
 def test_respawn(click_mouse=True):
-    check_active()
-    sleep(1)
-    respawn_character()
+    async def do_test(click_mouse=True):
+        await check_active()
+        await async_sleep(1)
+        await respawn_character()
+    asyncio.get_event_loop().run_until_complete(do_test(click_mouse=click_mouse))
 
 
 def test_join_target_server():
@@ -102,13 +104,16 @@ if __name__ == "__main__":
     #test_get_cookies_for_browser()
     #test_twitch()
     #test_character_select()
+    #test_character_select_full()
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()
+    #test_toggle_collisions()
+    
     #click_sit_button()
-    #test_respawn()
+    test_respawn()
     #test_join_target_server()
-    test_get_current_server_id()
+    #test_get_current_server_id()
     error_log("test")
     #test_get_cookies_for_browser()
     #test_loading_cookies_for_browser()

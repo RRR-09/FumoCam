@@ -1,4 +1,4 @@
-from config import *
+from arduino_integration import *
 import os
 from time import sleep,time,strftime,strptime,mktime
 from asyncio import sleep as async_sleep
@@ -176,21 +176,6 @@ def notify_admin(message):  # todo: Seperate always-running process
         print(err)
     else:
         print(f"[Dev Notified] {message}")
-
-
-async def alt_tab_click(click_mouse=True):
-    """
-    Even pydirectinput cant click normally.
-    This is a work-around that actually clicks in the area the cursor was moved.
-    """
-    alt_tab_duration = 0.5
-    pyautogui.hotkey('alt', 'tab')
-    await async_sleep(alt_tab_duration)
-    pyautogui.hotkey('alt', 'tab')
-    await async_sleep(alt_tab_duration)
-    if click_mouse:
-        pydirectinput.mouseDown()
-        pydirectinput.mouseUp()
 
 
 def get_english_timestamp(time_var):

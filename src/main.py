@@ -14,12 +14,9 @@ async def queue_movement(action):  # todo: Simplify
         CFG.action_running = False
         return False
     time_to_press = action["move_time"]
-    log(f"Moving {valid_keys[key]} for {time_to_press}s")
+    log(f"Moving {valid_keys[key]} for {time_to_press} FC Units")
     await check_active()
-    #await async_sleep(0.75)
-    pydirectinput.keyDown(key)
-    await async_sleep(time_to_press)
-    pydirectinput.keyUp(key)
+    ACFG.move(direction_key=key, amount=time_to_press)
     log("")
     log_process("")
     CFG.action_running = False
@@ -32,19 +29,7 @@ async def queue_leap(action):  # todo: Simplify
     time_jump = action["jump_time"]
     log(f"Moving forward for {time_forward}s and jumping for {time_jump}s")
     await check_active()
-    #await async_sleep(0.75)
-    pydirectinput.keyDown("w")
-    pydirectinput.keyDown("space")
-    if time_forward > time_jump:
-        await async_sleep(time_jump)
-        pydirectinput.keyUp("space")
-        await async_sleep(time_forward - time_jump)
-        pydirectinput.keyUp("w")
-    else:
-        await async_sleep(time_forward)
-        pydirectinput.keyUp("w")
-        await async_sleep(time_jump - time_forward)
-        pydirectinput.keyUp("space")
+    ACFG.leap(forward_time=time_forward, jump_time=time_jump)
     log("")
     log_process("")
     CFG.action_running = False
@@ -56,6 +41,8 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
     CFG.action_running = True
     while len(CFG.action_queue) > 0:
         print(CFG.action_queue)
+        await check_active()
+        await async_sleep(0.1)
         action = CFG.action_queue[0]
         if action == "anti-afk":
             await do_anti_afk()
@@ -64,14 +51,14 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         elif "turn_camera_direction" in action:
             turn_direction = action['turn_camera_direction']
             turn_time = action['turn_camera_time']
-            log_process(f"{turn_direction.upper()} for {turn_time}s")
-            await turn_camera(action)
+            log_process(f"{turn_time} degrees {turn_direction.upper()}")            
+            ACFG.look(direction=turn_direction, amount=turn_time)
             log_process("")
         elif "zoom_camera_direction" in action:
             zoom_direction = "in" if action['zoom_camera_direction'] == "i" else "out"
             zoom_time = action['zoom_camera_time']
-            log_process(f"Zooming {zoom_direction} for {zoom_time}s")
-            await zoom_camera(action)
+            log_process(f"Zooming {zoom_direction} {zoom_time}%")
+            ACFG.zoom(zoom_direction_key=action['zoom_camera_direction'], amount=zoom_time)
             log_process("")
         elif action == "check_for_better_server":
             crashed = await do_crash_check()
@@ -95,21 +82,17 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         elif action == "handle_join_new_server":
             await handle_join_new_server()
         elif action == "click":
-            await alt_tab_click()
+            await ACFG.left_click()
         elif action == "sit":
             await click_sit_button()
         elif action == "use":
             log_process("Pressing Use (e)")
-            await check_active()
-            pydirectinput.keyDown("e")
-            await async_sleep(1)
-            pydirectinput.keyUp("e")
+            ACFG.use()
             log_process("")
             log("")
         elif action == "grief":
             await toggle_collisions()
-            pydirectinput.moveTo(1, 1)
-            await alt_tab_click(click_mouse=False)
+            ACFG.resetMouse()
             log_process("")
             log("")
         elif action == "respawn":
@@ -121,7 +104,7 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             log_process("")
             log("")
         elif action == "jump":
-            await jump()
+            ACFG.jump()
         elif "movement" in action:
             await queue_movement(action)
         elif "leap" in action:

@@ -265,8 +265,8 @@ async def click_character_select_button():
     await async_sleep(0.5)
     #Beep(150, 100)
     button_x, button_y = await get_character_select_button_pos()
-    pydirectinput.moveTo(button_x, button_y)
-    await alt_tab_click()
+    ACFG.moveMouseAbsolute(x=round(button_x), y=round(button_y))
+    ACFG.left_click()
     await async_sleep(0.5)
     #Beep(100, 50)
 
@@ -274,10 +274,7 @@ async def click_character_select_button():
 async def scroll_to_character_in_menu():
     await async_sleep(0.5)
     log(f"Scrolling down {CFG.character_select_scroll_down_amount} times")
-    for i in range(CFG.character_select_scroll_down_amount):
-        pyautogui.scroll(CFG.character_select_scroll_down_scale)
-        Beep(40, 25)
-        await async_sleep(CFG.character_select_scroll_speed)
+    ACFG.scrollMouse(CFG.character_select_scroll_down_amount, down=True)
     log("")
 
 
@@ -288,8 +285,8 @@ async def click_character_in_menu(click_mouse=True, click_random=False):
         SCREEN_RES["height"] * CFG.character_select_screen_height_to_click)  # Toggle Collisions button
     if click_random:
         button_y += int(SCREEN_RES["height"]*CFG.respawn_character_select_offset)
-    pydirectinput.moveTo(button_x, button_y)
-    await alt_tab_click(click_mouse=click_mouse)
+    ACFG.moveMouseAbsolute(x=button_x, y=button_y)
+    ACFG.left_click()
     await async_sleep(0.5)
 
 
@@ -330,7 +327,7 @@ async def change_characters(respawn=False):
     await async_sleep(0.5)
     await click_character_select_button()
     await async_sleep(0.5)
-    pydirectinput.moveTo(SCREEN_RES["width"], SCREEN_RES["height"])
+    ACFG.resetMouse()
 
 
 async def server_spawn():
@@ -346,8 +343,7 @@ async def server_spawn():
     if CFG.disable_collisions_on_spawn:
         await toggle_collisions()
     await change_characters()
-    pydirectinput.moveTo(1, 1)
-    await alt_tab_click()
+    ACFG.resetMouse()
     return True
 
 

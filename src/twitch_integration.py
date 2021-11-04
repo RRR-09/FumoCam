@@ -111,8 +111,8 @@ class TwitchBot(commands.Bot):
     
     # Complex commands/Commands with args
     async def camera_turn_handler(self, turn_camera_direction, ctx):
-        turn_time = 0.1
-        max_turn_time = 2
+        turn_time = 45
+        max_turn_time = 360
         args = await self.get_args(ctx)
         if args:
             try:
@@ -120,7 +120,7 @@ class TwitchBot(commands.Bot):
                 if max_turn_time >= number > 0:
                     turn_time = number
                 else:
-                    await ctx.send(f"[{args[0]} is too high/low! Please use a time between 0 and {max_turn_time}.]")
+                    await ctx.send(f"[{args[0]} is too high/low! Please use an angle between 0 and 360.]")
                     return
             except Exception:
                 await ctx.send(f"[Error! Invalid number specified.]")
@@ -211,7 +211,7 @@ class TwitchBot(commands.Bot):
     @commands.command()
     async def move(self, ctx):
         move_time = 1
-        max_move_time = 5
+        max_move_time = 10
         valid_movement_keys = ["w","a","s","d"]
         args = await self.get_args(ctx)
         if not args or args[0].lower() not in valid_movement_keys:
@@ -224,7 +224,7 @@ class TwitchBot(commands.Bot):
                 if max_move_time >= number > 0:
                     move_time = number
                 else:
-                    await ctx.send(f"[{args[1]} is too high/low! Please use a time between 0 and {max_move_time}.]")
+                    await ctx.send(f"[{args[1]} is too high/low! Please use a unit between 0 and {max_move_time}.]")
                     return
             except Exception:
                 await ctx.send(f"[Error! Invalid number specified.]")
@@ -242,8 +242,8 @@ class TwitchBot(commands.Bot):
     
     
     async def zoom_handler(self, zoom_direction, ctx):
-        zoom_time = 0.05
-        max_zoom_time = 1
+        zoom_time = 15
+        max_zoom_time = 100
         args = await self.get_args(ctx)
         if args:
             try:
@@ -251,7 +251,7 @@ class TwitchBot(commands.Bot):
                 if max_zoom_time >= number > 0:
                     zoom_time = number
                 else:
-                    await ctx.send(f"[{args[0]} is too high/low! Please use a time between 0 and {max_zoom_time}.]")
+                    await ctx.send(f"[{args[0]} is too high/low! Please use a percentage between 0 and {max_zoom_time}.]")
                     return
             except Exception:
                 await ctx.send(f"[Error! Invalid number specified.]")
