@@ -228,9 +228,14 @@ class TwitchBot(commands.Bot):
         is_dev = await self.is_dev(ctx.message.author)
         action_queue_item = {}
         if msg.startswith("[") or msg.startswith("/w"):  # Whisper functionality
+            await ctx.send(f"[You do not have permission to whisper.]")
             return
-        elif (msg.startswith("/mute") or msg.startswith("/unmute")) and is_dev:  # Make muting dev-only
-            action_queue_item = {"chat": [msg]}
+        elif (msg.startswith("/mute") or msg.startswith("/unmute")):  # Make muting dev-only
+            if is_dev:
+                action_queue_item = {"chat": [msg]}
+            else:
+                await ctx.send(f"[You do not have permission to mute/unmute.]")
+                return
         elif msg.startswith("/"):
             if msg.startswith("/e"):
                 CFG.current_emote = msg

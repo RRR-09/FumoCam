@@ -17,7 +17,7 @@ class ArduinoConfig:
     }
     msg_letter_wait_time = 10/1000 # 10ms
     zoom_ratio = 0.013 # 100 = full zoom
-    turn_ratio = 120 # 360 = 3s = 360 degrees
+    turn_ratio = 124.15 # 360 = 3s = 360 degrees; smaller overshoot, bigger undershoot
     move_ratio = 0.3576 # 1 unit is smallest amount (to 4 decimal places) needed to consistently fall off diagonal spawn platform
 
     def arduino_interface(self, payload, delay_time=0):
@@ -61,14 +61,14 @@ class ArduinoConfig:
 
 
     def look(self, direction, amount):
-        turn_amount = round(amount/self.turn_ratio, 4)
+        turn_amount = amount/self.turn_ratio
         payload = {"type": "keyhold", "key": f"KEY_{direction.upper()}_ARROW", "hold_time": turn_amount}
         self.arduino_interface(payload, payload["hold_time"])
     #look("left", 90)
 
 
     def move(self, direction_key, amount):
-        move_amount = round(amount*self.move_ratio, 4)
+        move_amount = amount*self.move_ratio
         payload = {"type": "keyhold", "key": direction_key, "hold_time": move_amount}
         self.arduino_interface(payload, payload["hold_time"])
     #move("w", 2)
