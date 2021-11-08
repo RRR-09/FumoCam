@@ -120,16 +120,22 @@ def test_twitch():
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
+    # If account banned
+    #test_get_cookies_for_browser()
+    #test_loading_cookies_for_browser()
+    test_check_for_better_server()
+    
     #test_turn_camera(direction="right")
     #test_move()
     #sleep(5)
     #test_turn_camera("left")
     
     #test_get_cookies_for_browser()
+    
     #test_twitch()
     #test_character_select()
     #test_character_select_full()
-    test_check_for_better_server()
+    #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()
     #test_toggle_collisions()
@@ -139,6 +145,4 @@ if __name__ == "__main__":
     #test_join_target_server()
     #test_get_current_server_id()
     #error_log("test")
-    #test_get_cookies_for_browser()
-    #test_loading_cookies_for_browser()
     #test_check_for_better_server()
