@@ -6,7 +6,7 @@ from config import *
 
 class ArduinoConfig:
     port = "COM3"
-    baudrate = 115200
+    baudrate = 9300
     interface_timeout = 0.1
     interface = serial.Serial(port=port, baudrate=baudrate, timeout=interface_timeout)
     max_serial_wait_time = 10
@@ -57,6 +57,7 @@ class ArduinoConfig:
     def leap(self, forward_time, jump_time):
         payload = {"type": "leap", "forward_time": forward_time, "jump_time": jump_time}
         self.arduino_interface(payload, max(payload["forward_time"], payload["jump_time"]))
+        sleep(0.5)
     #leap(jump_time=1, forward_time=3)
 
 
@@ -64,6 +65,7 @@ class ArduinoConfig:
         turn_amount = round(amount/self.turn_ratio, 4)
         payload = {"type": "keyhold", "key": f"KEY_{direction.upper()}_ARROW", "hold_time": turn_amount}
         self.arduino_interface(payload, payload["hold_time"])
+        sleep(0.5)
     #look("left", 90)
 
 
@@ -71,6 +73,7 @@ class ArduinoConfig:
         move_amount = round(amount*self.move_ratio, 4)
         payload = {"type": "keyhold", "key": direction_key, "hold_time": move_amount}
         self.arduino_interface(payload, payload["hold_time"])
+        sleep(0.5)
     #move("w", 2)
 
 
@@ -143,5 +146,88 @@ class ArduinoConfig:
         self.arduino_interface(payload, payload["hold_time"])
     #zoom("o", 25)
 
+
 ACFG = ArduinoConfig()
+
+
+def main_to_shrimp_tree():
+    ACFG.look("left", 90)
+    ACFG.move("a",3.5)
+    ACFG.move("w",1.5)
+    ACFG.leap(0.55,0.5)
+    ACFG.leap(0.4,0.4)
+    ACFG.move("a",0.5)
+    ACFG.look("left", 135)
+    ACFG.leap(0.5,0.4)
+    ACFG.look("right", 43)
+    ACFG.move("a",0.2)
+    ACFG.move("s",0.2)
+    ACFG.move("d",0.2)
+    
+
+def treehouse_to_main():
+    ACFG.move("w",9.65)
+    ACFG.look("left", 137)
+    ACFG.move("s",0.7)
+
+
+def comedy_to_main():
+    ACFG.move("w",10)
+    ACFG.look("right", 45)
+    ACFG.move("a",0.8)
+
+
+# def treehouse():
+    # ACFG.move("w",10)
+    # ACFG.move("d",5)
+    # ACFG.leap(0.3,0.3)
+    # ACFG.move("s",0.2)
+    # ACFG.move("d",0.2)
+    # ACFG.look("right", 135)
+    # ACFG.move("w",0.2)
+    # ACFG.leap(0.3,0.4)
+    # ACFG.move("a",0.55)
+    # ACFG.look("left", 140)
+    # ACFG.leap(0.5,0.4)
+    # ACFG.look("right", 47)
+    # ACFG.move("a",0.2)
+    # ACFG.move("s",0.2)
+    # ACFG.move("d",0.2)
+    # #ACFG.send_message("[AutoNav] {Shrimp Tree (Treehouse Spawn) v2} Iteration #8")
+    # # ACFG.move("s",0.35)
+    # # ACFG.move("w",1)
+    # # ACFG.move("s",0.7)
+    
+# def comedy():
+    # ACFG.move("w",8)
+    # ACFG.move("a",5)
+    # ACFG.move("w",0.5)
+    # ACFG.leap(0.5,0.5)
+    # ACFG.look("left", 45)
+    # ACFG.move("w",0.4)
+    # ACFG.leap(0.4,0.4)
+    # ACFG.move("a",0.3)
+    # ACFG.move("s",0.3)
+    # ACFG.look("left", 135)
+    # ACFG.leap(0.6,0.4)
+    # ACFG.look("right", 45)
+    # ACFG.move("w",0.2)
+    # ACFG.move("s",0.2)
+    # ACFG.move("d",0.2)
+    # #ACFG.send_message("[AutoNav] {Shrimp Tree (CM9K Spawn) v2} Iteration #10")
+
+
+
+sleep(3)
+
+#comedy()
+#main()
+#treehouse()
+
+#ACFG.move("a",0.7)
+
+#comedy_to_main()
+#treehouse_to_main()
+
+#main()
 
