@@ -125,6 +125,7 @@ class MainBotConfig:
     
     current_emote = "/e dance3"
     event_timer_running = False
+    epoch_time = 1616817600
     disable_collisions_on_spawn = True
     game_executable_name = "RobloxPlayerBeta.exe"
     game_id = 6238705697

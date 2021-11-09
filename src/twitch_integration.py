@@ -3,6 +3,7 @@ from asyncio import create_task
 from commands import *
 from datetime import datetime
 import traceback
+from math import floor
 
 
 class TwitchBot(commands.Bot):
@@ -337,7 +338,9 @@ async def routine_check_better_server():
 
 @routines.routine(seconds=1, wait_first=True)
 async def routine_clock():
-    output_log("clock", strftime("%Y-%m-%d \n%I:%M:%S%p EST"))
+    current_time = strftime("%I:%M:%S%p EST")
+    days_since_creation = floor((time()-CFG.epoch_time)/(60*60*24))
+    output_log("clock", f"Day {days_since_creation}\n{current_time}")
 
 
 @routines.routine(time=datetime(year=1970,month=1,day=1,hour=3,minute=58))
