@@ -68,7 +68,7 @@ class TwitchBot(commands.Bot):
     
     async def run_subroutines(self):
         print("[Twitch] Initializing Subroutines")
-        subroutines = [routine_anti_afk, routine_check_better_server, routine_clock, routine_crash_check, routine_help]
+        subroutines = [routine_anti_afk, routine_check_better_server, routine_clock, routine_crash_check, routine_help, routine_reboot]
         for subroutine in subroutines:
             print(f"[Routine] Starting subroutine: {subroutine._coro.__name__.replace('routine_','')}")
             subroutine.start()
