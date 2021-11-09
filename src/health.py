@@ -314,7 +314,7 @@ async def change_characters(respawn=False):
     await async_sleep(1)
     log("Opening character select")
     await click_character_select_button()
-    await async_sleep(0.5)
+    sleep(1)
     if respawn:
         await click_character_in_menu(click_random=True)
         respawn_delay = 12
@@ -322,6 +322,7 @@ async def change_characters(respawn=False):
         await async_sleep(respawn_delay)
     else:
         await scroll_to_character_in_menu()
+    sleep(1)
     await click_character_in_menu()
     log("Closing character select")
     await async_sleep(0.5)

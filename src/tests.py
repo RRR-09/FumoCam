@@ -5,6 +5,21 @@ from utilities import *
 import pyautogui
 from twitch_integration import twitch_main
 import asyncio
+from arduino_integration import *
+
+def test_turn_camera(direction="left", amount=45):
+    async def do_test(direction, amount):
+        await check_active()
+        await async_sleep(1)
+        ACFG.look(direction, amount)
+    asyncio.get_event_loop().run_until_complete(do_test(direction, amount))
+
+def test_move(direction="w", amount=10):
+    async def do_test(direction, amount):
+        await check_active()
+        await async_sleep(1)
+        ACFG.move(direction, amount)
+    asyncio.get_event_loop().run_until_complete(do_test(direction, amount))
 
 def test_character_select(click_mouse=True):  # Character select OCR still needs work; guess coordinates and test
     async def do_test(click_mouse=True):
@@ -73,8 +88,12 @@ def test_loading_cookies_for_browser():
     
     with open(CFG.browser_cookies_path, 'r', encoding='utf-8') as f:
         cookies = json.load(f)
-    driver = webdriver.Chrome(CFG.browser_driver_path)
-    driver.get('https://www.roblox.com/games/6238705697/Become-Fumo')
+    
+    options = webdriver.ChromeOptions()
+    options.add_argument(f"--user-data-dir={CFG.browser_profile_path}")
+    driver = webdriver.Chrome(options=options, executable_path=CFG.browser_driver_path)
+    driver.get(CFG.game_instances_url)
+    
     for cookie in cookies:
         driver.add_cookie(cookie)
     driver.refresh()
@@ -88,7 +107,7 @@ def test_loading_cookies_for_browser():
 
 
 def test_check_for_better_server():
-    print(check_for_better_server())
+    print(asyncio.get_event_loop().run_until_complete(check_for_better_server()))
 
 
 def test_get_current_server_id():
@@ -101,10 +120,21 @@ def test_twitch():
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
+    # If account banned
     #test_get_cookies_for_browser()
+    #test_loading_cookies_for_browser()
+    test_check_for_better_server()
+    
+    #test_turn_camera(direction="right")
+    #test_move()
+    #sleep(5)
+    #test_turn_camera("left")
+    
+    #test_get_cookies_for_browser()
+    
     #test_twitch()
     #test_character_select()
-    test_character_select_full()
+    #test_character_select_full()
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()
@@ -114,6 +144,5 @@ if __name__ == "__main__":
     #test_respawn()
     #test_join_target_server()
     #test_get_current_server_id()
-    error_log("test")
-    #test_get_cookies_for_browser()
-    #test_loading_cookies_for_browser()
+    #error_log("test")
+    #test_check_for_better_server()
