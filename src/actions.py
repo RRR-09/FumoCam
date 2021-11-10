@@ -1,7 +1,8 @@
 # General use commands used frequently by other commands
 import random
 from winsound import Beep
-from utilities import *
+from arduino_integration import *
+ACFG.initalize_serial_interface(do_log=False)
 
 
 async def send_chat(message):

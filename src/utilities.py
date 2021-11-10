@@ -1,4 +1,4 @@
-from arduino_integration import *
+from config import *
 import os
 from time import sleep,time,strftime,strptime,mktime
 from asyncio import sleep as async_sleep
@@ -9,6 +9,7 @@ import subprocess
 import requests
 import math
 import psutil
+
 
 def check_admin_and_run():
     from sys import executable as a_executable, argv as a_argv

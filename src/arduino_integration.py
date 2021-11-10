@@ -1,14 +1,50 @@
+from utilities import *
 import serial  # pip install pyserial
 from time import sleep
 import json
-from config import *
 
 
 class ArduinoConfig:
-    port = "COM3"
-    baudrate = 9300
+    
+    interface_baudrate = 9300
+    interface_port = "COM3"
     interface_timeout = 0.1
-    interface = serial.Serial(port=port, baudrate=baudrate, timeout=interface_timeout)
+    
+    interface = serial.Serial(baudrate=interface_baudrate, timeout=interface_timeout)
+    
+    interface.port = interface_port
+    interface_ready = None
+    
+    
+    def interface_try_open(self, do_log=False):
+        try:
+            self.interface.close()
+        except:
+            pass
+        try:
+            self.interface.open()
+            if self.interface.isOpen():
+                self.interface.close()
+            self.interface.open()
+            if self.interface_ready is False or do_log:
+                log("Intialized")
+            self.interface_ready = True
+        except serial.serialutil.SerialException:
+            log("Failed to establish interface, retrying...")
+            self.interface_ready = False
+            pass
+
+    def initalize_serial_interface(self, do_log=False):
+        if do_log:
+            log_process("Precision Chip Interface")
+            log("Reserving precision chip interface port")
+        self.interface.close()
+        while not self.interface_ready:
+            sleep(1)
+            self.interface_try_open(do_log=do_log)
+        log("")
+        log_process("")
+    
     max_serial_wait_time = 10
     tick_rate = 0.25
     screen_height_pitch_ratios = {
@@ -218,7 +254,7 @@ def comedy_to_main():
 
 
 
-sleep(3)
+#sleep(3)
 
 #comedy()
 #main()
