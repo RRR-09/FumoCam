@@ -115,11 +115,12 @@ class TwitchBot(commands.Bot):
         pitch = 45
         max_pitch = 180
         args = await self.get_args(ctx)
+        print(args)
         if args:
             try:
-                number = float(args[0])
-                if max_pitch >= number > 0:
-                    turn_time = number
+                pitch = float(args[0])
+                if max_pitch >= pitch > 0:
+                    turn_time = pitch
                 else:
                     await ctx.send(f"[{args[0]} is too high/low! Please use an angle between 0 and {max_pitch}.]")
                     return
