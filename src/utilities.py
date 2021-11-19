@@ -2,6 +2,7 @@ from config import *
 import os
 from time import sleep,time,strftime,strptime,mktime
 from asyncio import sleep as async_sleep
+import asyncio
 from traceback import format_exc
 import pyautogui  # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
 import pydirectinput

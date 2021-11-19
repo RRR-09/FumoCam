@@ -187,6 +187,8 @@ ACFG = ArduinoConfig()
 
 
 def main_to_shrimp_tree():
+    log_process("AutoNav")
+    log("Main -> Shrimp Tree")
     ACFG.look("left", 90)
     ACFG.move("a",3.5)
     ACFG.move("w",1.5)
@@ -199,18 +201,28 @@ def main_to_shrimp_tree():
     ACFG.move("a",0.2)
     ACFG.move("s",0.2)
     ACFG.move("d",0.2)
+    log_process("")
+    log("")
     
 
 def treehouse_to_main():
+    log_process("AutoNav")
+    log("Treehouse -> Main")
     ACFG.move("w",9.65)
     ACFG.look("left", 137)
     ACFG.move("s",0.7)
+    log_process("")
+    log("")
 
 
 def comedy_to_main():
+    log_process("AutoNav")
+    log("Comedy Machine -> Main")
     ACFG.move("w",10)
     ACFG.look("right", 45)
     ACFG.move("a",0.8)
+    log_process("")
+    log("")
 
 
 # def treehouse():
@@ -267,3 +279,11 @@ def comedy_to_main():
 
 #main()
 
+if __name__ == "__main__":
+    ACFG.initalize_serial_interface(do_log=True)
+    asyncio.get_event_loop().run_until_complete(check_active())
+    sleep(3)
+    #comedy_to_main()
+    #treehouse_to_main()
+    #sleep(3)
+    main_to_shrimp_tree()

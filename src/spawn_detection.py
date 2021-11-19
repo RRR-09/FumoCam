@@ -46,14 +46,14 @@ def get_screenshot():
             #sleep(0.25)
             #pydirectinput.press("tab")
             #sleep(0.25)
-            monitor = mss().monitors[2]
+            monitor = mss().monitors[0]
             #print(mss().monitors)
-            left_cutoff = 320
-            monitor["left"] += left_cutoff
-            monitor["width"] -= left_cutoff
-            bottom_cutoff = 90
-            monitor["top"] -= bottom_cutoff
-            monitor["height"] -= bottom_cutoff*2
+            #left_cutoff = 320
+            #monitor["left"] += left_cutoff
+            #monitor["width"] -= left_cutoff
+            #bottom_cutoff = 90
+            #monitor["top"] -= bottom_cutoff
+            #monitor["height"] -= bottom_cutoff*2
             #monitor["left"] = int(monitor["left"]/2)
             #print(monitor)
             return np.array(sct.grab(monitor))
@@ -173,4 +173,5 @@ def main():
 
 
 if __name__ == '__main__':
+    asyncio.get_event_loop().run_until_complete(check_active())
     main()
