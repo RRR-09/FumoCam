@@ -144,6 +144,7 @@ def main():
     CFG.anti_afk = 0
     log_process("")
     log("")
+    output_log("collisions", "")
     output_log("change_server_status_text", "")
     CFG.anti_afk_runs = 0
     CFG.add_action_queue = add_action_queue
@@ -153,5 +154,5 @@ def main():
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
-    #main()
-    asyncio.get_event_loop().run_until_complete(auto_nav("shrimp_tree"))
+    main()
+    #asyncio.get_event_loop().run_until_complete(auto_nav("shrimp_tree"))

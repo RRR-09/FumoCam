@@ -46,7 +46,7 @@ async def toggle_collisions():
     ACFG.left_click()
     Beep(100, 50)
     CFG.collisions_disabled = not(CFG.collisions_disabled)
-    collisions_msg = "" if CFG.collisions_disabled else "[WARN] Griefing collisions enabled!"
+    collisions_msg = "" if CFG.collisions_disabled else "[WARN] Griefing/Collisions enabled!"
     output_log("collisions", collisions_msg)
     log("Closing Settings")
     await async_sleep(0.25)

@@ -322,10 +322,13 @@ async def change_characters(respawn=False):
     else:
         await scroll_to_character_in_menu()
     sleep(1)
+    await async_sleep(1) # I have no idea what causes less errors
     await click_character_in_menu()
     log("Closing character select")
     await async_sleep(0.5)
+    sleep(0.5)
     await click_character_select_button()
+    sleep(1)
     await async_sleep(0.5)
     ACFG.resetMouse()
 
@@ -343,6 +346,7 @@ async def server_spawn():
     if CFG.disable_collisions_on_spawn:
         CFG.collisions_disabled = False
         await toggle_collisions()
+    await async_sleep(1)
     await change_characters()
     ACFG.resetMouse()
     await auto_nav("shrimp", do_checks=False)

@@ -7,7 +7,7 @@ import json
 class ArduinoConfig:
     
     interface_baudrate = 9300
-    interface_port = "COM7"
+    interface_port = "COM3"
     interface_timeout = 0.1
     
     interface = serial.Serial(baudrate=interface_baudrate, timeout=interface_timeout)
@@ -115,16 +115,16 @@ class ArduinoConfig:
 
     def moveMouseAbsolute(self, x, y):
         payload = {"type": "resetMouse", "width": SCREEN_RES["width"], "height": SCREEN_RES["height"]}
-        self.arduino_interface(payload, 4) # Arbitrary max time for safety
-        sleep(1)
+        self.arduino_interface(payload, 5) # Arbitrary max time for safety
+        sleep(2)
         payload = {"type": "moveMouse", "x": x, "y": y}
-        self.arduino_interface(payload, 4) # Arbitrary max time for safety
+        self.arduino_interface(payload, 5) # Arbitrary max time for safety
     #moveMouseAbsolute(x=SCREEN_RES["width"]*0.5, y=SCREEN_RES["height"]*0.5)
 
 
     def moveMouseRelative(self, x, y):
         payload = {"type": "moveMouse", "x": x, "y": y}
-        self.arduino_interface(payload, 4) # Arbitrary max time for safety
+        self.arduino_interface(payload, 5) # Arbitrary max time for safety
     #moveMouse(x=0, y=SCREEN_RES["height"]*0.34)
 
 
