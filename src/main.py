@@ -66,6 +66,11 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             log_process(f"Zooming {zoom_direction} {zoom_time}%")
             ACFG.zoom(zoom_direction_key=action['zoom_camera_direction'], amount=zoom_time)
             log_process("")
+        elif "autonav" in action:
+            location = action["autonav"]
+            await auto_nav(location)
+            log_process("")
+            log("")
         elif action == "check_for_better_server":
             crashed = await do_crash_check()
             if not crashed:
@@ -148,4 +153,5 @@ def main():
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
-    main()
+    #main()
+    asyncio.get_event_loop().run_until_complete(auto_nav("shrimp_tree"))

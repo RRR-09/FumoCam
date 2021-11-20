@@ -62,7 +62,7 @@ def get_screenshot():
         return False
 
 
-def main():
+def spawn_detection_main():
     font = cv.FONT_HERSHEY_COMPLEX_SMALL
     
     screenshot_img = get_screenshot()
@@ -169,9 +169,9 @@ def main():
     cv.imshow("Spawn Detection", vis)
     cv.waitKey(1000)
     cv.destroyAllWindows()
-    return final_match_label
+    return {"location": current_best_match['label'], "confidence": current_best_match['confidence']}
 
 
 if __name__ == '__main__':
-    asyncio.get_event_loop().run_until_complete(check_active())
-    main()
+    asyncio.get_event_loop().run_until_complete(check_active(force_fullscreen=False))
+    spawn_detection_main()

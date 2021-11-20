@@ -76,6 +76,10 @@ class MainBotConfig:
             "help": "Moves forwards # FumoCam units. Max 10. (!move a, !move d, !move s)"
         },
         {
+            "command": "!nav shrimp",
+            "help": "AutoNavigates to a location. (shrimp,)"
+        },
+        {
             "command": "!leap 0.7 0.5",
             "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s"
         },
@@ -122,7 +126,7 @@ class MainBotConfig:
     Path(browser_profile_path).mkdir(parents=True, exist_ok=True)
     browser_cookies_path = browser_profile_path / "browser_cookies.json"
     
-    
+    collisions_disabled = True
     current_emote = "/e dance3"
     event_timer_running = False
     epoch_time = 1616817600

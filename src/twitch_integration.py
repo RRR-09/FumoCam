@@ -272,7 +272,21 @@ class TwitchBot(commands.Bot):
                 return
         await CFG.add_action_queue({"movement": "move", "move_key": move_key, "move_time": move_time, "override": await self.is_dev(ctx.message.author)})
 
-
+    
+    
+    @commands.command()
+    async def nav(self, ctx):
+        args = await self.get_args(ctx)
+        valid_locations = ["shrimp"]
+        if not args or args[0].lower() not in valid_locations:
+            await ctx.send(f"[Please specify a valid location! (i.e. \"!nav shrimp\")]")
+            return
+        location = args[0].lower()
+        await ctx.send(f"[Requested AutoNav! This is experimental, so if it does not work the first time, please re-run the command.]")
+        await CFG.add_action_queue({"autonav": "valid_locations"})
+        
+    
+    
     @commands.command()
     async def rejoin(self, ctx):
         if await self.is_dev(ctx.author):

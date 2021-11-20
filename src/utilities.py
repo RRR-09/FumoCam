@@ -112,7 +112,7 @@ def kill_process(executable="RobloxPlayerBeta.exe", force=False):
     subprocess.call(process_call)
 
 
-async def check_active(title="Roblox", title_ending=None):
+async def check_active(title="Roblox", title_ending=None, force_fullscreen=True):
     print(f"[check_active] {title} | {title_ending}")
     active_window = pyautogui.getActiveWindow()
     if active_window is not None:
@@ -158,7 +158,7 @@ async def check_active(title="Roblox", title_ending=None):
             if title_ending is not None:
                 await check_active(title_ending=title_ending)
                 print("Recurse")
-            elif title == "Roblox" and window.height != pyautogui.size()[1]:
+            elif title == "Roblox" and window.height != pyautogui.size()[1] and force_fullscreen:
                 while window.height != pyautogui.size()[1]:
                     pydirectinput.press("f11")
                     print("Maximizing window with F11")
