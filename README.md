@@ -6,7 +6,7 @@ Twitch: https://www.twitch.tv/becomefumocam
 # Writeup
 Full writeup pending, but an intro is available. Want to know why I made a bot for a game I dont play about a fandom I don't follow?
 
-https://fumocam.hashnode.dev/fumocam-beginnings
+https://fumocam.hashnode.dev/day-0-fumocam-beginnings
 
 # Deprecated Software-Driven Input
 This has always been a project that aims to replicate a human as mechanically and programmatically as possible. Due to how the Windows scheduler works, there is no software that can be written, in any language, that adequately supports consistent input (for example, `!move w 1` always moving the exact same amount, no error margin).
