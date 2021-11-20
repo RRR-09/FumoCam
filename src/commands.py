@@ -26,17 +26,3 @@ async def force_respawn_character():
     await send_chat("[Respawning!]")
     await change_characters(respawn=True)
     log_process("")
-
-
-async def respawn_character():
-    await check_active()
-    log_process("Respawning")
-    await send_chat("[Respawning!]")
-    await async_sleep(0.75)
-    ACFG.keyPress('KEY_ESC')
-    await async_sleep(0.5)
-    ACFG.keyPress('r')
-    await async_sleep(0.5)
-    ACFG.keyPress('KEY_RETURN')
-    await async_sleep(0.5)
-    log_process("")

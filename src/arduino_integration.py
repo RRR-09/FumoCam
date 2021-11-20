@@ -192,18 +192,18 @@ def main_to_shrimp_tree():
     #If main spawn is facing North,
     #Turn to face West
     ACFG.look("left", 90)
-    ACFG.move("a",4)
+    ACFG.move("a",3.6)
     ACFG.move("w",1.5)
     #Right in front of first step
-    ACFG.leap(0.55,0.475)
+    ACFG.leap(0.54,0.475)
     #Right before first tree
     ACFG.leap(0.4,0.4)
     #Move towards edge of tree
     ACFG.move("a",0.4)
     #Turn towards shrimp tree
     ACFG.look("left", 135)
-    #Leap
-    ACFG.leap(0.5,0.4)
+    #Leap to Shrimp Tree
+    ACFG.leap(0.6,0.4)
     #Face South, character looking North
     ACFG.look("right", 43)
     ACFG.move("a",0.2)
@@ -218,7 +218,7 @@ def treehouse_to_main():
     log("Treehouse -> Main")
     ACFG.move("w",9.65)
     ACFG.look("left", 140)
-    ACFG.move("s",0.7)
+    ACFG.move("s",0.85)
     log_process("")
     log("")
 

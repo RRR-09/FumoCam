@@ -57,3 +57,17 @@ async def toggle_collisions():
     ACFG.left_click()
     await async_sleep(0.25)
     Beep(100, 50)
+
+
+async def respawn_character():
+    await check_active()
+    log_process("Respawning")
+    await send_chat("[Respawning!]")
+    await async_sleep(0.75)
+    ACFG.keyPress('KEY_ESC')
+    await async_sleep(0.5)
+    ACFG.keyPress('r')
+    await async_sleep(0.5)
+    ACFG.keyPress('KEY_RETURN')
+    await async_sleep(0.5)
+    log_process("")
