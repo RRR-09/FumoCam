@@ -277,8 +277,7 @@ class TwitchBot(commands.Bot):
     @commands.command()
     async def nav(self, ctx):
         args = await self.get_args(ctx)
-        valid_locations = ["shrimp","ratcade"]
-        if not args or args[0].lower() not in valid_locations:
+        if not args or args[0].lower() not in CFG.nav_locations:
             await ctx.send(f"[Please specify a valid location! (i.e. \"!nav shrimp\")]")
             return
         location = args[0].lower()

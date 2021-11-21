@@ -59,10 +59,11 @@ async def toggle_collisions():
     Beep(100, 50)
 
 
-async def respawn_character():
+async def respawn_character(chat=True):
     await check_active()
     log_process("Respawning")
-    await send_chat("[Respawning!]")
+    if chat:
+        await send_chat("[Respawning!]")
     await async_sleep(0.75)
     ACFG.keyPress('KEY_ESC')
     await async_sleep(0.5)

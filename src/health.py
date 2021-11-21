@@ -393,13 +393,14 @@ async def auto_nav(location, do_checks=True):
     if do_checks:
         await check_active(force_fullscreen=False)
         await async_sleep(0.5)
+        await send_chat(f"[AutoNavigating to {CFG.nav_locations[location]['name']}!]")
         if not CFG.collisions_disabled:
             log("Disabling collisions")
             await toggle_collisions()
             await async_sleep(0.5)
         log("Respawning")
         #await change_characters(respawn=True)
-        await respawn_character()
+        await respawn_character(chat=False)
         await async_sleep(7)
     log("Zooming out to full scale")
     ACFG.zoom(zoom_direction_key="o", amount=105)

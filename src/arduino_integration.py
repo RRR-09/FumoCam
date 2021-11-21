@@ -7,7 +7,7 @@ import json
 class ArduinoConfig:
     
     interface_baudrate = 9300
-    interface_port = "COM7"
+    interface_port = "COM3"
     interface_timeout = 0.1
     
     interface = serial.Serial(baudrate=interface_baudrate, timeout=interface_timeout)

@@ -50,64 +50,6 @@ class MainBotConfig:
         "jjgay",
         "niggaHomosexual",
     ]
-    commands_list = [
-        {
-            "command": "!m Your Message",
-            "help": "Sends \"Your Message\" in-game"
-        },
-        {
-            "command": "!left 90 or !right 360",
-            "help": "Turn camera x degrees left or right"
-        },
-        {
-            "command": "!up 45 or !down 180",
-            "help": "Turn camera x degrees up or down"
-        },
-        {
-            "command": "!zoomin 100 or !zoomout 100",
-            "help": "Zoom camera in or out 100%"
-        },
-        {
-            "command": "!dev Your Message",
-            "help": "EMERGENCY ONLY, Sends \"Your Message\" to devs discord account"
-        },
-        {
-            "command": "!move w 10",
-            "help": "Moves forwards # FumoCam units. Max 10. (!move a, !move d, !move s)"
-        },
-        {
-            "command": "!nav LocationName",
-            "help": "AutoNavigates to a location. (shrimp, ratcade)"
-        },
-        {
-            "command": "!leap 0.7 0.5",
-            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s"
-        },
-        {
-            "command": "!jump",
-            "help": "Jumps. Helpful if stuck on something."
-        },
-        {
-            "command": "!grief",
-            "help": "Toggles anti-grief."
-        },
-        {
-            "command": "!respawn",
-            "help": "Respawns using Roblox respawn. Use !respawnforce if completely stuck."
-        },
-        {
-            "command": "!respawnforce",
-            "help": "Respawns. Helpful if completely stuck."
-        },
-        {
-            "command": "!use",
-            "help": "Presses \"e\"."
-        },
-        {
-            "command": "!sit",
-            "help": "Clicks the sit button."
-        },
-    ]
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
     character_select_scroll_down_amount = 13
     character_select_scroll_down_scale = -200
@@ -140,6 +82,10 @@ class MainBotConfig:
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 20
     max_attempts_better_server = 20
+    nav_locations = {
+        "shrimp": {"name": "Shrimp Tree"},
+        "ratcade": {"name": "Ratcade"}
+    }
     #player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
     #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
     #player_token = "D5E4A52E9B12F1E36D7269325943AE35"   # BecomeF_umoCam
@@ -147,6 +93,64 @@ class MainBotConfig:
     player_token = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
     respawn_character_select_offset = -0.1    
     sit_button_position = (0.79, 0.89)
+    commands_list = [
+        {
+            "command": "!m Your Message",
+            "help": "Sends \"Your Message\" in-game"
+        },
+        {
+            "command": "!left 90 or !right 360",
+            "help": "Turn camera x degrees left or right"
+        },
+        {
+            "command": "!up 45 or !down 180",
+            "help": "Turn camera x degrees up or down"
+        },
+        {
+            "command": "!zoomin 100 or !zoomout 100",
+            "help": "Zoom camera in or out 100%"
+        },
+        {
+            "command": "!dev Your Message",
+            "help": "EMERGENCY ONLY, Sends \"Your Message\" to devs discord account"
+        },
+        {
+            "command": "!move w 10",
+            "help": "Moves forwards # FumoCam units. Max 10. (!move a, !move d, !move s)"
+        },
+        {
+            "command": "!nav LocationName",
+            "help": f"AutoNavigates to a location. ({', '.join(list(nav_locations.keys()))})"
+        },
+        {
+            "command": "!leap 0.7 0.5",
+            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s"
+        },
+        {
+            "command": "!jump",
+            "help": "Jumps. Helpful if stuck on something."
+        },
+        {
+            "command": "!grief",
+            "help": "Toggles anti-grief."
+        },
+        {
+            "command": "!respawn",
+            "help": "Respawns using Roblox respawn. Use !respawnforce if completely stuck."
+        },
+        {
+            "command": "!respawnforce",
+            "help": "Respawns. Helpful if completely stuck."
+        },
+        {
+            "command": "!use",
+            "help": "Presses \"e\"."
+        },
+        {
+            "command": "!sit",
+            "help": "Clicks the sit button."
+        },
+    ]
 
 
 CFG = MainBotConfig()  # Instantiate the config for use between files
