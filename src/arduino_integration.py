@@ -7,7 +7,7 @@ import json
 class ArduinoConfig:
     
     interface_baudrate = 9300
-    interface_port = "COM3"
+    interface_port = "COM7"
     interface_timeout = 0.1
     
     interface = serial.Serial(baudrate=interface_baudrate, timeout=interface_timeout)
@@ -97,16 +97,20 @@ class ArduinoConfig:
     #leap(jump_time=1, forward_time=3)
 
 
-    def look(self, direction, amount):
-        turn_amount = amount/self.turn_ratio
+    def look(self, direction, amount, raw=False):
+        turn_amount = amount
+        if not raw:
+            turn_amount /= self.turn_ratio
         payload = {"type": "keyhold", "key": f"KEY_{direction.upper()}_ARROW", "hold_time": turn_amount}
         self.arduino_interface(payload, payload["hold_time"])
         sleep(0.5)
     #look("left", 90)
 
 
-    def move(self, direction_key, amount):
-        move_amount = amount*self.move_ratio
+    def move(self, direction_key, amount, raw=False):
+        move_amount = amount
+        if not raw:
+            move_amount *= self.move_ratio
         payload = {"type": "keyhold", "key": direction_key, "hold_time": move_amount}
         self.arduino_interface(payload, payload["hold_time"])
         sleep(0.5)
@@ -191,24 +195,24 @@ def main_to_shrimp_tree():
     log("Main -> Shrimp Tree")
     #If main spawn is facing North,
     #Turn to face West
-    ACFG.look("left", 90)
-    ACFG.move("a",3.6)
-    ACFG.move("w",1.5)
+    ACFG.look("left", 0.75, raw=True)
+    ACFG.move("a", 1.3, raw=True) # 0.3576
+    ACFG.move("w", 0.75, raw=True)
     #Right in front of first step
-    ACFG.leap(0.54,0.475)
+    ACFG.leap(0.54, 0.475)
     #Right before first tree
-    ACFG.leap(0.4,0.4)
+    ACFG.leap(0.4, 0.4)
     #Move towards edge of tree
-    ACFG.move("a",0.4)
+    ACFG.move("a", 0.1, raw=True)
     #Turn towards shrimp tree
-    ACFG.look("left", 135)
+    ACFG.look("left", 1.135, raw=True)
     #Leap to Shrimp Tree
-    ACFG.leap(0.6,0.4)
+    ACFG.leap(0.6, 0.4)
     #Face South, character looking North
-    ACFG.look("right", 43)
-    ACFG.move("a",0.2)
-    ACFG.move("s",0.2)
-    ACFG.move("d",0.2)
+    ACFG.look("right", 0.385, raw=True)
+    ACFG.move("a", 0.07, raw=True)
+    ACFG.move("s", 0.07, raw=True)
+    ACFG.move("d", 0.07, raw=True)
     log_process("")
     log("")
     
@@ -216,9 +220,9 @@ def main_to_shrimp_tree():
 def treehouse_to_main():
     log_process("AutoNav")
     log("Treehouse -> Main")
-    ACFG.move("w",9.65)
-    ACFG.look("left", 140)
-    ACFG.move("s",0.85)
+    ACFG.move("w",3.3, raw=True)
+    ACFG.move("d",0.2, raw=True)
+    ACFG.look("left", 1.1075, raw=True)
     log_process("")
     log("")
 
@@ -226,72 +230,33 @@ def treehouse_to_main():
 def comedy_to_main():
     log_process("AutoNav")
     log("Comedy Machine -> Main")
-    ACFG.move("w",10)
-    ACFG.look("right", 45)
-    ACFG.move("a",0.8)
+    ACFG.move("w",3.75, raw=True)
+    ACFG.move("a",0.5)
+    ACFG.look("right", 0.385, raw=True)
+    
     log_process("")
     log("")
 
+def main_to_ratcade():
+    log_process("AutoNav")
+    log("Main -> Ratcade")
+    ACFG.move("a", 1.5, raw=True)
+    ACFG.move("w", 5, raw=True)
+    ACFG.move("d", 0.5, raw=True)
+    ACFG.move("w", 0.9, raw=True)
+    ACFG.move("d", 2, raw=True)
+    ACFG.move("w", 0.075, raw=True)
+    ACFG.move("a", 0.075, raw=True)
+    ACFG.move("s", 0.075, raw=True)
+    ACFG.look("right", 0.75, raw=True)
 
-# def treehouse():
-    # ACFG.move("w",10)
-    # ACFG.move("d",5)
-    # ACFG.leap(0.3,0.3)
-    # ACFG.move("s",0.2)
-    # ACFG.move("d",0.2)
-    # ACFG.look("right", 135)
-    # ACFG.move("w",0.2)
-    # ACFG.leap(0.3,0.4)
-    # ACFG.move("a",0.55)
-    # ACFG.look("left", 140)
-    # ACFG.leap(0.5,0.4)
-    # ACFG.look("right", 47)
-    # ACFG.move("a",0.2)
-    # ACFG.move("s",0.2)
-    # ACFG.move("d",0.2)
-    # #ACFG.send_message("[AutoNav] {Shrimp Tree (Treehouse Spawn) v2} Iteration #8")
-    # # ACFG.move("s",0.35)
-    # # ACFG.move("w",1)
-    # # ACFG.move("s",0.7)
-    
-# def comedy():
-    # ACFG.move("w",8)
-    # ACFG.move("a",5)
-    # ACFG.move("w",0.5)
-    # ACFG.leap(0.5,0.5)
-    # ACFG.look("left", 45)
-    # ACFG.move("w",0.4)
-    # ACFG.leap(0.4,0.4)
-    # ACFG.move("a",0.3)
-    # ACFG.move("s",0.3)
-    # ACFG.look("left", 135)
-    # ACFG.leap(0.6,0.4)
-    # ACFG.look("right", 45)
-    # ACFG.move("w",0.2)
-    # ACFG.move("s",0.2)
-    # ACFG.move("d",0.2)
-    # #ACFG.send_message("[AutoNav] {Shrimp Tree (CM9K Spawn) v2} Iteration #10")
-
-
-
-#sleep(3)
-
-#comedy()
-#main()
-#treehouse()
-
-#ACFG.move("a",0.7)
-
-#comedy_to_main()
-#treehouse_to_main()
-
-#main()
 
 if __name__ == "__main__":
     ACFG.initalize_serial_interface(do_log=True)
-    asyncio.get_event_loop().run_until_complete(check_active())
-    sleep(3)
+    asyncio.get_event_loop().run_until_complete(check_active(force_fullscreen=False))
+    sleep(0.5)
     #comedy_to_main()
-    #treehouse_to_main()
+    treehouse_to_main()
     #sleep(3)
     main_to_shrimp_tree()
+    #main_to_ratcade()

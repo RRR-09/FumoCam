@@ -119,7 +119,7 @@ async def check_active(title="Roblox", title_ending=None, force_fullscreen=True)
         title_active = title_ending is None and active_window.title == title
         title_ending_active = title_ending is not None and active_window.title.endswith(title_ending)
         if title_active or title_ending_active:
-            if title == "Roblox" and active_window.height != pyautogui.size()[1]:
+            if title == "Roblox" and active_window.height != pyautogui.size()[1] and force_fullscreen:
                 print(active_window)
                 while active_window.height != pyautogui.size()[1]:
                     pydirectinput.press("f11")

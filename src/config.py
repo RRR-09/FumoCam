@@ -76,8 +76,8 @@ class MainBotConfig:
             "help": "Moves forwards # FumoCam units. Max 10. (!move a, !move d, !move s)"
         },
         {
-            "command": "!nav shrimp",
-            "help": "AutoNavigates to a location. (shrimp,)"
+            "command": "!nav LocationName",
+            "help": "AutoNavigates to a location. (shrimp, ratcade)"
         },
         {
             "command": "!leap 0.7 0.5",
