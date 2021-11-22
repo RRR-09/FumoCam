@@ -84,7 +84,8 @@ class MainBotConfig:
     max_attempts_better_server = 20
     nav_locations = {
         "shrimp": {"name": "Shrimp Tree"},
-        "ratcade": {"name": "Ratcade"}
+        "ratcade": {"name": "Ratcade"},
+        "train": {"name": "Train Station"}
     }
     #player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
     #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01

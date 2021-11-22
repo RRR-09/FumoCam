@@ -418,6 +418,8 @@ async def auto_nav(location, do_checks=True):
         main_to_shrimp_tree()
     elif location == "ratcade":
         main_to_ratcade()
+    elif location == "train":
+        main_to_train()
     log("Zooming out to normal scale")
     ACFG.zoom(zoom_direction_key="o", amount=30)
     log("Complete! This is experimental, so please run \n'!nav shrimp' if it didn't work.")

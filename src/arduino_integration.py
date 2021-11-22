@@ -189,6 +189,25 @@ class ArduinoConfig:
 
 ACFG = ArduinoConfig()
 
+def treehouse_to_main():
+    log_process("AutoNav")
+    log("Treehouse -> Main")
+    ACFG.move("w",3.3, raw=True)
+    ACFG.move("d",0.2, raw=True)
+    ACFG.look("left", 1.105, raw=True)
+    log_process("")
+    log("")
+
+
+def comedy_to_main():
+    log_process("AutoNav")
+    log("Comedy Machine -> Main")
+    ACFG.move("w",3.75, raw=True)
+    ACFG.move("a",0.5)
+    ACFG.look("right", 0.385, raw=True)
+    
+    log_process("")
+    log("")
 
 def main_to_shrimp_tree():
     log_process("AutoNav")
@@ -217,26 +236,6 @@ def main_to_shrimp_tree():
     log("")
     
 
-def treehouse_to_main():
-    log_process("AutoNav")
-    log("Treehouse -> Main")
-    ACFG.move("w",3.3, raw=True)
-    ACFG.move("d",0.2, raw=True)
-    ACFG.look("left", 1.1075, raw=True)
-    log_process("")
-    log("")
-
-
-def comedy_to_main():
-    log_process("AutoNav")
-    log("Comedy Machine -> Main")
-    ACFG.move("w",3.75, raw=True)
-    ACFG.move("a",0.5)
-    ACFG.look("right", 0.385, raw=True)
-    
-    log_process("")
-    log("")
-
 def main_to_ratcade():
     log_process("AutoNav")
     log("Main -> Ratcade")
@@ -249,14 +248,40 @@ def main_to_ratcade():
     ACFG.move("a", 0.075, raw=True)
     ACFG.move("s", 0.075, raw=True)
     ACFG.look("right", 0.75, raw=True)
+    log_process("")
+    log("")
 
+
+def main_to_train():
+    log_process("AutoNav")
+    log("Main -> Train Station")
+    ACFG.move("a", 0.25, raw=True)
+    ACFG.move("s", 4.5, raw=True)
+    ACFG.move("d", 1.525, raw=True)
+    ACFG.move("s", 2.9, raw=True)
+    ACFG.move("d", 1, raw=True)
+    ACFG.move("s", 2, raw=True)
+    ACFG.move("d", 0.6, raw=True)
+    ACFG.look("left",  1.5, raw=True)
+    ACFG.leap(0.75, 0.75)
+    ACFG.move("w", 0.75, raw=True)
+    ACFG.leap(1, 1)
+    ACFG.look("left", 0.75, raw=True)
+    ACFG.move("s", 0.05, raw=True)
+    ACFG.move("a", 0.075, raw=True)
+    ACFG.move("s", 0.1, raw=True)
+    log_process("")
+    log("")
+    
 
 if __name__ == "__main__":
     ACFG.initalize_serial_interface(do_log=True)
     asyncio.get_event_loop().run_until_complete(check_active(force_fullscreen=False))
     sleep(0.5)
+    
     #comedy_to_main()
     treehouse_to_main()
     #sleep(3)
+    #main_to_train()
     main_to_shrimp_tree()
     #main_to_ratcade()
