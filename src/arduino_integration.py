@@ -16,9 +16,17 @@ class ArduinoConfig:
             interface.port = ports[0]
             break
         elif len(ports) == 0:
-            log("Precision chip interface not detected!")
+            log("Precision chip not found by name,\nAssuming first available port")
+            sleep(1)
+            all_ports = serial.tools.list_ports.comports()
+            if len(all_ports) > 0:
+                interface.port = all_ports[0].name
+                log("")
+                break
+            log("No ports available! Is precision chip plugged in?")
         else:
-            print("More than one precision chip detected!")
+            log("More than one precision chip detected!")
+        sleep(1)
     
     interface_ready = None
     
