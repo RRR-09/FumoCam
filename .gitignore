@@ -1,6 +1,7 @@
 # Project Files
 output/
 resources/.browser_profile
+resources/SoundVolumeView.cfg
 
 # .idea folder
 .idea/
