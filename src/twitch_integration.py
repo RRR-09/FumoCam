@@ -91,6 +91,16 @@ class TwitchBot(commands.Bot):
     
     
     @commands.command()
+    async def mute(self, ctx):
+        await CFG.add_action_queue({"mute": None})
+    
+    
+    @commands.command()
+    async def unmute(self, ctx):
+        await CFG.add_action_queue({"mute": False})
+    
+    
+    @commands.command()
     async def respawnforce(self, ctx):
         await CFG.add_action_queue(ctx.command.name)
     

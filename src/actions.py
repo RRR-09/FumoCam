@@ -72,3 +72,23 @@ async def respawn_character(chat=True):
     ACFG.keyPress('KEY_RETURN')
     await async_sleep(0.5)
     log_process("")
+
+
+async def mute_toggle(mute=None):
+    desired_mute_state = not CFG.audio_muted
+    if mute is not None:  # If specified, force to state
+        desired_mute_state = mute
+    desired_volume = 0 if desired_mute_state else 100
+    os.system(f"{str(RESOURCES_PATH / CFG.sound_control_executable_name)} /SetVolume \"{CFG.game_executable_name}\" {desired_volume}")
+    
+    # Kill the process no matter what, race condition for this is two songs playing (bad)
+    kill_process(executable=CFG.vlc_executable_name, force=True)
+    
+    if desired_mute_state:  # Start playing music
+        os.system(f'cp "{str(RESOURCES_PATH / OBS.muted_icon_name)}" "{str(OBS.output_folder)}"')
+        subprocess.Popen(f'"{str(CFG.vlc_path / CFG.vlc_executable_name)}" --playlist-autostart --loop --playlist-tree {str(RESOURCES_PATH / "soundtracks" / "overworld")} &')
+        output_log("muted_status", "In-game audio muted!\nRun !mute to unmute")
+    else:  # Stop playing music
+        os.system(f'rm -f "{str(OBS.output_folder / OBS.muted_icon_name)}"')
+        output_log("muted_status", "")
+    CFG.audio_muted = desired_mute_state

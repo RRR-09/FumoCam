@@ -120,11 +120,15 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             await queue_movement(action)
         elif "leap" in action:
             await queue_leap(action)
+        elif "mute" in action:
+            await mute(action["mute"])
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
     await async_sleep(0.1)
     CFG.action_running = False
+
+
 async def add_action_queue(item):
     CFG.action_queue.append(item)
     await do_process_queue()
@@ -132,13 +136,8 @@ async def add_action_queue(item):
 
 async def async_main():
     print("[Async_Main] Start")
-    # crashed = await do_crash_check()
-    # if crashed or "Roblox" not in pyautogui.getAllTitles():
-       # CFG.action_queue.append("handle_crash")
-       # await do_process_queue()
-    # else:
-       # await check_active()
-    
+    CFG.add_action_queue({"mute": False})
+
 
 def main():
     CFG.anti_afk = 0
@@ -155,4 +154,3 @@ def main():
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     main()
-    #asyncio.get_event_loop().run_until_complete(auto_nav("shrimp_tree"))

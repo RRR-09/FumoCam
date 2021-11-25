@@ -1,5 +1,5 @@
 from health import click_character_in_menu, change_characters, join_target_server, check_for_better_server, get_current_server_id
-from actions import toggle_collisions
+from actions import toggle_collisions, mute_toggle
 from commands import click_sit_button, respawn_character
 from utilities import *
 import pyautogui
@@ -117,6 +117,9 @@ def test_get_current_server_id():
 def test_twitch():
     twitch_main()
 
+def test_mute(mute=None):
+    asyncio.get_event_loop().run_until_complete(mute_toggle(mute=mute))
+
 
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
@@ -124,6 +127,8 @@ if __name__ == "__main__":
     #test_get_cookies_for_browser()
     #test_loading_cookies_for_browser()
     #test_check_for_better_server()
+    
+    test_mute(mute=True)
     
     #test_turn_camera(direction="right")
     #test_move()
@@ -134,7 +139,7 @@ if __name__ == "__main__":
     
     #test_twitch()
     #test_character_select()
-    test_character_select_full()
+    #test_character_select_full()
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()

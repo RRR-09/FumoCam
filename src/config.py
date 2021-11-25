@@ -26,6 +26,7 @@ class OBS:
     output_folder = Path.cwd().parent / "output"
     event_time = "2021-06-09 12:05:00AM"
     event_end_time = "2021-05-03 10:23:18PM"
+    muted_icon_name = "muted_icon.png"
 
 
 class Discord:
@@ -39,6 +40,7 @@ class MainBotConfig:
         "This bot is live on T witch! Go to the roblox profile for a link or Google",
         '"BecomeFumoCam"!'
     ]
+    audio_muted = False
     censored_words = [  # todo: Attempt to inject into chat censor API
         "gay",
         "nigger",
@@ -94,6 +96,10 @@ class MainBotConfig:
     player_token = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
     respawn_character_select_offset = -0.1    
     sit_button_position = (0.79, 0.89)
+    sound_control_executable_name = "SoundVolumeView.exe"
+    vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
+    vlc_executable_name = "vlc.exe"
+    
     commands_list = [
         {
             "command": "!m Your Message",
@@ -150,6 +156,10 @@ class MainBotConfig:
         {
             "command": "!sit",
             "help": "Clicks the sit button."
+        },
+        {
+            "command": "!mute",
+            "help": "Music will still play, but toggles mute in-game sound effects."
         },
     ]
 
