@@ -136,7 +136,7 @@ async def add_action_queue(item):
 
 async def async_main():
     print("[Async_Main] Start")
-    CFG.add_action_queue({"mute": False})
+    await CFG.add_action_queue({"mute": False})
 
 
 def main():
