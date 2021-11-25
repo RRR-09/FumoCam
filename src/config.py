@@ -3,6 +3,7 @@ from dotenv import load_dotenv  # pip3.9 install python-dotenv
 from pyautogui import size as get_monitor_size
 from mss import mss
 from pathlib import Path
+from shutil import copyfile
 
 load_dotenv()
 RESOURCES_PATH = Path.cwd().parent / "resources"

@@ -75,20 +75,34 @@ async def respawn_character(chat=True):
 
 
 async def mute_toggle(mute=None):
+    log_process("In-game Mute")
     desired_mute_state = not CFG.audio_muted
     if mute is not None:  # If specified, force to state
         desired_mute_state = mute
     desired_volume = 0 if desired_mute_state else 100
+    log_msg = "Muting" if desired_mute_state else "Un-muting"
+    log(log_msg)
     os.system(f"{str(RESOURCES_PATH / CFG.sound_control_executable_name)} /SetVolume \"{CFG.game_executable_name}\" {desired_volume}")
     
     # Kill the process no matter what, race condition for this is two songs playing (bad)
     kill_process(executable=CFG.vlc_executable_name, force=True)
     
     if desired_mute_state:  # Start playing music
-        os.system(f'cp "{str(RESOURCES_PATH / OBS.muted_icon_name)}" "{str(OBS.output_folder)}"')
-        subprocess.Popen(f'"{str(CFG.vlc_path / CFG.vlc_executable_name)}" --playlist-autostart --loop --playlist-tree {str(RESOURCES_PATH / "soundtracks" / "overworld")} &')
+        copyfile(RESOURCES_PATH / OBS.muted_icon_name, OBS.output_folder / OBS.muted_icon_name)
+        subprocess.Popen(f'"{str(CFG.vlc_path / CFG.vlc_executable_name)}" --playlist-autostart --loop --playlist-tree {str(RESOURCES_PATH / "soundtracks" / "overworld")}')
         output_log("muted_status", "In-game audio muted!\nRun !mute to unmute")
+        sleep(5)  # Give it time to load VLC
     else:  # Stop playing music
-        os.system(f'rm -f "{str(OBS.output_folder / OBS.muted_icon_name)}"')
+        try:
+            os.remove(OBS.output_folder / OBS.muted_icon_name)
+        except OSError:
+            log("Error, could not remove icon!\nNotifying admin...")
+            async_sleep(2)
+            notify_admin("Mute icon could not be removed")
+            log(log_msg)
         output_log("muted_status", "")
     CFG.audio_muted = desired_mute_state
+    
+    await check_active()
+    log_process("")
+    log("")

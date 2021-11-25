@@ -121,7 +121,7 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         elif "leap" in action:
             await queue_leap(action)
         elif "mute" in action:
-            await mute(action["mute"])
+            await mute_toggle(action["mute"])
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
