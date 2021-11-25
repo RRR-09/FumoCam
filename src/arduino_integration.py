@@ -270,6 +270,7 @@ def main_to_train():
     ACFG.move("s", 0.05, raw=True)
     ACFG.move("a", 0.075, raw=True)
     ACFG.move("s", 0.1, raw=True)
+    ACFG.zoom("o", 20)
     log_process("")
     log("")
     
