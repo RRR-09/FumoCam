@@ -270,7 +270,6 @@ async def click_character_select_button(check_open_state=None):
     ACFG.left_click()
     
     if check_open_state is not None:
-        prev_log = get_log()
         log(f"Checking that character select is {'open' if check_open_state else 'closed'}")
         sleep(2)
         last_button_x, last_button_y = button_x, button_y
@@ -285,7 +284,7 @@ async def click_character_select_button(check_open_state=None):
                 ACFG.left_click()
                 sleep(2)
                 last_button_x, last_button_y = new_button_x, new_button_y 
-        log(prev_log)
+        log("")
     else:
         await async_sleep(0.5)    
     #Beep(100, 50)
