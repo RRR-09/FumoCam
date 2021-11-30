@@ -4,6 +4,9 @@ from pyautogui import size as get_monitor_size
 from mss import mss
 from pathlib import Path
 from shutil import copyfile
+import json
+import pytesseract
+pytesseract.pytesseract.tesseract_cmd = os.path.join("C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe")
 
 load_dotenv()
 RESOURCES_PATH = Path.cwd().parent / "resources"
@@ -54,10 +57,25 @@ class MainBotConfig:
         "niggaHomosexual",
     ]
     character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
-    character_select_scroll_down_amount = 13
+    character_select_scroll_down_amount = 0
     character_select_scroll_down_scale = -200
-    character_select_screen_height_to_click = 0.50
+    character_select_screen_height_to_click = 0
     character_select_scroll_speed = 0.2
+    
+    character_select_desired = "Momiji"
+    character_select_width = 0.28
+    character_select_button_height = 0.035
+    character_select_scan_attempts = 3
+    character_select_max_scroll_attempts = 100
+    
+    try:
+        with open(OBS.output_folder / "character_select.json", "r") as f:
+            prev_char_select = json.load(f)
+        character_select_screen_height_to_click = prev_char_select["desired_character_height"] / SCREEN_RES["height"]
+        character_select_scroll_down_amount = prev_char_select["scroll_amount"]
+    except:
+        print(f"{OBS.output_folder / 'character_select.json'} malformed or missing")
+    
     
     chat_name_sleep_factor = 0.05  # Seconds to wait per char in users name before sending their message
     chat_bypasses = {}  # Bypass filters for harmless words

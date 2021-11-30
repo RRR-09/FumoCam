@@ -72,6 +72,10 @@ def log(status, no_log=False):
     output_log("main_status", status)
 
 
+def get_log():
+    read_output_log("main_status")
+
+
 def log_process(process, no_log=False):
     process = f"[{process}]" if process.strip() != "" else ""
     print(process)
@@ -81,6 +85,10 @@ def log_process(process, no_log=False):
     sleep(0.1)
 
 
+def get_log_process():
+    read_output_log("main_process")
+    
+    
 def read_output_log(file_name):
     if not os.path.exists(OBS.output_folder):
         return "ERROR: Path does not exist"

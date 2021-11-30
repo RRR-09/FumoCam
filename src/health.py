@@ -1,6 +1,8 @@
 from actions import *
 from selenium import webdriver
+import numpy as np
 import json
+import cv2 as cv
 
 
 async def force_get_best_server():
@@ -260,14 +262,125 @@ async def get_best_server():
     return highest_player_count_server
 
 
-async def click_character_select_button():
+async def click_character_select_button(check_open_state=None):
     await async_sleep(0.5)
     #Beep(150, 100)
     button_x, button_y = await get_character_select_button_pos()
-    ACFG.moveMouseAbsolute(x=round(button_x), y=round(button_y))
+    ACFG.moveMouseAbsolute(x=int(button_x), y=int(button_y))
     ACFG.left_click()
-    await async_sleep(0.5)
+    
+    if check_open_state is not None:
+        prev_log = get_log()
+        log(f"Checking that character select is {'open' if check_open_state else 'closed'}")
+        sleep(2)
+        last_button_x, last_button_y = button_x, button_y
+        while True:
+            new_button_x, new_button_y = await get_character_select_button_pos()
+            if check_open_state is True and (new_button_y > last_button_y):
+                break  # If we want it open and the new pos is further down the screen than before
+            elif check_open_state is False and (new_button_y < last_button_y):
+                break  # If we want it closed and the new pos is further up the screen than before
+            else:
+                ACFG.moveMouseAbsolute(x=int(new_button_x), y=int(new_button_y))
+                ACFG.left_click()
+                sleep(2)
+                last_button_x, last_button_y = new_button_x, new_button_y 
+        log(prev_log)
+    else:
+        await async_sleep(0.5)    
     #Beep(100, 50)
+    
+async def ocr_for_character(character=None):
+    desired_character = CFG.character_select_desired.lower()
+    if character is not None:
+        desired_character = character.lower()
+    button_x, button_y = await get_character_select_button_pos()
+    
+    await async_sleep(0.5)
+    #Beep(150, 100)
+    monitor = mss().monitors[-1]
+    screen_width = monitor["width"]
+    screen_height = monitor["height"]
+    print(screen_width)
+    monitor["width"] = int(CFG.character_select_width * screen_width)
+    monitor["left"] = int(button_x - (CFG.character_select_width/2) * screen_width)
+    monitor["height"] = int(button_y - (CFG.character_select_button_height * screen_height))
+    ocr_data = None
+    last_ocr_text = None
+    times_no_movement = 0
+    found_character = False
+    scroll_amount = 0
+    for attempts in range(CFG.character_select_max_scroll_attempts):
+        log(f"Scanning list for '{desired_character.capitalize()}' {attempts}/{CFG.character_select_max_scroll_attempts}")
+        for i in range(CFG.character_select_scan_attempts):  # Attempt multiple OCRs
+            screenshot = None
+            with mss() as sct:
+                screenshot = sct.grab(monitor)
+            screenshot = np.array(screenshot)
+
+            #rgb = cv.cvtColor(screenshot, cv.COLOR_BGR2RGB)  # PyTesseract
+            gray = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)  # PyTesseract
+            #_, screenshot = cv.threshold(screenshot, 132, 255, 3)
+            gray, img_bin = cv.threshold(gray,100,255,cv.THRESH_BINARY | cv.THRESH_OTSU)
+            gray = cv.bitwise_not(img_bin)            
+            kernel = np.ones((2, 1), np.uint8)
+            img = cv.erode(gray, kernel, iterations=1)
+            img = cv.dilate(img, kernel, iterations=1)
+
+            #scale_percent = 60 # percent of original size
+            #width = int(img.shape[1] * scale_percent / 100)
+            #height = int(img.shape[0] * scale_percent / 100)
+            #dim = (width, height)
+            #resized = cv.resize(img, dim, interpolation = cv.INTER_AREA)
+            # cv.imshow("OCR", resized)
+            # cv.waitKey(500)
+            ocr_data = pytesseract.image_to_data(img, config='--oem 1', output_type=pytesseract.Output.DICT)
+            ocr_data["text"] = [word.lower() for word in ocr_data["text"]]
+            print(ocr_data["text"])
+            if desired_character in ocr_data["text"]:
+                found_character = True
+                break
+            sleep(0.1)
+        
+        if found_character:
+            break
+        
+        if last_ocr_text == ocr_data["text"]:
+            times_no_movement += 1
+        else:
+            times_no_movement = 0
+            last_ocr_text = ocr_data["text"]
+        
+        if times_no_movement > 3:
+            break  # We reached the bottom of the list, OCR isnt changing
+        
+        ACFG.scrollMouse(1, down=True)
+        scroll_amount += 1
+        sleep(1)
+        Beep(60, 100)
+    
+    if not found_character:
+        log(f"Failed to find '{desired_character.capitalize()}'.\n Notifying Dev...")
+        notify_admin("Failed to find `{desired_character}`")
+        sleep(5)
+        #click_character_select_button(check_open_state=False)  # Close character select
+        return False
+    
+    # We found the character, lets click it
+    ocr_index = ocr_data["text"].index(desired_character)
+    desired_character_height = int(ocr_data["top"][ocr_index] + (ocr_data["height"][ocr_index]/2))
+    with open(OBS.output_folder / "character_select.json", "w") as f:
+        json.dump({
+            "scroll_amount": scroll_amount, 
+            "desired_character_height": desired_character_height,
+        }, f)
+    CFG.character_select_screen_height_to_click = desired_character_height / SCREEN_RES["height"]
+    CFG.character_select_scroll_down_amount = scroll_amount
+    ACFG.moveMouseAbsolute(x=int(button_x), y=int(desired_character_height))
+    sleep(0.5)
+    ACFG.left_click()
+    sleep(0.5)
+    return True
 
 
 async def scroll_to_character_in_menu():
@@ -278,7 +391,7 @@ async def scroll_to_character_in_menu():
 
 
 async def click_character_in_menu(click_mouse=True, click_random=False):
-    character_name = "Momiji" if not click_random else "a random character"
+    character_name = CFG.character_select_desired if not click_random else "a random character"
     log(f"Clicking {character_name}")
     button_x, button_y = round(pyautogui.size()[0] * 0.5), round(
         SCREEN_RES["height"] * CFG.character_select_screen_height_to_click)  # Toggle Collisions button
@@ -292,7 +405,7 @@ async def click_character_in_menu(click_mouse=True, click_random=False):
 async def get_character_select_button_pos():
     character_select_button = None
     for i in range(CFG.max_attempts_character_selection):
-        await check_active()
+        #await check_active()
         Beep(40, 50)
         try:
             print("TryingToFind")
@@ -312,22 +425,22 @@ async def change_characters(respawn=False):
     await check_active()
     await async_sleep(1)
     log("Opening character select")
-    await click_character_select_button()
+    await click_character_select_button(check_open_state=True)
     sleep(1)
     if respawn:
         await click_character_in_menu(click_random=True)
         respawn_delay = 12
         log(f"Waiting for {respawn_delay} seconds (or else clicking our character won't work)")
         await async_sleep(respawn_delay)
+        await click_character_in_menu()
     else:
-        await scroll_to_character_in_menu()
+        await ocr_for_character()
     sleep(1)
     await async_sleep(1) # I have no idea what causes less errors
-    await click_character_in_menu()
     log("Closing character select")
     await async_sleep(0.5)
     sleep(0.5)
-    await click_character_select_button()
+    await click_character_select_button(check_open_state=False)
     sleep(1)
     await async_sleep(0.5)
     ACFG.resetMouse()
@@ -427,3 +540,6 @@ async def auto_nav(location, do_checks=True):
     ACFG.zoom(zoom_direction_key="o", amount=30)
     log("Complete! This is experimental, so please run \n'!nav shrimp' if it didn't work.")
     await async_sleep(3)
+
+if __name__ == "__main__":
+    asyncio.get_event_loop().run_until_complete(change_characters())
