@@ -404,7 +404,7 @@ async def click_character_in_menu(click_mouse=True, click_random=False):
 async def get_character_select_button_pos():
     character_select_button = None
     for i in range(CFG.max_attempts_character_selection):
-        #await check_active()
+        await check_active()
         Beep(40, 50)
         try:
             print("TryingToFind")
