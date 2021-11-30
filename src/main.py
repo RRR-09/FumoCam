@@ -43,7 +43,15 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         print(CFG.action_queue)
         await check_active()
         await async_sleep(0.1)
-        action = CFG.action_queue[0]
+        try:
+            action = CFG.action_queue[0]
+        except IndexError:
+            log_process("ERROR")
+            log("Error! You may have to re-input any commands\nyou requested from the bot.")
+            sleep(5)
+            log("")
+            log_process("")
+            return
         if action == "anti-afk":
             await do_anti_afk()
         elif action == "advert":

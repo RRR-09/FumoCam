@@ -128,7 +128,7 @@ if __name__ == "__main__":
     #test_loading_cookies_for_browser()
     #test_check_for_better_server()
     
-    test_mute(mute=True)
+    #test_mute(mute=True)
     
     #test_turn_camera(direction="right")
     #test_move()
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     
     #test_twitch()
     #test_character_select()
-    #test_character_select_full()
+    test_character_select_full()
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()

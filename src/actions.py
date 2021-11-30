@@ -94,7 +94,7 @@ async def mute_toggle(mute=None):
         sleep(5)  # Give it time to load VLC
     else:  # Stop playing music
         try:
-            if os.path.exists(OBS.output_folder / OBS.muted_icon_name)
+            if os.path.exists(OBS.output_folder / OBS.muted_icon_name):
                 os.remove(OBS.output_folder / OBS.muted_icon_name)
         except OSError:
             log("Error, could not remove icon!\nNotifying admin...")
