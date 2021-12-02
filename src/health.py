@@ -271,18 +271,21 @@ async def click_character_select_button(check_open_state=None):
     
     if check_open_state is not None:
         log(f"Checking that character select is {'open' if check_open_state else 'closed'}")
-        sleep(2)
+        await async_sleep(2)
         last_button_x, last_button_y = button_x, button_y
-        while True:
+        success = False
+        for i in range(CFG.character_select_max_close_attempts):
             new_button_x, new_button_y = await get_character_select_button_pos()
             if check_open_state is True and (new_button_y > last_button_y):
+                success = True
                 break  # If we want it open and the new pos is further down the screen than before
             elif check_open_state is False and (new_button_y < last_button_y):
+                success = True
                 break  # If we want it closed and the new pos is further up the screen than before
             else:
                 ACFG.moveMouseAbsolute(x=int(new_button_x), y=int(new_button_y))
                 ACFG.left_click()
-                sleep(2)
+                await async_sleep(2)
                 last_button_x, last_button_y = new_button_x, new_button_y 
         log("")
     else:

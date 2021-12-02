@@ -67,6 +67,8 @@ class MainBotConfig:
     character_select_button_height = 0.035
     character_select_scan_attempts = 3
     character_select_max_scroll_attempts = 100
+    character_select_max_close_attempts = 10
+    
     
     try:
         with open(OBS.output_folder / "character_select.json", "r") as f:
