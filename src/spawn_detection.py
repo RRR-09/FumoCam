@@ -87,11 +87,11 @@ def spawn_detection_main():
     for row_number,pixel_row in enumerate(edge):
         vis[row_number] = pixel_row
         cv.putText(vis, "SCANNING CURRENT LOCATION", (0, 650), font, 2, (0, 255, 0), 3, cv.LINE_AA)
-        if row_number % 5 == 0:
+        if row_number % 10 == 0:
             cv.imshow("Spawn Detection", vis)
             cv.waitKey(1)
     cv.imshow("Spawn Detection", vis)
-    cv.waitKey(500)
+    cv.waitKey(250)
     screenshot_img = edge
     
     spawns = ["comedy_machine", "main", "tree_house"]
@@ -142,14 +142,11 @@ def spawn_detection_main():
             feature_label = f"{spawn.capitalize()} ({file_name.rsplit('.',1)[0].capitalize()}) #{len(confidence_scores)}"
             match_label = f"Match: {percentage}%"
             print(feature_label, match_label)
-
-            cv.imshow("Spawn Detection", difference)
-            cv.waitKey(100)
             
             difference = cv.putText(difference, feature_label, (0, 600), font, 2, (0, 255, 0), 2, cv.LINE_AA)
             difference = cv.putText(difference, match_label, (0, 650), font, 2, (0, 255, 0), 2, cv.LINE_AA)
             cv.imshow("Spawn Detection", difference)
-            cv.waitKey(300)
+            cv.waitKey(150)
         
         best_confidence_for_spawn = max(confidence_scores)
         print(f"Confidence for {spawn}: {best_confidence_for_spawn}%\n")

@@ -431,6 +431,12 @@ async def change_characters(respawn=False):
     await check_active()
     await async_sleep(1)
     log("Opening character select")
+    
+    need_zoom_adjust = False
+    if CFG.zoom_level < CFG.zoom_ui_min_cv:
+        ACFG.zoom("o", CFG.zoom_out_ui_cv)
+        need_zoom_adjust = True
+    
     await click_character_select_button(check_open_state=True)
     sleep(1)
     if respawn:
@@ -450,6 +456,8 @@ async def change_characters(respawn=False):
     sleep(1)
     await async_sleep(0.5)
     ACFG.resetMouse()
+    if need_zoom_adjust:
+        ACFG.zoom("i", CFG.zoom_out_ui_cv)
 
 
 async def server_spawn():
@@ -709,7 +717,7 @@ async def ocr_for_settings(option=None):
     times_no_movement = 0
     found_option = False
     for attempts in range(CFG.settings_menu_ocr_max_attempts):  # Attempt multiple OCRs
-        log(f"Scanning list for '{desired_option.capitalize()}' {attempts}/{CFG.settings_menu_ocr_max_attempts}")
+        log(f"Finding '{desired_option.capitalize()}' (Attempt #{attempts}/{CFG.settings_menu_ocr_max_attempts})")
         with mss() as sct:
             screenshot = sct.grab(monitor)
         screenshot = np.array(screenshot)
@@ -733,6 +741,7 @@ async def ocr_for_settings(option=None):
         ocr_data["text"] = [word.lower() for word in ocr_data["text"]]
         print(ocr_data["text"])
         if desired_option in ocr_data["text"]:
+            log("Found option, clicking")
             found_option = True
             break
         await async_sleep(0.25)
@@ -762,19 +771,27 @@ async def toggle_collisions():
     await check_active(force_fullscreen=False)
     await async_sleep(1)
     
+    need_zoom_adjust = False
+    if CFG.zoom_level < CFG.zoom_ui_min_cv:
+        ACFG.zoom("o", CFG.zoom_out_ui_cv)
+        need_zoom_adjust = True
     
     if not await click_settings_button(check_open_state=True):
         notify_admin("Failed to open settings")
         log("")
         log_process("")
+        if need_zoom_adjust:
+            ACFG.zoom("i", CFG.zoom_out_ui_cv)
         return False
     
-    log("Clicking collisions option")
+    log(f"Finding {CFG.settings_menu_grief_text} option")
     await async_sleep(1)
     if not await ocr_for_settings():
         notify_admin("Failed to click settings option")
         log("")
         log_process("")
+        if need_zoom_adjust:
+            ACFG.zoom("i", CFG.zoom_out_ui_cv)
         return False
     
     CFG.collisions_disabled = not(CFG.collisions_disabled)
@@ -787,9 +804,14 @@ async def toggle_collisions():
         notify_admin("Failed to close settings")
         log("")
         log_process("")
+        if need_zoom_adjust:
+            ACFG.zoom("i", CFG.zoom_out_ui_cv)
         return False    
     log("")
     log_process("")
+    ACFG.resetMouse()
+    if need_zoom_adjust:
+        ACFG.zoom("i", CFG.zoom_out_ui_cv)
     return True
 
 if __name__ == "__main__":

@@ -196,6 +196,11 @@ class ArduinoConfig:
 
 
     def zoom(self, zoom_direction_key, amount):
+        CFG.zoom_level += amount * (1 if zoom_direction_key == "o" else -1)
+        CFG.zoom_level = min(CFG.zoom_max, max(CFG.zoom_min, CFG.zoom_level))  # Keep it in bounds
+        print(CFG.zoom_level)
+        
+        
         zoom_amount = round(self.zoom_ratio * amount, 4)
         payload = {"type": "keyhold", "key": zoom_direction_key, "hold_time": zoom_amount}
         self.arduino_interface(payload, payload["hold_time"])

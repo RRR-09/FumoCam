@@ -122,15 +122,24 @@ class MainBotConfig:
     settings_menu_width = 0.3
     settings_menu_grief_text = "Anti-Grief"
     settings_menu_max_find_attempts = 3
-    settings_menu_find_threshold = 0.75
+    settings_menu_find_threshold = 0.70
     settings_menu_max_click_attempts = 10
     settings_menu_button_height = 0.065
     settings_menu_ocr_max_attempts = 3
     
     sit_button_position = (0.79, 0.89)
+    
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
     vlc_executable_name = "vlc.exe"
+    
+    zoom_level = 50  # TODO: validate this is roughly correct on spawn
+    zoom_max = 100
+    zoom_min = 0
+    zoom_ui_min = 30  # If lower, zoom out when interacting with UI (No CV needed, just get out of first person)
+    zoom_out_ui = 10  # Amount to zoom out for safety when interacting with UI (No CV needed, just get out of first person)
+    zoom_ui_min_cv = 50  # If lower, zoom out when interacting with UI (Computervision)
+    zoom_out_ui_cv = 50  # Amount to zoom out for safety when interacting with UI (Computervision)
     
     commands_list = [
         {
