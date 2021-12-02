@@ -130,6 +130,13 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             await queue_leap(action)
         elif "mute" in action:
             await mute_toggle(action["mute"])
+        elif action == "rejoin":
+            log_process("Rejoining!")
+            kill_process(force=True)
+            await async_sleep(5)
+            log_process("")
+            log("")
+            await handle_join_new_server()
         else:
             print("queue failed")
         CFG.action_queue.pop(0)

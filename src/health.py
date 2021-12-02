@@ -362,7 +362,7 @@ async def ocr_for_character(character=None):
         
         ACFG.scrollMouse(1, down=True)
         scroll_amount += 1
-        sleep(1)
+        sleep(0.4)
         Beep(60, 100)
     
     if not found_character:
@@ -461,11 +461,11 @@ async def server_spawn():
         notify_admin("Failed to load into game")
         await CFG.add_action_queue("handle_crash")
         return False
-    await async_sleep(1)
+    await async_sleep(5)
     if CFG.disable_collisions_on_spawn:
         CFG.collisions_disabled = False
         await toggle_collisions()
-    await async_sleep(1)
+    await async_sleep(3)
     await change_characters()
     ACFG.resetMouse()
     await auto_nav("shrimp", do_checks=False)
@@ -599,7 +599,7 @@ async def get_settings_button_pos():
         if best_match["max_val"] >= CFG.settings_menu_find_threshold: 
             success = True
             break
-        sleep(1)
+        await async_sleep(1)
     try:
         right = best_match["bottom_right"][0]
         left = best_match["top_left"][0]
@@ -617,7 +617,7 @@ async def get_settings_button_pos():
             return center_x, center_y
         else:
             log(f"Could not find settings button!\n(Best match {round(best_match['max_val']*100,2)}% confidence)\n({center_x}, {center_y}")
-            sleep(5)            
+            await async_sleep(5)            
             log("")
             return None, None
     except:
@@ -655,7 +655,7 @@ async def click_settings_button(check_open_state=None):
     
     if check_open_state is not None:
         log(f"Checking that settings menu is {'open' if check_open_state else 'closed'}")
-        sleep(2)
+        await async_sleep(2)
         last_button_x, last_button_y = button_x, button_y
         success = False
         for i in range(CFG.character_select_max_click_attempts):
@@ -665,22 +665,22 @@ async def click_settings_button(check_open_state=None):
                     new_button_x, new_button_y = await get_settings_button_pos()
                     if new_button_x is not None:
                         break
-                    sleep(2)
+                    await async_sleep(2)
                 
-            if check_open_state is True and (int(new_button_y/10) < int(last_button_y/10)):
+            if check_open_state is True and (int(new_button_y/2) < int(last_button_y/2)):
                 success = True
                 break  # If we want it open and the new pos is further up the screen than before
-            elif check_open_state is False and (int(new_button_y/10) > int(last_button_y/10)):
+            elif check_open_state is False and (int(new_button_y/2) > int(last_button_y/2)):
                 success = True
                 break  # If we want it closed and the new pos is further down the screen than before
             else:
                 ACFG.moveMouseAbsolute(x=int(new_button_x), y=int(new_button_y))
                 ACFG.left_click()
-                sleep(2)
+                await async_sleep(2)
                 last_button_x, last_button_y = new_button_x, new_button_y 
         if not success:
             log("Unable to toggle settings menu!")
-            sleep(2)
+            await async_sleep(2)
         log("")
     else:
         await async_sleep(0.5)
@@ -735,12 +735,12 @@ async def ocr_for_settings(option=None):
         if desired_option in ocr_data["text"]:
             found_option = True
             break
-        sleep(0.25)
+        await async_sleep(0.25)
     
     if not found_option:
         log(f"Failed to find '{desired_option.capitalize()}'.\n Notifying Dev...")
         notify_admin(f"Failed to find `{desired_option}`")
-        sleep(5)
+        await async_sleep(5)
         return False
     
     # We found the option, lets click it
@@ -750,9 +750,9 @@ async def ocr_for_settings(option=None):
     option_half = ocr_data["height"][ocr_index]/2
     desired_option_height = int(option_top + option_half + height_offset)
     ACFG.moveMouseAbsolute(x=int(button_x), y=int(desired_option_height))
-    sleep(0.5)
+    await async_sleep(0.5)
     ACFG.left_click()
-    sleep(0.5)
+    await async_sleep(0.5)
     return True
 
 
@@ -769,8 +769,8 @@ async def toggle_collisions():
         log_process("")
         return False
     
-    log("Toggling Collisions")
-    await async_sleep(0.25)
+    log("Clicking collisions option")
+    await async_sleep(1)
     if not await ocr_for_settings():
         notify_admin("Failed to click settings option")
         log("")
@@ -793,4 +793,5 @@ async def toggle_collisions():
     return True
 
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(toggle_collisions())
+    pass
+    #asyncio.get_event_loop().run_until_complete(toggle_collisions())

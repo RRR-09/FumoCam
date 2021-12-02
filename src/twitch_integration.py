@@ -301,7 +301,9 @@ class TwitchBot(commands.Bot):
     async def rejoin(self, ctx):
         if await self.is_dev(ctx.author):
             await ctx.send(f"[@{ctx.author.name} Added restart to queue]")
-            await CFG.add_action_queue("handle_crash")
+            CFG.crashed = True
+            await CFG.add_action_queue("rejoin")
+            CFG.crashed = False
         else:
             await ctx.send("[You do not have permission!]")
     
