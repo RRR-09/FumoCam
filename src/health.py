@@ -757,18 +757,24 @@ async def ocr_for_settings(option=None):
 
 
 async def toggle_collisions():
+    log_process(f"{'Enabling' if CFG.collisions_disabled else 'Disabling'} Grief Collisions")
+    log("Opening Settings")
     await check_active(force_fullscreen=False)
     await async_sleep(1)
     
-    log("Opening Settings")
+    
     if not await click_settings_button(check_open_state=True):
         notify_admin("Failed to open settings")
+        log("")
+        log_process("")
         return False
     
     log("Toggling Collisions")
     await async_sleep(0.25)
     if not await ocr_for_settings():
         notify_admin("Failed to click settings option")
+        log("")
+        log_process("")
         return False
     
     CFG.collisions_disabled = not(CFG.collisions_disabled)
@@ -779,7 +785,11 @@ async def toggle_collisions():
     await async_sleep(0.25)
     if not await click_settings_button(check_open_state=False):
         notify_admin("Failed to close settings")
-        return False
+        log("")
+        log_process("")
+        return False    
+    log("")
+    log_process("")
     return True
 
 if __name__ == "__main__":
