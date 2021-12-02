@@ -1,5 +1,6 @@
 from actions import *
 from selenium import webdriver
+from imutils import rotate_bound
 import numpy as np
 import json
 import cv2 as cv
@@ -270,22 +271,27 @@ async def click_character_select_button(check_open_state=None):
     ACFG.left_click()
     
     if check_open_state is not None:
-        prev_log = get_log()
         log(f"Checking that character select is {'open' if check_open_state else 'closed'}")
         sleep(2)
         last_button_x, last_button_y = button_x, button_y
-        while True:
+        success = False
+        for i in range(CFG.character_select_max_click_attempts):
             new_button_x, new_button_y = await get_character_select_button_pos()
             if check_open_state is True and (new_button_y > last_button_y):
+                success = True
                 break  # If we want it open and the new pos is further down the screen than before
             elif check_open_state is False and (new_button_y < last_button_y):
+                success = True
                 break  # If we want it closed and the new pos is further up the screen than before
             else:
                 ACFG.moveMouseAbsolute(x=int(new_button_x), y=int(new_button_y))
                 ACFG.left_click()
                 sleep(2)
                 last_button_x, last_button_y = new_button_x, new_button_y 
-        log(prev_log)
+        if not success:
+            log("Unable to toggle character menu!")
+            sleep(2)
+        log("")
     else:
         await async_sleep(0.5)    
     #Beep(100, 50)
@@ -361,7 +367,7 @@ async def ocr_for_character(character=None):
     
     if not found_character:
         log(f"Failed to find '{desired_character.capitalize()}'.\n Notifying Dev...")
-        notify_admin("Failed to find `{desired_character}`")
+        notify_admin(f"Failed to find `{desired_character}`")
         sleep(5)
         #click_character_select_button(check_open_state=False)  # Close character select
         return False
@@ -541,5 +547,240 @@ async def auto_nav(location, do_checks=True):
     log("Complete! This is experimental, so please run \n'!nav shrimp' if it didn't work.")
     await async_sleep(3)
 
+
+async def get_settings_button_pos():
+    monitor = mss().monitors[-1]
+    screen_width = monitor["width"]
+    screen_height = monitor["height"]
+    monitor["width"] = int(CFG.character_select_width * screen_width)
+    monitor["left"] = int((screen_width/2) - (CFG.character_select_width/2) * screen_width)
+    
+    button_img = cv.imread(CFG.settings_menu_image_path, cv.IMREAD_UNCHANGED)
+    button_img = cv.cvtColor(button_img, cv.COLOR_BGR2GRAY)
+    _, button_img = cv.threshold(button_img,211,255,3)
+    
+    success = False
+    for i in range(CFG.settings_menu_max_find_attempts):
+        screenshot = None
+        with mss() as sct:
+            screenshot = sct.grab(monitor)
+        screenshot = np.array(screenshot)
+        screenshot = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)
+        _, screenshot = cv.threshold(screenshot,211,255,3)
+        
+        best_match = {"max_val": 0, "top_left": (0,0), "bottom_right": (0,0), "angle": 0}
+        for rotation_degrees in range(360):  
+            rotated_button = rotate_bound(button_img, rotation_degrees)
+            result = cv.matchTemplate(screenshot, rotated_button, cv.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)        
+            if best_match["max_val"] < max_val:
+                button_w = button_img.shape[1]
+                button_h = button_img.shape[0]
+                top_left = max_loc
+                bottom_right = (top_left[0] + button_w, top_left[1] + button_h)
+                best_match = {
+                    "max_val": max_val,
+                    "top_left": top_left,
+                    "bottom_right": bottom_right,
+                    "angle": rotation_degrees
+                }
+                # No break; getting highest confidence rotation reduces false positives
+        
+        #screenshot = cv.cvtColor(screenshot, cv.COLOR_GRAY2RGB)
+        #cv.rectangle(screenshot, best_match["top_left"], best_match["bottom_right"], color=(0, 255, 0), thickness=2, lineType=cv.LINE_4)
+        #img = screenshot
+        #scale_percent = 60 # percent of original size
+        #width = int(img.shape[1] * scale_percent / 100)
+        #height = int(img.shape[0] * scale_percent / 100)
+        #dim = (width, height)
+        #resized = cv.resize(img, dim, interpolation = cv.INTER_AREA)
+        #cv.imshow("OCR", resized)
+        #cv.waitKey(1)
+        if best_match["max_val"] >= CFG.settings_menu_find_threshold: 
+            success = True
+            break
+        sleep(1)
+    try:
+        right = best_match["bottom_right"][0]
+        left = best_match["top_left"][0]
+        width =  max(right,left) - min(right, left)
+        center_x = int(monitor["left"]) + int(left + (width/2))
+        
+        bottom = best_match["bottom_right"][1]
+        top = best_match["top_left"][1]
+        height = max(top,bottom) - min(top,bottom)
+        center_y = int(top + (height/2))
+        
+        if best_match["max_val"] >= CFG.settings_menu_find_threshold:    
+            print(f"Found button. ({round(best_match['max_val']*100,2)}%)")
+            log("")
+            return center_x, center_y
+        else:
+            log(f"Could not find settings button!\n(Best match {round(best_match['max_val']*100,2)}% confidence)\n({center_x}, {center_y}")
+            sleep(5)            
+            log("")
+            return None, None
+    except:
+        error_log(format_exc())
+        log(f"Could not find settings button!")
+        return None, None
+
+
+async def click_settings_button(check_open_state=None):
+    await async_sleep(0.5)
+    button_x, button_y = await get_settings_button_pos()
+    if button_x is None:
+        return False
+    
+    # with mss() as sct:
+        # screenshot = sct.grab(mss().monitors[-1])
+    # screenshot = np.array(screenshot)
+    # screenshot = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)
+    
+    # button_half = 15
+    # print(button_x, button_y)
+    # cv.rectangle(screenshot, (button_x-button_half, button_y-button_half), (button_x+button_half, button_y+button_half), color=(0, 255, 0), thickness=2, lineType=cv.LINE_4)
+    # img = screenshot
+    # scale_percent = 60 # percent of original size
+    # width = int(img.shape[1] * scale_percent / 100)
+    # height = int(img.shape[0] * scale_percent / 100)
+    # dim = (width, height)
+    # resized = cv.resize(img, dim, interpolation = cv.INTER_AREA)
+    # cv.imshow("OCR", resized)
+    # cv.waitKey(10000)
+    
+    
+    ACFG.moveMouseAbsolute(x=int(button_x), y=int(button_y))
+    ACFG.left_click()
+    
+    if check_open_state is not None:
+        log(f"Checking that settings menu is {'open' if check_open_state else 'closed'}")
+        sleep(2)
+        last_button_x, last_button_y = button_x, button_y
+        success = False
+        for i in range(CFG.character_select_max_click_attempts):
+            new_button_x, new_button_y = await get_settings_button_pos()
+            if new_button_x is None:
+                for i in range(CFG.settings_menu_max_find_attempts):
+                    new_button_x, new_button_y = await get_settings_button_pos()
+                    if new_button_x is not None:
+                        break
+                    sleep(2)
+                
+            if check_open_state is True and (int(new_button_y/10) < int(last_button_y/10)):
+                success = True
+                break  # If we want it open and the new pos is further up the screen than before
+            elif check_open_state is False and (int(new_button_y/10) > int(last_button_y/10)):
+                success = True
+                break  # If we want it closed and the new pos is further down the screen than before
+            else:
+                ACFG.moveMouseAbsolute(x=int(new_button_x), y=int(new_button_y))
+                ACFG.left_click()
+                sleep(2)
+                last_button_x, last_button_y = new_button_x, new_button_y 
+        if not success:
+            log("Unable to toggle settings menu!")
+            sleep(2)
+        log("")
+    else:
+        await async_sleep(0.5)
+    return True
+
+
+async def ocr_for_settings(option=None):
+    desired_option = CFG.settings_menu_grief_text.lower()
+    if option is not None:
+        desired_option = option.lower()
+    button_x, button_y = await get_settings_button_pos()
+    if button_x is None:
+        return False
+    monitor = mss().monitors[-1]
+    screen_width = monitor["width"]
+    screen_height = monitor["height"]
+    print(screen_width)
+    monitor["width"] = int(CFG.settings_menu_width * screen_width)
+    monitor["left"] = int(button_x - (CFG.settings_menu_width/2) * screen_width)
+    height_offset = int(button_y + (CFG.settings_menu_button_height * screen_height))
+    monitor["top"] = height_offset
+    monitor["height"] = monitor["height"] - height_offset
+    
+    ocr_data = None
+    last_ocr_text = None
+    times_no_movement = 0
+    found_option = False
+    for attempts in range(CFG.settings_menu_ocr_max_attempts):  # Attempt multiple OCRs
+        log(f"Scanning list for '{desired_option.capitalize()}' {attempts}/{CFG.settings_menu_ocr_max_attempts}")
+        with mss() as sct:
+            screenshot = sct.grab(monitor)
+        screenshot = np.array(screenshot)
+
+        gray = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)  # PyTesseract
+        gray, img_bin = cv.threshold(gray,100,255,cv.THRESH_BINARY | cv.THRESH_OTSU)
+        gray = cv.bitwise_not(img_bin)            
+        kernel = np.ones((2, 1), np.uint8)
+        img = cv.erode(gray, kernel, iterations=1)
+        img = cv.dilate(img, kernel, iterations=1)
+
+        # scale_percent = 60 # percent of original size
+        # width = int(img.shape[1] * scale_percent / 100)
+        # height = int(img.shape[0] * scale_percent / 100)
+        # dim = (width, height)
+        # resized = cv.resize(img, dim, interpolation = cv.INTER_AREA)
+        # cv.imshow("ocr", resized)
+        # cv.waitKey(5000)
+        
+        ocr_data = pytesseract.image_to_data(img, config='--oem 1', output_type=pytesseract.Output.DICT)
+        ocr_data["text"] = [word.lower() for word in ocr_data["text"]]
+        print(ocr_data["text"])
+        if desired_option in ocr_data["text"]:
+            found_option = True
+            break
+        sleep(0.25)
+    
+    if not found_option:
+        log(f"Failed to find '{desired_option.capitalize()}'.\n Notifying Dev...")
+        notify_admin(f"Failed to find `{desired_option}`")
+        sleep(5)
+        return False
+    
+    # We found the option, lets click it
+    ocr_index = ocr_data["text"].index(desired_option)
+    
+    option_top = ocr_data["top"][ocr_index]
+    option_half = ocr_data["height"][ocr_index]/2
+    desired_option_height = int(option_top + option_half + height_offset)
+    ACFG.moveMouseAbsolute(x=int(button_x), y=int(desired_option_height))
+    sleep(0.5)
+    ACFG.left_click()
+    sleep(0.5)
+    return True
+
+
+async def toggle_collisions():
+    await check_active(force_fullscreen=False)
+    await async_sleep(1)
+    
+    log("Opening Settings")
+    if not await click_settings_button(check_open_state=True):
+        notify_admin("Failed to open settings")
+        return False
+    
+    log("Toggling Collisions")
+    await async_sleep(0.25)
+    if not await ocr_for_settings():
+        notify_admin("Failed to click settings option")
+        return False
+    
+    CFG.collisions_disabled = not(CFG.collisions_disabled)
+    collisions_msg = "" if CFG.collisions_disabled else "[WARN] Griefing/Collisions enabled!"
+    output_log("collisions", collisions_msg)
+    
+    log("Closing Settings")
+    await async_sleep(0.25)
+    if not await click_settings_button(check_open_state=False):
+        notify_admin("Failed to close settings")
+        return False
+    return True
+
 if __name__ == "__main__":
-    asyncio.get_event_loop().run_until_complete(change_characters())
+    asyncio.get_event_loop().run_until_complete(toggle_collisions())

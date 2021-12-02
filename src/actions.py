@@ -28,37 +28,6 @@ async def do_advert():
         await send_chat(message)
 
 
-async def toggle_collisions():
-    await check_active()
-    await async_sleep(1)
-    log("Opening Settings")
-    Beep(150, 100)
-    button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(SCREEN_RES["height"] * 0.98)  # Settings button
-    ACFG.moveMouseAbsolute(x=button_x, y=button_y)
-    ACFG.left_click()
-
-    log("Toggling Collisions")
-    await async_sleep(0.25)
-    Beep(150, 100)
-    button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(
-        SCREEN_RES["height"] * 0.53)  # Toggle Collisions button
-    ACFG.moveMouseAbsolute(x=button_x, y=button_y)
-    ACFG.left_click()
-    Beep(100, 50)
-    CFG.collisions_disabled = not(CFG.collisions_disabled)
-    collisions_msg = "" if CFG.collisions_disabled else "[WARN] Griefing/Collisions enabled!"
-    output_log("collisions", collisions_msg)
-    log("Closing Settings")
-    await async_sleep(0.25)
-    Beep(150, 100)
-    button_x, button_y = round(SCREEN_RES["width"] * 0.5), round(
-        SCREEN_RES["height"] * 0.30)  # Toggle Collisions button
-    ACFG.moveMouseAbsolute(x=button_x, y=button_y)
-    ACFG.left_click()
-    await async_sleep(0.25)
-    Beep(100, 50)
-
-
 async def respawn_character(chat=True):
     await check_active()
     log_process("Respawning")

@@ -67,6 +67,7 @@ class MainBotConfig:
     character_select_button_height = 0.035
     character_select_scan_attempts = 3
     character_select_max_scroll_attempts = 100
+    character_select_max_click_attempts = 10
     
     try:
         with open(OBS.output_folder / "character_select.json", "r") as f:
@@ -114,6 +115,16 @@ class MainBotConfig:
     #player_token = "A9AFD097DCB5C13B801697A4104C3A61"   # F_umoCam04
     player_token = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
     respawn_character_select_offset = -0.1    
+    
+    settings_menu_image_path = os.path.join(RESOURCES_PATH, "gear.jpg")
+    settings_menu_width = 0.3
+    settings_menu_grief_text = "Anti-Grief"
+    settings_menu_max_find_attempts = 3
+    settings_menu_find_threshold = 0.75
+    settings_menu_max_click_attempts = 10
+    settings_menu_button_height = 0.065
+    settings_menu_ocr_max_attempts = 3
+    
     sit_button_position = (0.79, 0.89)
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
