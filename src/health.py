@@ -272,10 +272,10 @@ async def click_character_select_button(check_open_state=None):
     
     if check_open_state is not None:
         log(f"Checking that character select is {'open' if check_open_state else 'closed'}")
-        sleep(2)
+        await async_sleep(2)
         last_button_x, last_button_y = button_x, button_y
         success = False
-        for i in range(CFG.character_select_max_click_attempts):
+        for i in range(CFG.character_select_max_close_attempts):
             new_button_x, new_button_y = await get_character_select_button_pos()
             if check_open_state is True and (new_button_y > last_button_y):
                 success = True
@@ -286,7 +286,7 @@ async def click_character_select_button(check_open_state=None):
             else:
                 ACFG.moveMouseAbsolute(x=int(new_button_x), y=int(new_button_y))
                 ACFG.left_click()
-                sleep(2)
+                await async_sleep(2)
                 last_button_x, last_button_y = new_button_x, new_button_y 
         if not success:
             log("Unable to toggle character menu!")
@@ -411,7 +411,7 @@ async def click_character_in_menu(click_mouse=True, click_random=False):
 async def get_character_select_button_pos():
     character_select_button = None
     for i in range(CFG.max_attempts_character_selection):
-        #await check_active()
+        await check_active()
         Beep(40, 50)
         try:
             print("TryingToFind")
