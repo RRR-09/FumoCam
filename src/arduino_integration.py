@@ -100,11 +100,25 @@ class ArduinoConfig:
 
 
     def left_click(self):
+        if CFG.mouse_software_emulation:
+            return self.left_click_software()
         payload = {"type": "leftClick"}
         self.arduino_interface(payload, 2) # Arbitrary max time for safety
     #left_click()
 
-
+    def left_click_software(self, do_click=True):
+        """
+        Even pydirectinput cant click normally.
+        This is a work-around that actually clicks in the area the cursor was moved.
+        """
+        alt_tab_duration = 0.5
+        pyautogui.hotkey('alt', 'tab')
+        sleep(alt_tab_duration)
+        pyautogui.hotkey('alt', 'tab')
+        sleep(alt_tab_duration*2)
+        if do_click:
+            pydirectinput.click()
+            
     def leap(self, forward_time, jump_time):
         payload = {"type": "leap", "forward_time": forward_time, "jump_time": jump_time}
         self.arduino_interface(payload, max(payload["forward_time"], payload["jump_time"]))
@@ -133,18 +147,31 @@ class ArduinoConfig:
 
 
     def moveMouseAbsolute(self, x, y):
+        if CFG.mouse_software_emulation:
+            return self.moveMouseAbsolute_software(x, y)
         payload = {"type": "resetMouse", "width": SCREEN_RES["width"], "height": SCREEN_RES["height"]}
         self.arduino_interface(payload, 5) # Arbitrary max time for safety
         sleep(2)
         payload = {"type": "moveMouse", "x": x, "y": y}
         self.arduino_interface(payload, 5) # Arbitrary max time for safety
     #moveMouseAbsolute(x=SCREEN_RES["width"]*0.5, y=SCREEN_RES["height"]*0.5)
-
+    
+    
+    def moveMouseAbsolute_software(self, x, y):
+        pydirectinput.moveTo(x, y)
+        sleep(2)
+        
 
     def moveMouseRelative(self, x, y):
+        if CFG.mouse_software_emulation:
+            return self.moveMouseRelative_software(x, y)
         payload = {"type": "moveMouse", "x": x, "y": y}
         self.arduino_interface(payload, 5) # Arbitrary max time for safety
-    #moveMouse(x=0, y=SCREEN_RES["height"]*0.34)
+        
+
+    def moveMouseRelative_software(self, x, y):
+        pydirectinput.move(x, y) 
+        sleep(2)
 
 
     def scrollMouse(self, amount, down=True):

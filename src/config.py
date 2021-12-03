@@ -106,6 +106,7 @@ class MainBotConfig:
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 20
     max_attempts_better_server = 20
+    mouse_software_emulation = True
     nav_locations = {
         "shrimp": {"name": "Shrimp Tree"},
         "ratcade": {"name": "Ratcade"},
