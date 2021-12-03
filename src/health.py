@@ -514,7 +514,7 @@ async def handle_join_new_server(crash=False):
     log("")
 
 
-async def auto_nav(location, do_checks=True):
+async def auto_nav(location, do_checks=True, slow_spawn_detect=True):
     #await check_active()
     log_process("AutoNav")
     if do_checks:
@@ -535,24 +535,25 @@ async def auto_nav(location, do_checks=True):
     log("Zooming out to full scale")
     ACFG.zoom(zoom_direction_key="o", amount=105)
     
-    spawn = spawn_detection_main()["location"]
-    log("Zooming in to precision movement scale")
-    ACFG.zoom(zoom_direction_key="i", amount=90)
+    spawn = spawn_detection_main(slow=slow_spawn_detect)["location"]
+    #log("Zooming in to precision movement scale")
+    #ACFG.zoom(zoom_direction_key="i", amount=90)
     if spawn == "comedy_machine":
         comedy_to_main()
-        await async_sleep(3)
     elif spawn == "tree_house":
         treehouse_to_main()
-        await async_sleep(3)
+    await async_sleep(1)
     if location == "shrimp":
         main_to_shrimp_tree()
     elif location == "ratcade":
         main_to_ratcade()
     elif location == "train":
         main_to_train()
-    log("Zooming out to normal scale")
-    ACFG.zoom(zoom_direction_key="o", amount=30)
-    log("Complete! This is experimental, so please run \n'!nav shrimp' if it didn't work.")
+    elif location == "classic":
+        main_to_classic()
+    log("Zooming in to normal scale")
+    ACFG.zoom(zoom_direction_key="i", amount=70)
+    log(f"Complete! This is experimental, so please re-run \n'!nav {location}' if it didn't work.")
     await async_sleep(3)
 
 
@@ -815,5 +816,11 @@ async def toggle_collisions():
     return True
 
 if __name__ == "__main__":
-    pass
-    #asyncio.get_event_loop().run_until_complete(toggle_collisions())
+    async def test():
+        await check_active(force_fullscreen=False)
+        sleep(0.5)
+        await auto_nav("classic", do_checks=False, slow_spawn_detect=False)
+        
+        
+    asyncio.get_event_loop().run_until_complete(test())
+    

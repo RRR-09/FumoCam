@@ -119,9 +119,9 @@ class ArduinoConfig:
         if do_click:
             pydirectinput.click()
             
-    def leap(self, forward_time, jump_time):
-        payload = {"type": "leap", "forward_time": forward_time, "jump_time": jump_time}
-        self.arduino_interface(payload, max(payload["forward_time"], payload["jump_time"]))
+    def leap(self, forward_time, jump_time, direction_key="w", jump_delay=0):
+        payload = {"type": "leap", "forward_time": forward_time, "jump_time": jump_time, "direction_key": direction_key, "jump_delay": jump_delay}
+        self.arduino_interface(payload, max(payload["forward_time"], payload["jump_time"])+payload["jump_delay"])
         sleep(0.5)
     #leap(jump_time=1, forward_time=3)
 
@@ -241,7 +241,7 @@ def treehouse_to_main():
     log("Treehouse -> Main")
     ACFG.move("w",3.3, raw=True)
     ACFG.move("d",0.2, raw=True)
-    ACFG.look("left", 1.105, raw=True)
+    ACFG.look("left", 1.10, raw=True)
     log_process("")
     log("")
 
@@ -251,14 +251,14 @@ def comedy_to_main():
     log("Comedy Machine -> Main")
     ACFG.move("w",3.75, raw=True)
     ACFG.move("a",0.5)
-    ACFG.look("right", 0.385, raw=True)
+    ACFG.look("right", 0.3875, raw=True)
     
     log_process("")
     log("")
 
 def main_to_shrimp_tree():
     log_process("AutoNav")
-    log("Main -> Shrimp Tree")
+    log(f"Main -> Shrimp Tree")
     #If main spawn is facing North,
     #Turn to face West
     ACFG.look("left", 0.75, raw=True)
@@ -317,10 +317,44 @@ def main_to_train():
     ACFG.move("s", 0.05, raw=True)
     ACFG.move("a", 0.075, raw=True)
     ACFG.move("s", 0.1, raw=True)
-    ACFG.zoom("o", 20)
     log_process("")
     log("")
+
+
+def main_to_classic():
+    log_process("AutoNav")
+    log("Main -> Classic BF Portal")
+    ACFG.move("a", 0.25, raw=True)
+    ACFG.move("s", 4.5, raw=True)
+    ACFG.move("d", 1.75, raw=True)
+    ACFG.move("s", 2.6, raw=True)
+    ACFG.move("a", 1, raw=True)
+    ACFG.move("s", 2.55, raw=True)
+    ACFG.move("d", 1, raw=True)
+    ACFG.move("s", 2.5, raw=True)
+    ACFG.leap(forward_time=0.3, jump_time=0.25, direction_key="s")
     
+    ACFG.move("d", 0.5, raw=True)
+    ACFG.move("s", 0.3, raw=True)
+    
+    ACFG.leap(forward_time=0.3, jump_time=0.3, direction_key="s")
+    ACFG.move("d", 0.2, raw=True)
+    ACFG.move("s", 0.275, raw=True)
+    ACFG.leap(forward_time=0.625, jump_time=0.5, direction_key="s")
+    ACFG.leap(forward_time=1, jump_time=0.2, direction_key="d", jump_delay=0.35)
+    ACFG.move("s", 0.225, raw=True)
+    ACFG.leap(forward_time=0.8, jump_time=0.4, direction_key="d", jump_delay=0.3)
+    ACFG.use()
+    sleep(5)
+    ACFG.move("w", 1.8, raw=True)
+    ACFG.move("d", 0.125, raw=True)
+    ACFG.move("w", 2.275, raw=True)
+    ACFG.look("right",  0.375, raw=True)
+    ACFG.move("s", 0.075, raw=True)
+    ACFG.move("d", 0.06, raw=True)    
+    
+    log_process("")
+    log("")
 
 if __name__ == "__main__":
     ACFG.initalize_serial_interface(do_log=True)
