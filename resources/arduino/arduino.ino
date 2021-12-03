@@ -22,28 +22,46 @@ void leap(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
   const unsigned long jump_microseconds = (jump_seconds*1000000);
   const double forward_seconds = payload["forward_time"];
   const unsigned long forward_microseconds = (forward_seconds*1000000);
-
+  const char* input_direction_key = payload["direction_key"];
+  char direction_key = input_direction_key[0];  
+  const double jump_delay_seconds = payload["jump_delay"];
+  const unsigned long jump_delay_microseconds = (jump_delay_seconds*1000000);
+  
   //todo: inefficient, simplify
-  if (jump_seconds > forward_seconds){
-    while (micros() > (micros() + jump_seconds)) {} // If about to overflow, wait
-    const unsigned long forward_goal = micros() + forward_microseconds;
-    const unsigned long jump_goal = micros() + jump_microseconds;
-    Keyboard.press('w');
-    Keyboard.press(' ');
-    while (micros() < forward_goal) {} // Forward expires first
-    Keyboard.release('w'); // Release forward
-    while (micros() < jump_goal) {} // Jump lasts longer
-    Keyboard.release(' '); // Release jump
+  if (jump_delay_microseconds > 0) {
+      while (micros() > (micros() + jump_seconds)) {} // If about to overflow, wait
+      const unsigned long forward_goal = micros() + forward_microseconds;
+      const unsigned long jump_delay_goal = micros() + jump_delay_microseconds;
+      Keyboard.press(direction_key);
+      while (micros() < jump_delay_goal) {} // Delay jump
+      const unsigned long jump_goal = micros() + jump_microseconds;
+      Keyboard.press(' ');
+      while (micros() < jump_goal) {} // Jump expires first
+      Keyboard.release(' '); // Release jump
+      while (micros() < forward_goal) {} // Forward lasts longer
+      Keyboard.release(direction_key); // Release forward
   } else {
-    while (micros() > (micros() + forward_seconds)) {} // If about to overflow, wait
-    const unsigned long jump_goal = micros() + jump_microseconds;
-    const unsigned long forward_goal = micros() + forward_microseconds;
-    Keyboard.press('w');
-    Keyboard.press(' ');
-    while (micros() < jump_goal) {} // Jump expires first
-    Keyboard.release(' '); // Release jump
-    while (micros() < forward_goal) {} // Forward lasts longer
-    Keyboard.release('w'); // Release forward
+    if (jump_seconds > forward_seconds){
+      while (micros() > (micros() + jump_seconds)) {} // If about to overflow, wait
+      const unsigned long forward_goal = micros() + forward_microseconds;
+      const unsigned long jump_goal = micros() + jump_microseconds;
+      Keyboard.press(direction_key);
+      Keyboard.press(' ');
+      while (micros() < forward_goal) {} // Forward expires first
+      Keyboard.release(direction_key); // Release forward
+      while (micros() < jump_goal) {} // Jump lasts longer
+      Keyboard.release(' '); // Release jump
+    } else {
+      while (micros() > (micros() + forward_seconds)) {} // If about to overflow, wait
+      const unsigned long jump_goal = micros() + jump_microseconds;
+      const unsigned long forward_goal = micros() + forward_microseconds;
+      Keyboard.press(direction_key);
+      Keyboard.press(' ');
+      while (micros() < jump_goal) {} // Jump expires first
+      Keyboard.release(' '); // Release jump
+      while (micros() < forward_goal) {} // Forward lasts longer
+      Keyboard.release(direction_key); // Release forward
+    }
   }
 }
 
