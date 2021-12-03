@@ -323,7 +323,7 @@ def main_to_train():
 
 def main_to_classic():
     log_process("AutoNav")
-    log("Main -> Classic BF Portal")
+    log("Main -> BecomeFumo Classic Portal")
     ACFG.move("a", 0.25, raw=True)
     ACFG.move("s", 4.5, raw=True)
     ACFG.move("d", 1.75, raw=True)
@@ -355,6 +355,49 @@ def main_to_classic():
     
     log_process("")
     log("")
+
+
+def main_to_treehouse():
+    log_process("AutoNav")
+    log("Main -> Funky Treehouse")
+    ACFG.move("a", 1.5, raw=True)
+    ACFG.move("w", 3, raw=True)
+    ACFG.move("a", 1, raw=True)
+    ACFG.move("w", 1.5, raw=True)
+    ACFG.move("a", 1.1, raw=True)
+    ACFG.move("s", 1, raw=True)
+    ACFG.leap(forward_time=1, jump_time=1, direction_key="s")
+    ACFG.move("s", 0.5, raw=True)
+    ACFG.move("d", 0.5, raw=True)
+    ACFG.move("w", 0.3, raw=True)
+    ACFG.move("d", 0.2, raw=True)
+    ACFG.leap(forward_time=0.305, jump_time=0.3, direction_key="w")
+    ACFG.move("d", 0.2, raw=True)
+    ACFG.leap(forward_time=0.6, jump_time=0.3, direction_key="s", jump_delay=0.15)
+    
+    ACFG.move("w", 0.125, raw=True)
+    ACFG.leap(forward_time=0.2, jump_time=0.3, direction_key="d", jump_delay=0.1)
+    ACFG.move("d", 0.125, raw=True)
+    ACFG.leap(forward_time=0.2, jump_time=0.3, direction_key="d")
+    ACFG.move("s", 0.5, raw=True)
+    ACFG.leap(forward_time=0.2, jump_time=0.2, direction_key="s")
+    ACFG.move("a", 0.1, raw=True)
+    ACFG.move("s", 0.15, raw=True)
+    ACFG.move("a", 0.8, raw=True)
+    ACFG.move("w", 0.125, raw=True)
+    ACFG.leap(forward_time=0.3, jump_time=0.15, direction_key="d")
+    ACFG.move("d", 1.5, raw=True)
+    ACFG.move("w", 0.5, raw=True)
+    ACFG.move("a", 0.5, raw=True)
+    
+    ACFG.move("s", 0.41, raw=True)
+    ACFG.move("d", 0.55, raw=True)
+    ACFG.leap(forward_time=0.4, jump_time=0.75, direction_key="a")
+    ACFG.leap(forward_time=0.2, jump_time=0.3, direction_key="d", jump_delay=0.1)
+
+    ACFG.move("s", 0.075, raw=True)
+    ACFG.move("a", 0.05, raw=True)   
+
 
 if __name__ == "__main__":
     ACFG.initalize_serial_interface(do_log=True)

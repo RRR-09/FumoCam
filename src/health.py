@@ -551,8 +551,12 @@ async def auto_nav(location, do_checks=True, slow_spawn_detect=True):
         main_to_train()
     elif location == "classic":
         main_to_classic()
+    elif location == "treehouse":
+        main_to_treehouse()
     log("Zooming in to normal scale")
-    ACFG.zoom(zoom_direction_key="i", amount=70)
+    default_zoom_in_amount = (CFG.zoom_max - CFG.zoom_default)
+    zoom_in_amount = CFG.nav_post_zoom_in.get(location, default_zoom_in_amount)
+    ACFG.zoom(zoom_direction_key="i", amount=zoom_in_amount)
     log(f"Complete! This is experimental, so please re-run \n'!nav {location}' if it didn't work.")
     await async_sleep(3)
 
@@ -819,8 +823,11 @@ if __name__ == "__main__":
     async def test():
         await check_active(force_fullscreen=False)
         sleep(0.5)
-        await auto_nav("classic", do_checks=False, slow_spawn_detect=False)
+        await auto_nav("treehouse", do_checks=False, slow_spawn_detect=False)
         
+        #ACFG.zoom("o", 105)
+        #ACFG.zoom("i", 50)
+           
         
     asyncio.get_event_loop().run_until_complete(test())
     
