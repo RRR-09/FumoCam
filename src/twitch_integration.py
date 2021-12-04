@@ -76,6 +76,12 @@ class TwitchBot(commands.Bot):
     
     # Basic Commands
     @commands.command()
+    async def backpack(self, ctx):
+        await ctx.send(f"[{'Closing' if CFG.backpack_open else 'Opening'} backpack, please make sure it's closed when you're done!]")
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
     async def click(self, ctx):
         await CFG.add_action_queue(ctx.command.name)
     
@@ -83,7 +89,30 @@ class TwitchBot(commands.Bot):
     @commands.command()
     async def grief(self, ctx):
         await CFG.add_action_queue(ctx.command.name)
+
     
+    @commands.command()
+    async def hidemouse(self, ctx):
+        await CFG.add_action_queue(ctx.command.name)
+    
+    
+    @commands.command()
+    async def item(self, ctx):
+        args = await self.get_args(ctx)
+        if len(args) < 1:
+            await ctx.send(f"[Please specify an item number! (Must be 1-8)")
+            return
+        try:
+            item_number = int(args[0])
+            if item_number not in CFG.backpack_item_positions:
+                raise
+        except Exception:
+            await ctx.send(f"[Error! Invalid number specified. (Must be 1-8)]")
+            return
+        if CFG.backpack_open:
+            await ctx.send(f"[Doesn't seem like the backpack is open! Clicking anyway, just in case. (Use !backpack to open, if needed)]")
+        await CFG.add_action_queue({"item": item_number})
+
     
     @commands.command()
     async def jump(self, ctx):
@@ -93,6 +122,21 @@ class TwitchBot(commands.Bot):
     @commands.command()
     async def mute(self, ctx):
         await CFG.add_action_queue({"mute": None})
+    
+    
+    @commands.command()
+    async def mouse(self, ctx):
+        args = await self.get_args(ctx)
+        if len(args) < 2:
+            await ctx.send(f"[Please specify the two numbers (x and y) that you want the mouse to move away from center of the screen!]")
+            return
+        try:
+            x = int(args[0])
+            y = int(args[1])
+        except Exception:
+            await ctx.send(f"[Error! Invalid number(s) specified.]")
+            return
+        await CFG.add_action_queue({"chat_move_mouse": {"x": x, "y": y, "twitch_ctx": ctx}})
     
     
     @commands.command()

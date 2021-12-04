@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv  # pip3.9 install python-dotenv
 from pyautogui import size as get_monitor_size
+from pyautogui import position as get_mouse_position
 from mss import mss
 from pathlib import Path
 from shutil import copyfile
@@ -15,6 +16,10 @@ SCREEN_RES = {  # todo: Don't use globals, make class-based
     "height": get_monitor_size()[1],
     "x_multi": get_monitor_size()[0] / 2560,
     "y_multi": get_monitor_size()[1] / 1440,
+    "center_x_float": get_monitor_size()[0]/2,
+    "center_y_float": get_monitor_size()[1]/2,
+    "center_x": int(get_monitor_size()[0]/2),
+    "center_y": int(get_monitor_size()[1]/2),
 }
 MONITOR_SIZE = mss().monitors[0]
 
@@ -85,6 +90,19 @@ class MainBotConfig:
     
     crashed = False
     
+    backpack_button_position = (0.87, 0.89)
+    backpack_item_positions = {
+        1: {"x": 0.26, "y": 0.35},
+        2: {"x": 0.41, "y": 0.35},
+        3: {"x": 0.56, "y": 0.35},
+        4: {"x": 0.71, "y": 0.35},
+        5: {"x": 0.26, "y": 0.6},
+        6: {"x": 0.41, "y": 0.6},
+        7: {"x": 0.56, "y": 0.6},
+        8: {"x": 0.71, "y": 0.6},
+    }
+    backpack_open = False
+    
     browser_driver_executable_name = "chromedriver.exe"
     browser_driver_path = RESOURCES_PATH / browser_driver_executable_name
     browser_executable_name = "chrome.exe"
@@ -107,6 +125,13 @@ class MainBotConfig:
     max_seconds_browser_launch = 20
     max_attempts_better_server = 20
     mouse_software_emulation = True
+    mouse_blocked_regions = [
+        {"name": "Chat", "x1": 0, "y1": 0, "x2":340, "y2":240},
+        {"name": "Character Select", "x1": 420, "y1": 0, "x2":850, "y2":80},
+        {"name": "Settings/Bottom-Right Buttons", "x1": 0, "y1": 580, "x2":1280, "y2":720},
+        {"name": "Leaderboard", "x1": 1100, "y1": 0, "x2":1280, "y2":720},
+        
+    ]
     nav_locations = {
         "shrimp": {"name": "Shrimp Tree"},
         "ratcade": {"name": "Ratcade"},
@@ -135,6 +160,7 @@ class MainBotConfig:
     settings_menu_ocr_max_attempts = 3
     
     sit_button_position = (0.79, 0.89)
+    sitting_status = False
     
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
@@ -209,6 +235,26 @@ class MainBotConfig:
         {
             "command": "!mute",
             "help": "Music will still play, but toggles mute in-game sound effects."
+        },
+        {
+            "command": "!click",
+            "help": "Clicks wherever the mouse is on screen."
+        },
+        {
+            "command": "!mouse -30 50",
+            "help": "FROM SCREEN CENTER, moves mouse 30 pixels left, 50 pixels down."
+        },
+        {
+            "command": "!backpack",
+            "help": "Toggles the backpack."
+        },
+        {
+            "command": "!item 1",
+            "help": "(OPEN BACKPACK FIRST), Clicks item 1 (goes up to 8)"
+        },
+        {
+            "command": "!hidemouse",
+            "help": "Moves mouse off-screen."
         },
     ]
 

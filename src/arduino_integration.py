@@ -119,6 +119,17 @@ class ArduinoConfig:
         if do_click:
             pydirectinput.click()
             
+    def middle_click_software(self):
+        """
+        Even pydirectinput cant click normally.
+        This is a work-around that actually clicks in the area the cursor was moved.
+        """
+        alt_tab_duration = 0.5
+        pyautogui.hotkey('alt', 'tab')
+        sleep(alt_tab_duration)
+        pyautogui.hotkey('alt', 'tab')
+        sleep(alt_tab_duration*2)
+        pydirectinput.click(button="middle")
     def leap(self, forward_time, jump_time, direction_key="w", jump_delay=0):
         payload = {"type": "leap", "forward_time": forward_time, "jump_time": jump_time, "direction_key": direction_key, "jump_delay": jump_delay}
         self.arduino_interface(payload, max(payload["forward_time"], payload["jump_time"])+payload["jump_delay"])
@@ -200,10 +211,18 @@ class ArduinoConfig:
         self.arduino_interface(payload, payload["hold_time"])
     #move("w", 2)
 
-    def resetMouse(self, move_to_bottom_left=True):
+    def resetMouse(self, move_to_bottom_right=True):
+        if CFG.mouse_software_emulation:
+            if move_to_bottom_right:
+                self.moveMouseAbsolute_software(SCREEN_RES["width"]-1, SCREEN_RES["height"]-1)
+                self.middle_click_software()
+                return
+            self.moveMouseAbsolute_software(1, 1)
+            self.middle_click_software()
+            return
         payload = {"type": "resetMouse", "width": SCREEN_RES["width"], "height": SCREEN_RES["height"]}
         self.arduino_interface(payload, 4) # Arbitrary max time for safety
-        if move_to_bottom_left:
+        if move_to_bottom_right:
             payload = {"type": "moveMouse", "x": SCREEN_RES["width"]-1, "y": SCREEN_RES["height"]-1}
             self.arduino_interface(payload, 4) # Arbitrary max time for safety
     #resetMouse()
@@ -396,17 +415,15 @@ def main_to_treehouse():
     ACFG.leap(forward_time=0.2, jump_time=0.3, direction_key="d", jump_delay=0.1)
 
     ACFG.move("s", 0.075, raw=True)
-    ACFG.move("a", 0.05, raw=True)   
+    ACFG.move("a", 0.05, raw=True)
+
 
 
 if __name__ == "__main__":
-    ACFG.initalize_serial_interface(do_log=True)
-    asyncio.get_event_loop().run_until_complete(check_active(force_fullscreen=False))
-    sleep(0.5)
-    
-    #comedy_to_main()
-    treehouse_to_main()
-    #sleep(3)
-    #main_to_train()
-    main_to_shrimp_tree()
-    #main_to_ratcade()
+    async def test():
+        await check_active(force_fullscreen=False)
+        sleep(0.5)
+        #had_to_move, area = move_mouse_chat_cmd(,-600)
+        #print(had_to_move, area)
+        
+    asyncio.get_event_loop().run_until_complete(test())

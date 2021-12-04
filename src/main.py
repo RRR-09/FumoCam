@@ -100,8 +100,6 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             await handle_join_new_server(crash=True)
         elif action == "handle_join_new_server":
             await handle_join_new_server()
-        elif action == "click":
-            await ACFG.left_click()
         elif action == "sit":
             await click_sit_button()
         elif action == "use":
@@ -137,6 +135,34 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             log_process("")
             log("")
             await handle_join_new_server()
+        elif "chat_move_mouse" in action:
+            params = action["chat_move_mouse"]
+            had_to_move, area = await move_mouse_chat_cmd(params["x"],params["y"])
+            await async_sleep(2)
+            if had_to_move:
+                try:
+                    await params["twitch_ctx"].send(f"[Can't move near '{area}'! Moved mouse to safe range nearby.]")
+                except:
+                    print(format_exc())
+            log_process("")
+            log("")
+        elif action == "click":
+            await chat_mouse_click()
+            log_process("")
+            log("")
+        elif action == "backpack":
+            await click_backpack_button()
+            log_process("")
+            log("")
+        elif "item" in action:
+            item_number = action["item"]
+            await click_item(item_number)
+            log_process("")
+            log("")
+        elif action == "hidemouse":
+            ACFG.resetMouse()
+            log_process("")
+            log("")
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
