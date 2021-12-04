@@ -25,7 +25,7 @@ MONITOR_SIZE = mss().monitors[0]
 
 
 class Twitch:
-    channel_name = "becomefumocambeta"
+    channel_name = "becomefumocam"
     username = "BecomeFumoCamBot"
     admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
     
