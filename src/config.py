@@ -143,11 +143,11 @@ class MainBotConfig:
         "treehouse": 50,
         "train": 0,
     }
-    #player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
+    player_token = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
     #player_token = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
     #player_token = "D5E4A52E9B12F1E36D7269325943AE35"   # BecomeF_umoCam
     #player_token = "A9AFD097DCB5C13B801697A4104C3A61"   # F_umoCam04
-    player_token = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
+    #player_token = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
     respawn_character_select_offset = -0.1    
     
     settings_menu_image_path = os.path.join(RESOURCES_PATH, "gear.jpg")

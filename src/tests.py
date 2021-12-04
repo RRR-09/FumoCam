@@ -1,5 +1,5 @@
 from health import click_character_in_menu, change_characters, join_target_server, check_for_better_server, get_current_server_id
-from actions import toggle_collisions, mute_toggle
+from actions import mute_toggle
 from commands import click_sit_button, respawn_character
 from utilities import *
 import pyautogui
@@ -125,7 +125,7 @@ if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
     #test_get_cookies_for_browser()
-    #test_loading_cookies_for_browser()
+    test_loading_cookies_for_browser()
     #test_check_for_better_server()
     
     #test_mute(mute=True)
@@ -139,7 +139,7 @@ if __name__ == "__main__":
     
     #test_twitch()
     #test_character_select()
-    test_character_select_full()
+    #test_character_select_full()
     #test_check_for_better_server()
     #test_character_select_full(click_mouse=True)
     #toggle_collisions()
