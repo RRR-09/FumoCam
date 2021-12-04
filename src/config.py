@@ -25,7 +25,7 @@ MONITOR_SIZE = mss().monitors[0]
 
 
 class Twitch:
-    channel_name = "becomefumocam"
+    channel_name = "becomefumocambeta"
     username = "BecomeFumoCamBot"
     admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
     
@@ -50,6 +50,35 @@ class MainBotConfig:
         '"BecomeFumoCam"!'
     ]
     audio_muted = False
+    
+    twitch_blacklist = []
+    twitch_blacklist_path = OBS.output_folder / 'twitch_blacklist.json'
+    try:
+        with open(str(twitch_blacklist_path), "r") as f:
+            twitch_blacklist = json.load(f)
+    except:
+        print(f"{twitch_blacklist_path} malformed or missing")
+    
+    backpack_button_position = (0.87, 0.89)
+    backpack_item_positions = {
+        1: {"x": 0.26, "y": 0.35},
+        2: {"x": 0.41, "y": 0.35},
+        3: {"x": 0.56, "y": 0.35},
+        4: {"x": 0.71, "y": 0.35},
+        5: {"x": 0.26, "y": 0.6},
+        6: {"x": 0.41, "y": 0.6},
+        7: {"x": 0.56, "y": 0.6},
+        8: {"x": 0.71, "y": 0.6},
+    }
+    backpack_open = False
+    
+    browser_driver_executable_name = "chromedriver.exe"
+    browser_driver_path = RESOURCES_PATH / browser_driver_executable_name
+    browser_executable_name = "chrome.exe"
+    browser_profile_path = RESOURCES_PATH / ".browser_profile"
+    Path(browser_profile_path).mkdir(parents=True, exist_ok=True)
+    browser_cookies_path = browser_profile_path / "browser_cookies.json"
+    
     censored_words = [  # todo: Attempt to inject into chat censor API
         "gay",
         "nigger",
@@ -89,26 +118,6 @@ class MainBotConfig:
     chat_bypasses = {}  # Bypass filters for harmless words
     
     crashed = False
-    
-    backpack_button_position = (0.87, 0.89)
-    backpack_item_positions = {
-        1: {"x": 0.26, "y": 0.35},
-        2: {"x": 0.41, "y": 0.35},
-        3: {"x": 0.56, "y": 0.35},
-        4: {"x": 0.71, "y": 0.35},
-        5: {"x": 0.26, "y": 0.6},
-        6: {"x": 0.41, "y": 0.6},
-        7: {"x": 0.56, "y": 0.6},
-        8: {"x": 0.71, "y": 0.6},
-    }
-    backpack_open = False
-    
-    browser_driver_executable_name = "chromedriver.exe"
-    browser_driver_path = RESOURCES_PATH / browser_driver_executable_name
-    browser_executable_name = "chrome.exe"
-    browser_profile_path = RESOURCES_PATH / ".browser_profile"
-    Path(browser_profile_path).mkdir(parents=True, exist_ok=True)
-    browser_cookies_path = browser_profile_path / "browser_cookies.json"
     
     collisions_disabled = True
     current_emote = "/e dance3"
@@ -165,6 +174,8 @@ class MainBotConfig:
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
     vlc_executable_name = "vlc.exe"
+    
+    vip_twitch_names = ["ceatidk", "initialo", "dedegiko", "maplemedictv", "becomefumocam"]
     
     zoom_default = 30
     zoom_level = 50  # TODO: validate this is roughly correct on spawn

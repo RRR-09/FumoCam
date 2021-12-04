@@ -25,17 +25,24 @@ class TwitchBot(commands.Bot):
         print(msg_str.encode("ascii","ignore").decode("ascii","ignore"))
         
         log_task = create_task(self.do_discord_log(message))
-        commands_task = create_task(self.handle_commands(message))
+        
+        if message.author.name not in CFG.twitch_blacklist:
+            commands_task = create_task(self.handle_commands(message))
+        else:
+            if message.content.startswith("!dev"):
+                await self.manual_dev_command(message)
         try:
             await log_task
         except:
             print(format_exc())
-            notify_admin(f"```{format_exc()}```")
-        try:
-            await commands_task
-        except:
-            print(format_exc())
-            notify_admin(f"```{format_exc()}```")
+            notify_admin(f"```{format_exc()}```")        
+        
+        if message.author.name not in CFG.twitch_blacklist:
+            try:
+                await commands_task
+            except:
+                print(format_exc())
+                notify_admin(f"```{format_exc()}```")
     
     
     async def event_command_error(self, ctx, error):
@@ -226,6 +233,15 @@ class TwitchBot(commands.Bot):
         pitch_camera_direction = "down"
         await self.camera_pitch_handler(pitch_camera_direction, ctx)
     
+    async def manual_dev_command(self, message):
+        args = message.content.split(" ", 1)
+        if len(args) < 2:
+            await message.channel.send(f"[Specify a message, this command is for emergencies! (Please do not misuse it)]")
+            return
+        msg = args[-1]
+        notify_admin(f"{message.author}: {msg}")
+        await message.channel.send(f"[Notified dev! As a reminder, you have been blacklisted by a trusted member, so your controls will not work. If you feel this is in error, use this commmand.]")
+    
     
     @commands.command()
     async def dev(self, ctx):
@@ -302,7 +318,41 @@ class TwitchBot(commands.Bot):
             action_queue_item = {"chat_with_name": [f"{ctx.message.author.display_name}:", msg]}
         await CFG.add_action_queue(action_queue_item)
     
+
     
+    @commands.command()  # Send message in-game
+    async def blacklist(self, ctx):
+        if ctx.message.author.name.lower() not in CFG.vip_twitch_names:
+            await ctx.send(f"[You do not have permission to run this command!]")
+        args = await self.get_args(ctx)
+        if not args:
+            await ctx.send(f"[Please specify a user!]")
+            return
+        try:
+            name = args[0].lower()
+        except:
+            await ctx.send(f"[Please specify a user!]")
+            return
+        
+        added = False
+        if name not in CFG.twitch_blacklist:
+            CFG.twitch_blacklist.append(name)
+            with open(str(CFG.twitch_blacklist_path), "w") as f:
+                json.dump(CFG.twitch_blacklist, f)
+            added = True
+        
+        await ctx.send(f"['{name}' has {'already' if not added else ''} been blacklisted from interacting with FumoCam.]")
+        await async_sleep(1)
+        await ctx.send(f"[It is recommended you also report them to Twitch, if needed.]")
+        await async_sleep(1)
+        await ctx.send(f"[@{name} if you feel this is in error, please type '!dev unjust ban' in chat. The dev has already been notified]")
+        
+        mod_url = f"<https://www.twitch.tv/popout/becomefumocam/viewercard/{ctx.message.author.name.lower()}>"
+        target_url = f"<https://www.twitch.tv/popout/becomefumocam/viewercard/{name.lower()}>"
+        
+        notify_admin(f"{ctx.message.author.name} has blacklisted {name}\n{mod_url}\n{target_url}")
+
+        
     @commands.command()
     async def move(self, ctx):
         move_time = 1
