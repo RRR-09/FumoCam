@@ -3,6 +3,8 @@ import random
 from shutil import copyfile
 from winsound import Beep
 
+from pyautogui import position as get_mouse_position
+
 from arduino_integration import *
 from spawn_detection import spawn_detection_main
 
