@@ -39,6 +39,7 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
     if len(CFG.action_queue) == 0 or CFG.action_running:
         return
     CFG.action_running = True
+    remove_duplicates = False
     while len(CFG.action_queue) > 0:
         print(CFG.action_queue)
         await check_active()
@@ -98,8 +99,10 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
                 await send_chat(message)
         elif action == "handle_crash":
             await handle_join_new_server(crash=True)
+            remove_duplicates = True
         elif action == "handle_join_new_server":
             await handle_join_new_server()
+            remove_duplicates = True
         elif action == "sit":
             await click_sit_button()
         elif action == "use":
@@ -166,6 +169,13 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
+        if remove_duplicates:
+            original_queue = CFG.action_queue
+            for action_queue_item in original_queue:
+                if (isinstance(action_queue_item, dict) and list(action.keys())[-1] in action_queue_item:
+                    CFG.action_queue.remove(action_queue_item)
+                elif action == action_queue_item
+                    CFG.action_queue.remove(action_queue_item)
     await async_sleep(0.1)
     CFG.action_running = False
 
