@@ -176,12 +176,6 @@ async def check_for_better_server():
             await CFG.add_action_queue("handle_crash")
             return False
         else:  # other world easter egg
-            log("Successfully failed! Could not find FumoCam in the realms of the living.")
-            Beep(60, 2000)
-            log("S#c%e!s%u^l& f!i@e%! &o#l* ^o$ f!n& @u$o%a& *n !h# $e^l!s #f ^$e #i!i$g.")
-            Beep(50, 2000)
-            log("!#@%&!@%%^^& $!#@&%! &@#!* ^*$ @!$& @^$@%a& *$ !@# $#^%!@ #@ ^$% #@!%$#.")
-            Beep(40, 2000)
             log_process("")
             log("")
             return True
