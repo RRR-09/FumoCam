@@ -1,5 +1,5 @@
 import os
-from dotenv import load_dotenv  # pip3.9 install python-dotenv
+from dotenv import load_dotenv, dotenv_values
 from pyautogui import size as get_monitor_size
 from pyautogui import position as get_mouse_position
 from mss import mss
@@ -9,7 +9,21 @@ import json
 import pytesseract
 pytesseract.pytesseract.tesseract_cmd = os.path.join("C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe")
 
-load_dotenv()
+load_dotenv(".env", verbose=True)
+def check_dotenv():
+    try:
+        for dotenv_key in list(dotenv_values(".env.default").keys()):
+            print(f"[DotEnv] Checking {dotenv_key}")
+            if os.getenv(dotenv_key) is None:
+                raise IndexError
+    except Exception as e:
+        print(e)
+        raise Exception("Could not validate .env file! Does it exist/have all values?")
+        
+
+
+check_dotenv()
+
 RESOURCES_PATH = Path.cwd().parent / "resources"
 SCREEN_RES = {  # todo: Don't use globals, make class-based
     "width": get_monitor_size()[0],
