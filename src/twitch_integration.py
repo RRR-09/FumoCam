@@ -330,6 +330,8 @@ class TwitchBot(commands.Bot):
             return
         try:
             name = args[0].lower()
+            if name[0] == '@':
+                name = name[1:]
         except:
             await ctx.send(f"[Please specify a user!]")
             return

@@ -128,6 +128,7 @@ class MainBotConfig:
     game_id = 6238705697
     game_id_nil = 7137029060
     game_id_hinamizawa = 6601613056
+    game_id_lenen = 8129913919
     game_instances_url = "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     max_attempts_character_selection = 30
     max_attempts_sit_button = 3
