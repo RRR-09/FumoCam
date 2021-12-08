@@ -24,7 +24,9 @@ jobs:
     - name: Echo Poetry Version
       env:
         POETRYVERSION: ${{ matrix.poetry-version }}
-      run: echo $POETRYVERSION
+      run: |
+        echo $POETRYVERSION
+        echo Test
     - name: Install Poetry
       env: 
         POETRYVERSION: ${{ matrix.poetry-version }}
