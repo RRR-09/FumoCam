@@ -21,11 +21,15 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Echo Poetry Version
+      env:
+        POETRYVERSION: ${{ matrix.poetry-version }}
+      run: echo $POETRYVERSION
     - name: Install Poetry
       env: 
-        POETRY_VERSION: ${{ matrix.poetry-version }}
+        POETRYVERSION: ${{ matrix.poetry-version }}
       run: |
-        pip install poetry==$POETRY_VERSION
+        pip install poetry==$POETRYVERSION
     - name: Install dependencies via Poetry
       run: |
         poetry install
