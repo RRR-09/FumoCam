@@ -42,3 +42,11 @@ build-backend = "poetry.core.masonry.api"
 [tool.isort]
 src_paths=["src"]
 profile = "black"
+
+
+[tool.mypy]
+python_version = "3.9"
+
+[[tool.mypy.overrides]]
+module = []
+ignore_missing_imports = true
