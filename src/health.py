@@ -171,7 +171,7 @@ async def check_for_better_server():
         nil_world_id = await check_if_in_nil_world()
         hinamizawa_world_id = await check_if_in_hinamizawa_world()
         lenen_world_id = await check_if_in_lenen_world()
-        if nil_world_id == "N/A" and hinamizawa_world_id == "N/A":
+        if nil_world_id == "N/A" and hinamizawa_world_id == "N/A" and lenen_world_id == "N/A":
             log_process("Could not find FumoCam in any servers")
             await CFG.add_action_queue("handle_crash")
             return False
