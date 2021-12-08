@@ -17,25 +17,30 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - uses: actions/checkout@v2
+
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Install Poetry (*nix OS)
-      env: 
-        POETRY_VERSION: ${{ matrix.poetry-version }}
-      run: |
-        pip install poetry==$POETRY_VERSION
-      if: runner.os != 'Windows'
+
     - name: Install Poetry (Windows OS)
+      if: runner.os == 'Windows'
       env: 
         POETRY_VERSION: ${{ matrix.poetry-version }}
       run: |
         pip install poetry==%POETRY_VERSION%
-      if: runner.os == 'Windows'
+
+    - name: Install Poetry (*nix OS)
+      if: runner.os != 'Windows'
+      env: 
+        POETRY_VERSION: ${{ matrix.poetry-version }}
+      run: |
+        pip install poetry==$POETRY_VERSION
+        
     - name: Install dependencies via Poetry
       run: |
         poetry install
+
     - name: Imports Sorted (isort)
       run: |
         poetry run isort --check src
