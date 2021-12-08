@@ -28,7 +28,7 @@ jobs:
       env: 
         POETRY_VERSION: ${{ matrix.poetry-version }}
       run: |
-        pip install poetry==%POETRY_VERSION%
+        pip install poetry==$env:POETRY_VERSION
 
     - name: Install Poetry (*nix OS)
       if: runner.os != 'Windows'
