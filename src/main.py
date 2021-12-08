@@ -174,7 +174,7 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             for action_queue_item in original_queue:
                 if isinstance(action_queue_item, dict) and list(action.keys())[-1] in action_queue_item:
                     CFG.action_queue.remove(action_queue_item)
-                elif action == action_queue_item
+                elif action == action_queue_item:
                     CFG.action_queue.remove(action_queue_item)
     await async_sleep(0.1)
     CFG.action_running = False
