@@ -102,6 +102,27 @@ async def check_if_in_hinamizawa_world():
     return "ERROR"
 
 
+async def check_if_in_lenen_world(): 
+    current_server_id = "N/A"
+    url = f"https://games.roblox.com/v1/games/{CFG.game_id_lenen}/servers/Public?sortOrder=Asc&limit=10"
+    try:
+        response = requests.get(url, timeout=10)
+    except Exception:
+        print(format_exc())
+        return "ERROR"
+    if response.status_code == 200:
+        response_result = response.json()
+        servers = response_result["data"]
+        for server in servers:
+            if CFG.player_token in server["playerTokens"]:
+                current_server_id = server["id"]
+                break
+        if current_server_id != "ERROR":
+            print(current_server_id)
+        return current_server_id
+    return "ERROR"
+
+
 async def get_current_server_id():
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
@@ -149,6 +170,7 @@ async def check_for_better_server():
     if current_server_id == "N/A":
         nil_world_id = await check_if_in_nil_world()
         hinamizawa_world_id = await check_if_in_hinamizawa_world()
+        lenen_world_id = await check_if_in_lenen_world()
         if nil_world_id == "N/A" and hinamizawa_world_id == "N/A":
             log_process("Could not find FumoCam in any servers")
             await CFG.add_action_queue("handle_crash")
