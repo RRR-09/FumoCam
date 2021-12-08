@@ -21,17 +21,18 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
-    - name: Echo Poetry Version
-      env:
-        POETRYVERSION: ${{ matrix.poetry-version }}
-      run: |
-        echo $POETRYVERSION
-        echo Test
-    - name: Install Poetry
+    - name: Install Poetry (*nix OS)
       env: 
-        POETRYVERSION: ${{ matrix.poetry-version }}
+        POETRY_VERSION: ${{ matrix.poetry-version }}
       run: |
-        pip install poetry==$POETRYVERSION
+        pip install poetry==$POETRY_VERSION
+      if: runner.os != 'Windows'
+    - name: Install Poetry (Windows OS)
+      env: 
+        POETRY_VERSION: ${{ matrix.poetry-version }}
+      run: |
+        pip install poetry==%POETRY_VERSION%
+      if: runner.os == 'Windows'
     - name: Install dependencies via Poetry
       run: |
         poetry install
