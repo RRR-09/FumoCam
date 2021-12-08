@@ -1,0 +1,142 @@
+image: python:3.9-slim
+
+variables:
+  TEST: "ASDF"
+
+cache:
+  paths:
+    - .cache/poetry
+    - .venv/
+
+.venv: &venv
+  before_script:
+    - pip install poetry
+    - poetry config virtualenvs.in-project true
+    - poetry config cache-dir "$CI_PROJECT_DIR/.cache/poetry"
+    - poetry install
+
+stages:
+  - static-analysis
+  - test
+  - build
+  - deploy
+
+flake8:
+  stage: static-analysis
+  <<: *venv
+  script:
+    - poetry run flake8 cim_datastore test
+
+black:
+  stage: static-analysis
+  <<: *venv
+  script:
+    - poetry run black --check -v --diff src
+
+isort:
+  stage: static-analysis
+  <<: *venv
+  script:
+    - poetry run isort --check src
+
+mypy:
+  stage: static-analysis
+  <<: *venv
+  script:
+    - poetry run mypy src
+
+security-test:
+  stage: static-analysis
+  <<: *venv
+  script:
+    - poetry run bandit -r -ll -f screen src
+
+pytest:
+  stage: test
+  services:
+    - name: ${DKR_REGISTRY}/<REDACTED>/database:master
+      alias: database
+    - name: minio/minio:RELEASE.2019-07-31T18-57-56Z
+      alias: minio
+      command: ["server", "/data"]
+  <<: *venv
+  script:
+    - apt-get update && apt-get install -y gcc && apt-get install -y mdbtools
+    - poetry run pytest --cov-report term --cov=src --junit-xml=./junit.xml --cov-report xml:coverage.xml
+  coverage: /\d+.\d+\%\s*$/
+  artifacts:
+    reports:
+      junit: junit.xml
+      cobertura: coverage.xml
+
+dependency-scan:
+  stage: test
+  <<: *venv
+  script:
+    - poetry export -o requirements-dev.txt --dev --without-hashes
+    - poetry run ossaudit -f requirements-dev.txt
+  only:
+    - schedules
+
+license-scan:
+  stage: test
+  <<: *venv
+  script:
+    - poetry export -o requirements.txt --without-hashes
+    - poetry run liccheck -r requirements.txt --reporting public/licenses.txt
+  artifacts:
+    when: on_success
+    paths:
+      - public
+
+build:
+  stage: build
+  image: docker:19.03.8
+  script:
+    - docker build -t $DOCKER_TAG --build-arg JFROG_USER=$JFROG_USER --build-arg JFROG_PASSWORD=$JFROG_PASSWORD --label commit=$CI_COMMIT_SHA .
+    - docker push $DOCKER_TAG
+  only:
+    - master
+    - tags
+  except:
+    - schedules
+
+pages:
+  stage: build
+  <<: *venv
+  script:
+    - poetry run create_api_docs
+  artifacts:
+    when: on_success
+    paths:
+      - public
+  only:
+    - master
+
+deploy-<REDACTED>-master:
+  stage: deploy
+  image: ${DKR_REGISTRY}/<REDACTED>/<REDACTED>-deploy:master
+  script:
+    - source /usr/src/run
+    - main deploy <REDACTED> master $CI_COMMIT_REF_NAME
+  environment:
+    name: <REDACTED>-master
+    url: https://<REDACTED>-master.vpn.<REDACTED>.com
+  only:
+    - master
+  except:
+    - schedules
+
+deploy-transition-dev:
+  stage: deploy
+  image: ${DKR_REGISTRY}/<REDACTED>/<REDACTED>-deploy:master
+  environment:
+    name: transition-dev
+    url: https://transition-dev.vpn.<REDACTED>.com
+  script:
+    - source /usr/src/run
+    - main deploy -f /usr/src/configs/stacks/transition/stack.yml transition dev $CI_COMMIT_REF_NAME
+  only:
+    - master
+  except:
+    - schedules
