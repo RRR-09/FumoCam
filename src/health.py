@@ -74,7 +74,7 @@ async def check_if_in_nil_world():
         response_result = response.json()
         servers = response_result["data"]
         for server in servers:
-            if CFG.player_token in server["playerTokens"]:
+            if CFG.player_id in server["playerTokens"]:
                 current_server_id = server["id"]
                 break
         if current_server_id != "ERROR":
@@ -116,7 +116,7 @@ async def check_if_in_lenen_world():
         response_result = response.json()
         servers = response_result["data"]
         for server in servers:
-            if CFG.player_token in server["playerTokens"]:
+            if CFG.player_id in server["playerTokens"]:
                 current_server_id = server["id"]
                 break
         if current_server_id != "ERROR":
@@ -140,7 +140,7 @@ async def get_current_server_id():
         if len(servers) == 0:
             return "ERROR"
         for server in servers:
-            if CFG.player_token in server["playerTokens"]:
+            if CFG.player_id in server["playerTokens"]:
                 current_server_id = server["id"]
                 break
         if current_server_id != "ERROR":
