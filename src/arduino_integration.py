@@ -1,8 +1,10 @@
-from utilities import *
+import json
+from time import sleep
+
 import serial  # pip install pyserial
 import serial.tools.list_ports  # TODO: figure out why not the same as above
-from time import sleep
-import json
+
+from utilities import *
 
 
 class ArduinoConfig:

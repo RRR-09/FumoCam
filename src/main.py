@@ -1,6 +1,7 @@
 from health import *  # Optimized import, contains all other src files down the line of dependency
 from twitch_integration import *
 
+
 async def queue_movement(action):  # todo: Simplify
     CFG.action_running = True
     log_process("Manual Movement")

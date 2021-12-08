@@ -1,12 +1,14 @@
+import json
 import os
-from dotenv import load_dotenv, dotenv_values
-from pyautogui import size as get_monitor_size
-from pyautogui import position as get_mouse_position
-from mss import mss
 from pathlib import Path
 from shutil import copyfile
-import json
+
 import pytesseract
+from dotenv import dotenv_values, load_dotenv
+from mss import mss
+from pyautogui import position as get_mouse_position
+from pyautogui import size as get_monitor_size
+
 pytesseract.pytesseract.tesseract_cmd = os.path.join("C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe")
 
 load_dotenv(".env", verbose=True)

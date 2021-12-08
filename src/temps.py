@@ -1,17 +1,17 @@
-from utilities import run_as_admin
-
-
-from time import sleep
-from utilities import output_log
 from os import path
-from config import RESOURCES_PATH
-import psutil  # pip3.9 install psutil
+from time import sleep
+
 # noinspection PyPackageRequirements
 import clr  # pip3.9 install wheel; pip3.9 install pythonnet
+import psutil  # pip3.9 install psutil
+
+from config import RESOURCES_PATH
+from utilities import output_log, run_as_admin
 
 clr.AddReference(path.join(RESOURCES_PATH, "OpenHardwareMonitorLib.dll"))
 # noinspection PyUnresolvedReferences
 import OpenHardwareMonitor.Hardware  # Ignore "No module found named...", is imported dynamically by above line
+
 run_as_admin()
 
 def get_temps(computer):

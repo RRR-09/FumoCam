@@ -1,11 +1,16 @@
-from health import click_character_in_menu, change_characters, join_target_server, check_for_better_server, get_current_server_id
-from actions import mute_toggle
-from commands import click_sit_button, respawn_character
-from utilities import *
-import pyautogui
-from twitch_integration import twitch_main
 import asyncio
+
+import pyautogui
+
+from actions import mute_toggle
 from arduino_integration import *
+from commands import click_sit_button, respawn_character
+from health import (change_characters, check_for_better_server,
+                    click_character_in_menu, get_current_server_id,
+                    join_target_server)
+from twitch_integration import twitch_main
+from utilities import *
+
 
 def test_turn_camera(direction="left", amount=45):
     async def do_test(direction, amount):
@@ -56,9 +61,10 @@ def test_join_target_server():
 
 
 def test_get_cookies_for_browser():
+    import json
+
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
-    import json
     print("Login to your account in the brower that opens, come back to this screen, and press enter.")
     print("Press enter to start")
     input()
@@ -79,9 +85,10 @@ def test_get_cookies_for_browser():
 
 
 def test_loading_cookies_for_browser():
+    import json
+
     from selenium import webdriver
     from selenium.webdriver.chrome.options import Options
-    import json
     print("If you completed test_get_cookies_for_browser, this should open a logged-in browser.")
     print("Press enter to start, and press enter again to terminate the browser.")
     input()

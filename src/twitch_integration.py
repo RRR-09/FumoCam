@@ -1,9 +1,11 @@
-from twitchio.ext import commands, routines
-from asyncio import create_task
-from commands import *
-from datetime import datetime
 import traceback
+from asyncio import create_task
+from datetime import datetime
 from math import floor
+
+from twitchio.ext import commands, routines
+
+from commands import *
 
 
 class TwitchBot(commands.Bot):

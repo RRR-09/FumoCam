@@ -1,9 +1,11 @@
-from actions import *
-from selenium import webdriver
-from imutils import rotate_bound
-import numpy as np
 import json
+
 import cv2 as cv
+import numpy as np
+from imutils import rotate_bound
+from selenium import webdriver
+
+from actions import *
 
 
 async def force_get_best_server():

@@ -1,16 +1,16 @@
-import os
-from time import sleep
-from utilities import check_active
-from config import RESOURCES_PATH
-from traceback import format_exc
-from copy import copy
-
-from mss import mss  # pip3.9 install mss
-import numpy as np
-import cv2 as cv
-import pydirectinput
 import asyncio
+import os
+from copy import copy
+from time import sleep
+from traceback import format_exc
 
+import cv2 as cv
+import numpy as np
+import pydirectinput
+from mss import mss  # pip3.9 install mss
+
+from config import RESOURCES_PATH
+from utilities import check_active
 
 
 def apply_edge_filter(original_image, edge_filter=None):

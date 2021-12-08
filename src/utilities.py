@@ -1,20 +1,23 @@
-from config import *
-import os
-from time import sleep,time,strftime,strptime,mktime
-from asyncio import sleep as async_sleep
 import asyncio
+import math
+import os
+import subprocess
+from asyncio import sleep as async_sleep
+from time import mktime, sleep, strftime, strptime, time
 from traceback import format_exc
+
+import psutil
 import pyautogui  # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
 import pydirectinput
-import subprocess
 import requests
-import math
-import psutil
+
+from config import *
 
 
 def check_admin_and_run():
-    from sys import executable as a_executable, argv as a_argv
     from ctypes import windll as a_windll
+    from sys import argv as a_argv
+    from sys import executable as a_executable
     from traceback import format_exc as a_fe
 
     try:
