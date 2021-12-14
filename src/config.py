@@ -52,6 +52,15 @@ class ActionQueueItem:
         self.values = values
 
 
+class BlockedMouseRegion:
+    def __init__(self, name: str, x1: int, y1: int, x2: int, y2: int):
+        self.name = name
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
+
+
 class MainBotConfig:
     resources_path = Path.cwd().parent / "resources"
     screen_res = {  # todo: Don't use globals, make class-based
@@ -63,7 +72,7 @@ class MainBotConfig:
         "center_y_float": get_monitor_size()[1] / 2,
         "center_x": int(get_monitor_size()[0] / 2),
         "center_y": int(get_monitor_size()[1] / 2),
-        "mss_monitor_size": mss().monitors[0]
+        "mss_monitor_size": mss().monitors[0],
     }
 
     action_queue: List[ActionQueueItem] = []
@@ -153,17 +162,14 @@ class MainBotConfig:
     max_attempts_better_server = 20
     mouse_software_emulation = True
     mouse_blocked_regions = [
-        {"name": "Chat", "x1": 0, "y1": 0, "x2": 340, "y2": 240},
-        {"name": "Character Select", "x1": 420, "y1": 0, "x2": 850, "y2": 80},
-        {
-            "name": "Settings/Bottom-Right Buttons",
-            "x1": 0,
-            "y1": 580,
-            "x2": 1280,
-            "y2": 720,
-        },
-        {"name": "Leaderboard", "x1": 1100, "y1": 0, "x2": 1280, "y2": 720},
+        BlockedMouseRegion(name="Chat", x1=0, y1=0, x2=340, y2=240),
+        BlockedMouseRegion(name="Character Select", x1=420, y1=0, x2=850, y2=80),
+        BlockedMouseRegion(
+            name="Settings/Bottom-Right Buttons", x1=0, y1=580, x2=1280, y2=720
+        ),
+        BlockedMouseRegion(name="Leaderboard", x1=1100, y1=0, x2=1280, y2=720),
     ]
+    mouse_blocked_safety_padding = 10
     nav_locations = {
         "shrimp": {"name": "Shrimp Tree"},
         "ratcade": {"name": "Ratcade"},
@@ -220,7 +226,9 @@ class MainBotConfig:
     zoom_min: float = 0
     zoom_ui_min: float = 30  # If lower, zoom out when interacting with UI (No CV needed, just get out of first person)
     zoom_out_ui: float = 10  # Amount to zoom out when interacting with UI (No CV needed, just get out of first person)
-    zoom_ui_min_cv: float = 50  # If lower, zoom out when interacting with UI (Computervision)
+    zoom_ui_min_cv: float = (
+        50  # If lower, zoom out when interacting with UI (Computervision)
+    )
     zoom_out_ui_cv: float = (
         50  # Amount to zoom out for safety when interacting with UI (Computervision)
     )

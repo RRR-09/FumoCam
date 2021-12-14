@@ -55,5 +55,5 @@ profile = "black"
 python_version = "3.9"
 
 [[tool.mypy.overrides]]
-module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*"]
+module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*"]
 ignore_missing_imports = true
