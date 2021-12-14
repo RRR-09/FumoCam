@@ -2687,6 +2687,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "types-selenium"
+version = "3.141.4"
+description = "Typing stubs for selenium"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.0.1"
 description = "Backported and Experimental Type Hints for Python 3.6+"
@@ -2739,7 +2747,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "3320c0a65d74096ef916dbd90a144dd188e8a3503200a7e9090c59f5ef6f1691"
+content-hash = "2384617102ede169686bf7b682a4f4b4d9f1ea6a9dc0316e97337b11362d19a9"
 
 [metadata.files]
 aiohttp = [
@@ -4126,6 +4134,10 @@ types-psutil = [
 types-requests = [
     {file = "types-requests-2.26.1.tar.gz", hash = "sha256:0893e112e1510bbb67f537941c92192de7472e51bf7f236e0e583866f0ed933e"},
     {file = "types_requests-2.26.1-py3-none-any.whl", hash = "sha256:853571b3accc188976c0f4feffcaebf6cdfc170082b5e43f3358aa78de61f531"},
+]
+types-selenium = [
+    {file = "types-selenium-3.141.4.tar.gz", hash = "sha256:fbcd243ed439d910060b9fe8c26270a103826549628677f2f74237e28f0e8702"},
+    {file = "types_selenium-3.141.4-py3-none-any.whl", hash = "sha256:5af55973a4238795a74df64cbba4553c08ed80bbe1e40c9843a0770fc62a2239"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.0.1-py3-none-any.whl", hash = "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"},

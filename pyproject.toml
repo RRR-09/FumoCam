@@ -41,6 +41,7 @@ mypy = "^0.910"
 ossaudit = "^0.5.0"
 types-psutil = "^5.8.15"
 types-requests = "^2.26.1"
+types-selenium = "^3.141.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -55,5 +56,5 @@ profile = "black"
 python_version = "3.9"
 
 [[tool.mypy.overrides]]
-module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*"]
+module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*", "cv2.*", "imutils.*"]
 ignore_missing_imports = true
