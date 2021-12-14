@@ -1,0 +1,61 @@
+name: Static Analysis
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ci:
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+        os: [windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set Up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install Poetry
+      uses: snok/install-poetry@v1.3.0
+      with:
+        virtualenvs-create: true
+        virtualenvs-in-project: true
+
+    - name: Load Cached Venv
+      id: cached-poetry-dependencies
+      uses: actions/cache@v2
+      with:
+        path: .venv
+        key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}
+            
+    - name: Install dependencies via Poetry
+      run: poetry install
+      if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+    - name: Imports Sorted (isort)
+      run: poetry run isort --check src
+    
+    - name: PEP8 Compliance (flake8)
+      run: poetry run flake8 src
+    
+    - name: Code Formatting (black)
+      run: poetry run black --check -v --diff src
+    
+    - name: Static Type Check (mypy)
+      run: poetry run mypy src
+    
+    - name: Security Test (bandit)
+      run: poetry run bandit -r -ll -f screen src
+    
+    - name: Dependency Security Audit (ossaudit)
+      run: |
+        poetry export -o requirements-dev.txt --dev --without-hashes
+        poetry run ossaudit -f requirements-dev.txt
+        
