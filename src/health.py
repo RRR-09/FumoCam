@@ -565,7 +565,7 @@ async def handle_join_new_server(crash=False):
     log("")
 
 
-async def auto_nav(location, do_checks=True, slow_spawn_detect=True):
+async def auto_nav(location: str, do_checks: bool = True, slow_spawn_detect: bool = True):
     # await check_active()
     log_process("AutoNav")
     if do_checks:
@@ -580,12 +580,18 @@ async def auto_nav(location, do_checks=True, slow_spawn_detect=True):
         ACFG.jump()
         await async_sleep(1)
         log("Respawning")
-        await respawn_character(chat=False)
+        await respawn_character(notify_chat=False)
         await async_sleep(7)
     log("Zooming out to full scale")
     ACFG.zoom(zoom_direction_key="o", amount=105)
 
-    spawn = spawn_detection_main(slow=slow_spawn_detect)["location"]
+    spawn = spawn_detection_main(CFG.resources_path, slow=slow_spawn_detect)
+    if spawn == "ERROR":
+        log("Failed to detect spawn!\n Notifying Dev...")
+        notify_admin("Failed to find spawn in `auto_nav`")
+        sleep(5)
+        return
+
     if spawn == "comedy_machine":
         comedy_to_main()
     elif spawn == "tree_house":
@@ -611,7 +617,7 @@ async def auto_nav(location, do_checks=True, slow_spawn_detect=True):
     await async_sleep(3)
 
 
-async def get_settings_button_pos():
+async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
     monitor = CFG.screen_res["mss_monitor"]
     screen_width = monitor["width"]
     monitor["width"] = int(CFG.character_select_width * screen_width)
@@ -626,47 +632,43 @@ async def get_settings_button_pos():
     for __ in range(CFG.settings_menu_max_find_attempts):
         screenshot = np.array(take_screenshot_binary())
         screenshot = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)
-        ___, screenshot = cv.threshold(screenshot, 211, 255, 3)
+        _, screenshot = cv.threshold(screenshot, 211, 255, 3)
 
-        best_match = {
-            "max_val": 0,
-            "top_left": (0, 0),
-            "bottom_right": (0, 0),
-            "angle": 0,
-        }
+        match_max_val = 0
+        match_top_left = (0, 0)
+        match_bottom_right = (0, 0)
+
         for rotation_degrees in range(360):
             rotated_button = rotate_bound(button_img, rotation_degrees)
             result = cv.matchTemplate(screenshot, rotated_button, cv.TM_CCOEFF_NORMED)
-            min_val, max_val, min_loc, max_loc = cv.minMaxLoc(result)
-            if best_match["max_val"] < max_val:
+            _, max_val, _, max_loc = cv.minMaxLoc(result)
+            if match_max_val < max_val:
                 button_w = button_img.shape[1]
                 button_h = button_img.shape[0]
                 top_left = max_loc
                 bottom_right = (top_left[0] + button_w, top_left[1] + button_h)
-                best_match = {
-                    "max_val": max_val,
-                    "top_left": top_left,
-                    "bottom_right": bottom_right,
-                    "angle": rotation_degrees,
-                }
+                match_max_val = max_val
+                match_top_left = top_left
+                match_bottom_right = bottom_right
                 # No break; getting highest confidence rotation reduces false positives
 
-        if best_match["max_val"] >= CFG.settings_menu_find_threshold:
+        if match_max_val >= CFG.settings_menu_find_threshold:
             break
         await async_sleep(1)
+
     try:
-        right = best_match["bottom_right"][0]
-        left = best_match["top_left"][0]
+        right = match_bottom_right[0]
+        left = match_top_left[0]
         width = max(right, left) - min(right, left)
         center_x = int(monitor["left"]) + int(left + (width / 2))
 
-        bottom = best_match["bottom_right"][1]
-        top = best_match["top_left"][1]
+        bottom = match_bottom_right[1]
+        top = match_top_left[1]
         height = max(top, bottom) - min(top, bottom)
         center_y = int(top + (height / 2))
 
-        if best_match["max_val"] >= CFG.settings_menu_find_threshold:
-            print(f"Found button. ({round(best_match['max_val']*100,2)}%)")
+        if match_max_val >= CFG.settings_menu_find_threshold:
+            print(f"Found button. ({round(match_max_val*100,2)}%)")
             log("")
             return center_x, center_y
         else:
@@ -676,18 +678,20 @@ async def get_settings_button_pos():
             )
             await async_sleep(5)
             log("")
-            return None, None
+            return None
     except Exception:
         error_log(format_exc())
         log("Could not find settings button!")
-        return None, None
+        return None
 
 
-async def click_settings_button(check_open_state=None):
+async def click_settings_button(check_open_state: Union[bool, None] = None) -> bool:
     await async_sleep(0.5)
-    button_x, button_y = await get_settings_button_pos()
-    if button_x is None:
+
+    settings_button_pos = await get_settings_button_pos()
+    if settings_button_pos is None:
         return False
+    button_x, button_y = settings_button_pos
 
     ACFG.moveMouseAbsolute(x=int(button_x), y=int(button_y))
     ACFG.left_click()
@@ -700,13 +704,17 @@ async def click_settings_button(check_open_state=None):
         _, last_button_y = button_x, button_y
         success = False
         for i in range(CFG.character_select_max_click_attempts):
-            new_button_x, new_button_y = await get_settings_button_pos()
-            if new_button_x is None:
+            new_settings_button_pos = await get_settings_button_pos()
+            if new_settings_button_pos is None:
                 for i in range(CFG.settings_menu_max_find_attempts):
-                    new_button_x, new_button_y = await get_settings_button_pos()
-                    if new_button_x is not None:
+                    new_settings_button_pos = await get_settings_button_pos()
+                    if new_settings_button_pos is not None:
                         break
                     await async_sleep(2)
+
+            if new_settings_button_pos is None:
+                continue
+            new_button_x, new_button_y = new_settings_button_pos
 
             if check_open_state is True and (
                 int(new_button_y / 2) < int(last_button_y / 2)
@@ -732,13 +740,14 @@ async def click_settings_button(check_open_state=None):
     return True
 
 
-async def ocr_for_settings(option=None):
-    desired_option = CFG.settings_menu_grief_text.lower()
-    if option is not None:
-        desired_option = option.lower()
-    button_x, button_y = await get_settings_button_pos()
-    if button_x is None:
+async def ocr_for_settings(option: str = "") -> bool:
+    desired_option = (CFG.settings_menu_grief_text if not option else option).lower()
+
+    settings_button_pos = await get_settings_button_pos()
+    if settings_button_pos is None:
         return False
+    button_x, button_y = settings_button_pos
+
     monitor = CFG.screen_res["mss_monitor"]
     screen_width = monitor["width"]
     screen_height = monitor["height"]
@@ -749,7 +758,7 @@ async def ocr_for_settings(option=None):
     monitor["top"] = height_offset
     monitor["height"] = monitor["height"] - height_offset
 
-    ocr_data = None
+    ocr_data = {}
     found_option = False
     for attempts in range(CFG.settings_menu_ocr_max_attempts):  # Attempt multiple OCRs
         log(
@@ -794,7 +803,7 @@ async def ocr_for_settings(option=None):
     return True
 
 
-async def toggle_collisions():
+async def toggle_collisions() -> bool:
     log_process(
         f"{'Enabling' if CFG.collisions_disabled else 'Disabling'} Grief Collisions"
     )
