@@ -74,8 +74,8 @@ class ArduinoConfig:
     turn_ratio = 124.15  # 360 = 3s = 360 degrees; smaller overshoot, bigger undershoot
     move_ratio = 0.3576  # 1 unit is smallest amount (to 4 decimal places) needed to fall off diagonal spawn platform
 
-    def arduino_interface(self, payload: str, delay_time: float = 0):
-        payload = dumps(payload, separators=(",", ":"))
+    def arduino_interface(self, payload_object: dict, delay_time: float = 0):
+        payload = dumps(payload_object, separators=(",", ":"))
 
         completed = False
         data = []
@@ -97,7 +97,7 @@ class ArduinoConfig:
 
     def jump(self, jump_time: float = 1):
         payload = {"type": "keyhold", "key": " ", "hold_time": jump_time}
-        self.arduino_interface(payload, payload["hold_time"])
+        self.arduino_interface(payload, jump_time)
 
     def left_click(self):
         if CFG.mouse_software_emulation:
@@ -146,7 +146,7 @@ class ArduinoConfig:
         }
         self.arduino_interface(
             payload,
-            max(payload["forward_time"], payload["jump_time"]) + payload["jump_delay"],
+            max(forward_time, jump_time) + jump_delay,
         )
         sleep(0.5)
 
@@ -159,7 +159,7 @@ class ArduinoConfig:
             "key": f"KEY_{direction.upper()}_ARROW",
             "hold_time": turn_amount,
         }
-        self.arduino_interface(payload, payload["hold_time"])
+        self.arduino_interface(payload, turn_amount)
         sleep(0.5)
 
     def move(self, direction_key: str, amount: float, raw: bool = False):
@@ -167,7 +167,7 @@ class ArduinoConfig:
         if not raw:
             move_amount *= self.move_ratio
         payload = {"type": "keyhold", "key": direction_key, "hold_time": move_amount}
-        self.arduino_interface(payload, payload["hold_time"])
+        self.arduino_interface(payload, move_amount)
         sleep(0.5)
 
     def moveMouseAbsolute(self, x: int, y: int):
@@ -233,7 +233,7 @@ class ArduinoConfig:
 
     def keyPress(self, key: str, amount: float = 0.2):
         payload = {"type": "keyhold", "key": key, "hold_time": amount}
-        self.arduino_interface(payload, payload["hold_time"])
+        self.arduino_interface(payload, amount)
 
     def resetMouse(self, move_to_bottom_right: bool = True):
         if CFG.mouse_software_emulation:
@@ -263,7 +263,7 @@ class ArduinoConfig:
     def send_message(self, message: str):
         message = message[:100]  # 100 char ingame limit
         payload = {"type": "msg", "len": len(message), "msg": message}
-        self.arduino_interface(payload, payload["len"] * self.msg_letter_wait_time)
+        self.arduino_interface(payload, len(message) * self.msg_letter_wait_time)
         sleep(0.75)
 
     def use(self):
@@ -271,7 +271,8 @@ class ArduinoConfig:
         self.arduino_interface(payload, payload["hold_time"])
 
     def zoom(self, zoom_direction_key: str, amount: float):
-        CFG.zoom_level += amount * (1 if zoom_direction_key == "o" else -1)
+        zoom_direction_multiplier = (1.0 if zoom_direction_key == "o" else -1.0)
+        CFG.zoom_level += amount * zoom_direction_multiplier
         CFG.zoom_level = min(
             CFG.zoom_max, max(CFG.zoom_min, CFG.zoom_level)
         )  # Keep it in bounds
@@ -283,7 +284,7 @@ class ArduinoConfig:
             "key": zoom_direction_key,
             "hold_time": zoom_amount,
         }
-        self.arduino_interface(payload, payload["hold_time"])
+        self.arduino_interface(payload, zoom_amount)
 
 
 ACFG = ArduinoConfig()

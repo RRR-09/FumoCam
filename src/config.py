@@ -214,14 +214,14 @@ class MainBotConfig:
         "becomefumocam",
     ]
 
-    zoom_default = 30
-    zoom_level = 50  # TODO: validate this is roughly correct on spawn
-    zoom_max = 100
-    zoom_min = 0
-    zoom_ui_min = 30  # If lower, zoom out when interacting with UI (No CV needed, just get out of first person)
-    zoom_out_ui = 10  # Amount to safely zoom out when interacting with UI (No CV needed, just get out of first person)
-    zoom_ui_min_cv = 50  # If lower, zoom out when interacting with UI (Computervision)
-    zoom_out_ui_cv = (
+    zoom_default: float = 30
+    zoom_level: float = 50  # TODO: validate this is roughly correct on spawn
+    zoom_max: float = 100
+    zoom_min: float = 0
+    zoom_ui_min: float = 30  # If lower, zoom out when interacting with UI (No CV needed, just get out of first person)
+    zoom_out_ui: float = 10  # Amount to zoom out when interacting with UI (No CV needed, just get out of first person)
+    zoom_ui_min_cv: float = 50  # If lower, zoom out when interacting with UI (Computervision)
+    zoom_out_ui_cv: float = (
         50  # Amount to zoom out for safety when interacting with UI (Computervision)
     )
 
