@@ -117,6 +117,12 @@ async def take_screenshot() -> str:
     return file_name
 
 
+async def take_screenshot_binary():
+    with mss() as sct:
+        screenshot = sct.grab(CFG.screen_res["mss_monitor"])
+    return screenshot
+
+
 def kill_process(executable: str = "RobloxPlayerBeta.exe", force: bool = False):
     # TODO: taskkill.exe can fail, how can we kill the thing that should kill? https://i.imgur.com/jd01ZOv.png
     process_call = ["taskkill"]

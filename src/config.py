@@ -1,9 +1,8 @@
 import json
 import os
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
-import pytesseract
 from dotenv import dotenv_values, load_dotenv
 from mss import mss
 from pyautogui import size as get_monitor_size
@@ -23,10 +22,6 @@ def check_dotenv():
 
 
 check_dotenv()
-
-pytesseract.pytesseract.tesseract_cmd = os.path.join(
-    "C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe"
-)
 
 
 class Twitch:
@@ -72,7 +67,7 @@ class MainBotConfig:
         "center_y_float": get_monitor_size()[1] / 2,
         "center_x": int(get_monitor_size()[0] / 2),
         "center_y": int(get_monitor_size()[1] / 2),
-        "mss_monitor_size": mss().monitors[0],
+        "mss_monitor": mss().monitors[-1],
     }
 
     action_queue: List[ActionQueueItem] = []
@@ -150,9 +145,11 @@ class MainBotConfig:
     disable_collisions_on_spawn = True
     game_executable_name = "RobloxPlayerBeta.exe"
     game_id = 6238705697
-    game_id_nil = 7137029060
-    game_id_hinamizawa = 6601613056
-    game_id_lenen = 8129913919
+    game_ids_other: Dict[int, str] = {  # Do not check for better servers in these
+        7137029060: "Nil",
+        6601613056: "Hinamizawa",
+        8129913919: "Lenen",
+    }
     game_instances_url = (
         "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     )
@@ -186,6 +183,11 @@ class MainBotConfig:
     # player_id = "D5E4A52E9B12F1E36D7269325943AE35"   # BecomeF_umoCam
     # player_id = "A9AFD097DCB5C13B801697A4104C3A61"   # F_umoCam04
     # player_id = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
+    player_switch_cap = 50
+    player_difference_to_switch = 20
+    pytesseract_path = os.path.join(
+        "C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe"
+    )
     respawn_character_select_offset = -0.1
 
     settings_menu_image_path = os.path.join(resources_path, "gear.jpg")
