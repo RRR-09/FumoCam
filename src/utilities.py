@@ -13,7 +13,7 @@ from pygetwindow import getActiveWindow, getAllWindows
 from requests import post
 from requests.exceptions import HTTPError
 
-from config import CFG, OBS, SCREEN_RES, Discord
+from config import CFG, OBS, Discord
 
 
 def check_admin_and_run() -> bool:
@@ -140,11 +140,11 @@ async def check_active(
         if title_active or title_ending_active:
             if (
                 title == "Roblox"
-                and active_window.height != SCREEN_RES["height"]
+                and active_window.height != CFG.screen_res["height"]
                 and force_fullscreen
             ):
                 print(active_window)
-                while active_window.height != SCREEN_RES["height"]:
+                while active_window.height != CFG.screen_res["height"]:
                     press_key("f11")
                     print("Maximizing window with F11")
                     await async_sleep(0.3)
@@ -185,10 +185,10 @@ async def check_active(
                 print("Recurse")
             elif (
                 title == "Roblox"
-                and window.height != SCREEN_RES["height"]
+                and window.height != CFG.screen_res["height"]
                 and force_fullscreen
             ):
-                while window.height != SCREEN_RES["height"]:
+                while window.height != CFG.screen_res["height"]:
                     press_key("f11")
                     print("Maximizing window with F11")
                 await check_active(title)

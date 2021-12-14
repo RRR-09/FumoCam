@@ -28,19 +28,6 @@ pytesseract.pytesseract.tesseract_cmd = os.path.join(
     "C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe"
 )
 
-RESOURCES_PATH = Path.cwd().parent / "resources"
-SCREEN_RES = {  # todo: Don't use globals, make class-based
-    "width": get_monitor_size()[0],
-    "height": get_monitor_size()[1],
-    "x_multi": get_monitor_size()[0] / 2560,
-    "y_multi": get_monitor_size()[1] / 1440,
-    "center_x_float": get_monitor_size()[0] / 2,
-    "center_y_float": get_monitor_size()[1] / 2,
-    "center_x": int(get_monitor_size()[0] / 2),
-    "center_y": int(get_monitor_size()[1] / 2),
-}
-MONITOR_SIZE = mss().monitors[0]
-
 
 class Twitch:
     channel_name = "becomefumocam"
@@ -66,6 +53,19 @@ class ActionQueueItem:
 
 
 class MainBotConfig:
+    resources_path = Path.cwd().parent / "resources"
+    screen_res = {  # todo: Don't use globals, make class-based
+        "width": get_monitor_size()[0],
+        "height": get_monitor_size()[1],
+        "x_multi": get_monitor_size()[0] / 2560,
+        "y_multi": get_monitor_size()[1] / 1440,
+        "center_x_float": get_monitor_size()[0] / 2,
+        "center_y_float": get_monitor_size()[1] / 2,
+        "center_x": int(get_monitor_size()[0] / 2),
+        "center_y": int(get_monitor_size()[1] / 2),
+        "mss_monitor_size": mss().monitors[0]
+    }
+
     action_queue: List[ActionQueueItem] = []
     action_running = False
     advertisement = [
@@ -73,15 +73,6 @@ class MainBotConfig:
         '"BecomeFumoCam"!',
     ]
     audio_muted = False
-
-    twitch_blacklist = []
-    twitch_blacklist_path = OBS.output_folder / "twitch_blacklist.json"
-    try:
-        with open(str(twitch_blacklist_path), "r") as f:
-            twitch_blacklist = json.load(f)
-    except Exception:
-        print(f"{twitch_blacklist_path} malformed or missing")
-
     backpack_button_position = (0.87, 0.89)
     backpack_item_positions = {
         1: {"x": 0.26, "y": 0.35},
@@ -94,11 +85,10 @@ class MainBotConfig:
         8: {"x": 0.71, "y": 0.6},
     }
     backpack_open = False
-
     browser_driver_executable_name = "chromedriver.exe"
-    browser_driver_path = RESOURCES_PATH / browser_driver_executable_name
+    browser_driver_path = resources_path / browser_driver_executable_name
     browser_executable_name = "chrome.exe"
-    browser_profile_path = RESOURCES_PATH / ".browser_profile"
+    browser_profile_path = resources_path / ".browser_profile"
     Path(browser_profile_path).mkdir(parents=True, exist_ok=True)
     browser_cookies_path = browser_profile_path / "browser_cookies.json"
 
@@ -113,7 +103,7 @@ class MainBotConfig:
         "jjgay",
         "niggaHomosexual",
     ]
-    character_select_image_path = os.path.join(RESOURCES_PATH, "character_select.png")
+    character_select_image_path = os.path.join(resources_path, "character_select.png")
     character_select_scroll_down_amount = 0
     character_select_scroll_down_scale = -200
     character_select_screen_height_to_click = 0
@@ -131,7 +121,7 @@ class MainBotConfig:
         with open(OBS.output_folder / "character_select.json", "r") as f:
             prev_char_select = json.load(f)
         character_select_screen_height_to_click = (
-            prev_char_select["desired_character_height"] / SCREEN_RES["height"]
+            prev_char_select["desired_character_height"] / screen_res["height"]
         )
         character_select_scroll_down_amount = prev_char_select["scroll_amount"]
     except Exception:
@@ -192,7 +182,7 @@ class MainBotConfig:
     # player_id = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
     respawn_character_select_offset = -0.1
 
-    settings_menu_image_path = os.path.join(RESOURCES_PATH, "gear.jpg")
+    settings_menu_image_path = os.path.join(resources_path, "gear.jpg")
     settings_menu_width = 0.3
     settings_menu_grief_text = "Anti-Grief"
     settings_menu_max_find_attempts = 3
@@ -203,6 +193,14 @@ class MainBotConfig:
 
     sit_button_position = (0.79, 0.89)
     sitting_status = False
+
+    twitch_blacklist = []
+    twitch_blacklist_path = OBS.output_folder / "twitch_blacklist.json"
+    try:
+        with open(str(twitch_blacklist_path), "r") as f:
+            twitch_blacklist = json.load(f)
+    except Exception:
+        print(f"{twitch_blacklist_path} malformed or missing")
 
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
