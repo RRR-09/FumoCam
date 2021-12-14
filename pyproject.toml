@@ -28,6 +28,8 @@ mss = "^6.1.0"
 opencv-python = "^4.5.4"
 pytesseract = "^0.3.8"
 imutils = "^0.5.4"
+# Dependency security patches
+aiohttp = "^3.7.4"
 
 [tool.poetry.dev-dependencies]
 black = "^21.12b0"
