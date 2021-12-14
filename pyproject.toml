@@ -22,6 +22,7 @@ pyserial = "^3.5"
 # Software-Driven Input Emulation
 PyAutoGUI = "^0.9.53"
 PyDirectInput = "^1.0.4"
+PyGetWindow = "^0.0.9"
 # Computer Vision
 mss = "^6.1.0"
 opencv-python = "^4.5.4"
@@ -36,6 +37,8 @@ isort = "^5.10.1"
 liccheck = "^0.6.4"
 mypy = "^0.910"
 ossaudit = "^0.5.0"
+types-psutil = "^5.8.15"
+types-requests = "^2.26.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -50,5 +53,5 @@ profile = "black"
 python_version = "3.9"
 
 [[tool.mypy.overrides]]
-module = ["pytesseract.*", "mss.*", "pyautogui.*"]
+module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*"]
 ignore_missing_imports = true

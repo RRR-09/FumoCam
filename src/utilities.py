@@ -1,24 +1,26 @@
-import asyncio
-import math
 import os
-import subprocess
 from asyncio import sleep as async_sleep
-from time import mktime, sleep, strftime, strptime, time
+from math import floor
+from subprocess import call as call_proc  # nosec
+from time import sleep, strftime, time
 from traceback import format_exc
+from typing import Union
 
-import psutil
-import pyautogui  # pip3.9 install pygetwindow (allows additional functionality in pyautogui)
-import pydirectinput
-import requests
+from mss import mss
+from psutil import process_iter
+from pydirectinput import press as press_key
+from pygetwindow import getActiveWindow, getAllWindows
+from requests import post
+from requests.exceptions import HTTPError
 
-from config import *
+from config import CFG, OBS, SCREEN_RES, Discord
 
 
-def check_admin_and_run():
+def check_admin_and_run() -> bool:
     from ctypes import windll as a_windll
     from sys import argv as a_argv
     from sys import executable as a_executable
-    from traceback import format_exc as a_fe
+    from traceback import format_exc as a_formatexc
 
     try:
         is_not_admin = not (a_windll.shell32.IsUserAnAdmin())
@@ -31,10 +33,12 @@ def check_admin_and_run():
             run_path = ""
             for i, item in enumerate(a_argv[0:]):
                 run_path += f'"{item}"'
-            a_windll.shell32.ShellExecuteW(None, "runas", a_executable, run_path, None, 1)
-            return False
+            a_windll.shell32.ShellExecuteW(
+                None, "runas", a_executable, run_path, None, 1
+            )
         except Exception:
-            print(a_fe())
+            print(a_formatexc())
+        return False
     else:
         print("Administrator access acquired.")
         return True
@@ -47,7 +51,7 @@ def run_as_admin():
         exit()
 
 
-def error_log(error_msg, file_name="_errors"):
+def error_log(error_msg: str, file_name: str = "_errors"):
     if not os.path.exists(OBS.output_folder):
         os.mkdir(OBS.output_folder)
     file_path = os.path.join(OBS.output_folder, f"{file_name}.txt")
@@ -60,7 +64,7 @@ def error_log(error_msg, file_name="_errors"):
         f.write(entry)
 
 
-def output_log(file_name, message):
+def output_log(file_name: str, message: str):
     if not os.path.exists(OBS.output_folder):
         os.mkdir(OBS.output_folder)
     file_path = os.path.join(OBS.output_folder, f"{file_name}.txt")
@@ -68,18 +72,18 @@ def output_log(file_name, message):
         f.write(str(message))
 
 
-def log(status, no_log=False):
+def log(status: str, no_log: bool = False):
     print(status)
     if no_log:
         return
     output_log("main_status", status)
 
 
-def get_log():
-    read_output_log("main_status")
+def get_log() -> str:
+    return read_output_log("main_status")
 
 
-def log_process(process, no_log=False):
+def log_process(process: str, no_log: bool = False):
     process = f"[{process}]" if process.strip() != "" else ""
     print(process)
     if no_log:
@@ -88,11 +92,11 @@ def log_process(process, no_log=False):
     sleep(0.1)
 
 
-def get_log_process():
-    read_output_log("main_process")
-    
-    
-def read_output_log(file_name):
+def get_log_process() -> str:
+    return read_output_log("main_process")
+
+
+def read_output_log(file_name: str) -> str:
     if not os.path.exists(OBS.output_folder):
         return "ERROR: Path does not exist"
     file_path = os.path.join(OBS.output_folder, f"{file_name}.txt")
@@ -104,7 +108,7 @@ def read_output_log(file_name):
         return f"ERROR: {format_exc()}"
 
 
-async def take_screenshot():
+async def take_screenshot() -> str:
     file_name = f"{time()}.png"
     with mss() as sct:
         await check_active()
@@ -113,35 +117,45 @@ async def take_screenshot():
     return file_name
 
 
-def kill_process(executable="RobloxPlayerBeta.exe", force=False):
-    # todo: taskkill.exe can fail, how can we kill the thing that should kill? https://i.imgur.com/jd01ZOv.png
+def kill_process(executable: str = "RobloxPlayerBeta.exe", force: bool = False):
+    # TODO: taskkill.exe can fail, how can we kill the thing that should kill? https://i.imgur.com/jd01ZOv.png
     process_call = ["taskkill"]
     if force:
         process_call.append("/F")
     process_call.append("/IM")
     process_call.append(executable)
-    subprocess.call(process_call)
+    call_proc(process_call)  # nosec
 
 
-async def check_active(title="Roblox", title_ending=None, force_fullscreen=True):
+async def check_active(
+    title: str = "Roblox", title_ending: str = None, force_fullscreen: bool = True
+):
     print(f"[check_active] {title} | {title_ending}")
-    active_window = pyautogui.getActiveWindow()
+    active_window = getActiveWindow()
     if active_window is not None:
         title_active = title_ending is None and active_window.title == title
-        title_ending_active = title_ending is not None and active_window.title.endswith(title_ending)
+        title_ending_active = title_ending is not None and active_window.title.endswith(
+            title_ending
+        )
         if title_active or title_ending_active:
-            if title == "Roblox" and active_window.height != pyautogui.size()[1] and force_fullscreen:
+            if (
+                title == "Roblox"
+                and active_window.height != SCREEN_RES["height"]
+                and force_fullscreen
+            ):
                 print(active_window)
-                while active_window.height != pyautogui.size()[1]:
-                    pydirectinput.press("f11")
+                while active_window.height != SCREEN_RES["height"]:
+                    press_key("f11")
                     print("Maximizing window with F11")
                     await async_sleep(0.3)
                 await check_active(title)
             print(f"{active_window.title} already active")
             return
-    for window in pyautogui.getAllWindows():
+    for window in getAllWindows():
         title_active = title_ending is None and window.title == title
-        title_ending_active = title_ending is not None and window.title.endswith(title_ending)
+        title_ending_active = title_ending is not None and window.title.endswith(
+            title_ending
+        )
         if title_active or title_ending_active:
             try:
                 window.minimize()
@@ -169,67 +183,75 @@ async def check_active(title="Roblox", title_ending=None, force_fullscreen=True)
             if title_ending is not None:
                 await check_active(title_ending=title_ending)
                 print("Recurse")
-            elif title == "Roblox" and window.height != pyautogui.size()[1] and force_fullscreen:
-                while window.height != pyautogui.size()[1]:
-                    pydirectinput.press("f11")
+            elif (
+                title == "Roblox"
+                and window.height != SCREEN_RES["height"]
+                and force_fullscreen
+            ):
+                while window.height != SCREEN_RES["height"]:
+                    press_key("f11")
                     print("Maximizing window with F11")
                 await check_active(title)
 
 
-def notify_admin(message):  # todo: Seperate always-running process
-    webhook_url = os.getenv("DISCORD_WEBHOOK_DEV_CHANNEL")
+def notify_admin(
+    message: str,
+) -> bool:  # TODO: Make !dev a seperate, always-running process
+    webhook_url = os.getenv("DISCORD_WEBHOOK_DEV_CHANNEL", None)
+    if webhook_url is None:
+        return False
     webhook_data = {
         "content": f"<@{os.getenv('DISCORD_OWNER_ID')}>\n{message}",
-        "username": Discord.webhook_username
+        "username": Discord.webhook_username,
     }
-    result = requests.post(webhook_url, json=webhook_data)
+    result = post(webhook_url, json=webhook_data)
     try:
         result.raise_for_status()
-    except requests.exceptions.HTTPError as err:
+    except HTTPError as err:
         print(err)
     else:
         print(f"[Dev Notified] {message}")
+    return True
 
 
-def get_english_timestamp(time_var):
+def get_english_timestamp(time_var: Union[float, int]) -> str:
     original_time = time_var
     seconds_in_minute = 60
     seconds_in_hour = 60 * seconds_in_minute
     seconds_in_day = 24 * seconds_in_hour
-    days = math.floor(time_var / seconds_in_day)
+    days = floor(time_var / seconds_in_day)
     time_var -= days * seconds_in_day
-    hours = math.floor(time_var / seconds_in_hour)
+    hours = floor(time_var / seconds_in_hour)
     time_var -= hours * seconds_in_hour
-    minutes = math.floor(time_var / seconds_in_minute)
+    minutes = floor(time_var / seconds_in_minute)
     time_var -= minutes * seconds_in_minute
     seconds = round(time_var)
-    # if minutes == 0:
-    # return "{} second{}".format(seconds, "s" if seconds != 1 else "")
-    # if hours == 0:
-    #    return "{} minute{}".format(minutes, "s" if minutes != 1 else "")
-    hours = math.floor(original_time / seconds_in_hour) % 24
-    # if days == 0:
-    #    return "{} hour{}".format(hours, "s" if hours != 1 else "")
-    # return "{} day{}, {} hour{}".format(days, "s" if days != 1 else "", hours, "s" if hours != 1 else "")
+    hours = floor(original_time / seconds_in_hour) % 24
     return "{}d:{}h:{}m:{}s".format(days, hours, minutes, seconds)
 
 
-async def do_crash_check(do_notify=True):
-    crashed = not(is_process_running(CFG.game_executable_name))
+async def do_crash_check(do_notify=True) -> bool:
+    crashed = not (is_process_running(CFG.game_executable_name))
     if not crashed:  # Check if still open, but hanged with seperate "crash" dialog
-        for window in pyautogui.getAllWindows():
-            if window.title == "Crash" or window.title == "Roblox Crash" or window.title == "Crashed":
+        for window in getAllWindows():
+            if (
+                window.title == "Crash"
+                or window.title == "Roblox Crash"
+                or window.title == "Crashed"
+            ):
                 crashed = True
-                window.close()        
+                window.close()
     if crashed:
         CFG.crashed = True
         if do_notify:
             notify_admin("Roblox Crash")
-        #await CFG.add_action_queue("handle_crash")
     return crashed
 
 
-async def discord_log(message, author, author_avatar, author_url):
+async def discord_log(
+    message: str, author: str, author_avatar: str, author_url: str
+) -> bool:
+    success = False
     screenshot_filename = None
     if not CFG.action_running:
         screenshot_filename = await take_screenshot()
@@ -244,9 +266,8 @@ async def discord_log(message, author, author_avatar, author_url):
                 "author": {
                     "name": author,
                     "url": author_url,
-                    "icon_url": author_avatar
-
-                }
+                    "icon_url": author_avatar,
+                },
             }
         ]
     }
@@ -259,25 +280,37 @@ async def discord_log(message, author, author_avatar, author_url):
                 screenshot_binary = f.read()
             if os.path.exists(screenshot_filename):
                 os.remove(screenshot_filename)
+
     for webhook_url in webhook_urls:
-        result = requests.post(webhook_url, json=webhook_data)
+        if webhook_url is None:
+            continue
+
+        result = post(webhook_url, json=webhook_data)
         try:
             result.raise_for_status()
-        except requests.exceptions.HTTPError as err:
+        except HTTPError as err:
             print(err)
+            success = False
         else:
             print(f"[Logged] {message}")
 
         # Send screenshot
         if screenshot_binary is not None:
-            requests.post(webhook_url, files={f"_{screenshot_filename}": (screenshot_filename, screenshot_binary)})
+            post(
+                webhook_url,
+                files={
+                    f"_{screenshot_filename}": (screenshot_filename, screenshot_binary)
+                },
+            )
             try:
                 result.raise_for_status()
-            except requests.exceptions.HTTPError as error:
+            except HTTPError as error:
                 print(error)
+                success = False
             else:
                 print(f"[Logged Screenshot] {message}")
+    return success
 
 
-def is_process_running(name):
-    return len([proc for proc in psutil.process_iter() if proc.name() == name]) > 0
+def is_process_running(name: str) -> bool:
+    return len([proc for proc in process_iter() if proc.name() == name]) > 0

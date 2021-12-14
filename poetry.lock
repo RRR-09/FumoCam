@@ -2671,6 +2671,22 @@ iso8601 = "*"
 typing-extensions = "*"
 
 [[package]]
+name = "types-psutil"
+version = "5.8.15"
+description = "Typing stubs for psutil"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
+name = "types-requests"
+version = "2.26.1"
+description = "Typing stubs for requests"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "typing-extensions"
 version = "4.0.1"
 description = "Backported and Experimental Type Hints for Python 3.6+"
@@ -2723,7 +2739,7 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.9,<3.11"
-content-hash = "fdae99b97e9dca2a83f7a3213e1c345b5d3361d4fa519beb0580a77b75857fae"
+content-hash = "4c3135735fd7076e9e3e3a1ca7af7724f78bab6bb3da6741e0f10043f328c324"
 
 [metadata.files]
 aiohttp = [
@@ -4102,6 +4118,14 @@ trio-websocket = [
 twitchio = [
     {file = "twitchio-2.1.3-py3-none-any.whl", hash = "sha256:726187437441100ec1b0301e28b49aa1d0eec5b77308f6155dcae243c294cc8c"},
     {file = "twitchio-2.1.3.tar.gz", hash = "sha256:73b2666ca05754b40b5d5804781b95ca41279004ce198814018edf20d331524b"},
+]
+types-psutil = [
+    {file = "types-psutil-5.8.15.tar.gz", hash = "sha256:076b1cf8afb966459bdc689c3dcc87f735b56f0d4a615f41a819104d4dc14680"},
+    {file = "types_psutil-5.8.15-py3-none-any.whl", hash = "sha256:5575d4a1e58a486fac4dc9df8cac86cd84e285cfb64bc0fc824f1e7b19463731"},
+]
+types-requests = [
+    {file = "types-requests-2.26.1.tar.gz", hash = "sha256:0893e112e1510bbb67f537941c92192de7472e51bf7f236e0e583866f0ed933e"},
+    {file = "types_requests-2.26.1-py3-none-any.whl", hash = "sha256:853571b3accc188976c0f4feffcaebf6cdfc170082b5e43f3358aa78de61f531"},
 ]
 typing-extensions = [
     {file = "typing_extensions-4.0.1-py3-none-any.whl", hash = "sha256:7f001e5ac290a0c0401508864c7ec868be4e701886d5b573a9528ed3973d9d3b"},
