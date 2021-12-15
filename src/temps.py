@@ -4,10 +4,10 @@ import clr
 import psutil
 from System.IO import FileNotFoundException  # type: ignore
 
-from config import RESOURCES_PATH
+from config import CFG
 from utilities import output_log, run_as_admin
 
-OPEN_HARDWARE_MONITOR_PATH = str(RESOURCES_PATH / "OpenHardwareMonitorLib.dll")
+OPEN_HARDWARE_MONITOR_PATH = str(CFG.resources_path / "OpenHardwareMonitorLib.dll")
 try:
     clr.AddReference(OPEN_HARDWARE_MONITOR_PATH)
 except FileNotFoundException:
