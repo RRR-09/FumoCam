@@ -22,13 +22,12 @@ from commands import (
 from config import ActionQueueItem
 from health import (
     ACFG,
-    CFG,
     auto_nav,
     check_for_better_server,
     handle_join_new_server,
     toggle_collisions,
 )
-from twitch_integration import twitch_main
+from twitch_integration import twitch_main, CFG
 from utilities import (
     check_active,
     do_crash_check,
@@ -37,40 +36,6 @@ from utilities import (
     log_process,
     output_log,
 )
-
-
-async def queue_movement(action):  # TODO: Simplify
-    CFG.action_running = True
-    log_process("Manual Movement")
-    valid_keys = {"w": "Forward", "a": "Left", "s": "Backwards", "d": "Right"}
-    key = action["move_key"].lower()
-    if key not in valid_keys.keys():
-        log(f"Not a valid movement! ({','.join(valid_keys)})")
-        await async_sleep(5)
-        log("")
-        log_process("")
-        CFG.action_running = False
-        return False
-    time_to_press = action["move_time"]
-    log(f"Moving {valid_keys[key]} for {time_to_press} FC Units")
-    await check_active()
-    ACFG.move(direction_key=key, amount=time_to_press)
-    log("")
-    log_process("")
-    CFG.action_running = False
-
-
-async def queue_leap(action):  # TODO: Simplify
-    CFG.action_running = True
-    log_process("Leap Forward")
-    time_forward = action["forward_time"]
-    time_jump = action["jump_time"]
-    log(f"Moving forward for {time_forward}s and jumping for {time_jump}s")
-    await check_active()
-    ACFG.leap(forward_time=time_forward, jump_time=time_jump)
-    log("")
-    log_process("")
-    CFG.action_running = False
 
 
 async def do_process_queue():  # TODO: Investigate benefits of multithreading over single-threaded/async
@@ -93,95 +58,109 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             log("")
             log_process("")
             return
-        if action == "anti-afk":
+        if action.name == "anti_afk":
             await do_anti_afk()
-        elif action == "advert":
+        elif action.name == "advert":
             await do_advert()
-        elif "turn_camera_direction" in action:
-            turn_direction = action["turn_camera_direction"]
-            turn_time = action["turn_camera_time"]
+        elif action.name == "autonav":
+            await auto_nav(action.values["location"], slow_spawn_detect=False)
+            log_process("")
+            log("")
+        elif action.name == "backpack_toggle":
+            await click_backpack_button()
+            log_process("")
+            log("")
+        elif action.name == "backpack_item":
+            item_number = action.values["item_number"]
+            await click_item(item_number)
+            log_process("")
+            log("")
+        elif action.name == "camera_turn":
+            turn_direction = action.values["turn_direction"]
+            turn_time = action.values["turn_degrees"]
             log_process(f"{turn_time} degrees {turn_direction.upper()}")
             ACFG.look(direction=turn_direction, amount=turn_time)
             log_process("")
-        elif "pitch_camera_direction" in action:
-            pitch_direction = action["pitch_camera_direction"]
-            pitch_degrees = action["pitch_camera_degrees"]
+        elif action.name == "camera_pitch":
+            pitch_direction = action.values["pitch_direction"]
+            pitch_degrees = action.values["pitch_degrees"]
             log_process(f"Tilting {pitch_degrees} degrees {pitch_direction.upper()}")
             ACFG.pitch(amount=pitch_degrees, up=pitch_direction == "up")
             log_process("")
-        elif "zoom_camera_direction" in action:
-            zoom_direction = "in" if action["zoom_camera_direction"] == "i" else "out"
-            zoom_time = action["zoom_camera_time"]
-            log_process(f"Zooming {zoom_direction} {zoom_time}%")
+        elif action.name == "camera_zoom":
+            zoom_key = action.values["zoom_key"]
+            zoom_direction = "in" if zoom_key == "i" else "out"
+            zoom_amount = action.values["zoom_amount"]
+            log_process(f"Zooming {zoom_direction} {zoom_amount}%")
             ACFG.zoom(
-                zoom_direction_key=action["zoom_camera_direction"], amount=zoom_time
+                zoom_direction_key=zoom_key, amount=zoom_amount
             )
             log_process("")
-        elif "autonav" in action:
-            location = action["autonav"]
-            await auto_nav(location, slow_spawn_detect=False)
-            log_process("")
-            log("")
-        elif action == "check_for_better_server":
+        elif action.name == "check_for_better_server":
             crashed = await do_crash_check()
             if not crashed:
                 await check_for_better_server()
                 await check_active()
             else:
                 CFG.action_queue.insert(1, "handle_crash")
-        elif "chat_with_name" in action:
-            name = action["chat_with_name"][0]
+        elif action.name == "chat":
+            for message in action.values["msgs"]:
+                await send_chat(message)
+        elif action.name == "chat_with_name":
+            name = action.values["name"]
             await send_chat(name)
             await async_sleep(len(name) * CFG.chat_name_sleep_factor)
-            msgs = action["chat_with_name"][1:]
-            for msg in msgs:
-                await send_chat(msg)
-        elif "chat" in action:
-            for message in action["chat"]:
+            for message in action.values["msgs"]:
                 await send_chat(message)
-        elif action == "handle_crash":
-            await handle_join_new_server(crash=True)
-            remove_duplicates = True
-        elif action == "handle_join_new_server":
-            await handle_join_new_server()
-            remove_duplicates = True
-        elif action == "sit":
-            await click_sit_button()
-        elif action == "use":
-            log_process("Pressing Use (e)")
-            ACFG.use()
-            log_process("")
-            log("")
-        elif action == "grief":
+        elif action.name == "grief":
             await toggle_collisions()
             ACFG.resetMouse()
             log_process("")
             log("")
-        elif action == "respawn":
-            await respawn_character()
-            log_process("")
-            log("")
-        elif action == "respawnforce":
-            await force_respawn_character()
-            log_process("")
-            log("")
-        elif action == "jump":
-            ACFG.jump()
-        elif "movement" in action:
-            await queue_movement(action)
-        elif "leap" in action:
-            await queue_leap(action)
-        elif "mute" in action:
-            await mute_toggle(action["mute"])
-        elif action == "rejoin":
-            log_process("Rejoining!")
-            kill_process(force=True)
-            await async_sleep(5)
-            log_process("")
-            log("")
+        elif action.name == "handle_crash":
+            await handle_join_new_server(crash=True)
+            remove_duplicates = True
+        elif action.name == "handle_join_new_server":
             await handle_join_new_server()
-        elif "chat_move_mouse" in action:
-            params = action["chat_move_mouse"]
+            remove_duplicates = True
+        elif action.name == "jump":
+            ACFG.jump()
+        elif action.name == "leap":
+            log_process("Leap Forward")
+            time_forward = action.values["forward_time"]
+            time_jump = action.values["jump_time"]
+            log(f"Moving forward for {time_forward}s and jumping for {time_jump}s")
+            await check_active()
+            ACFG.leap(forward_time=time_forward, jump_time=time_jump)
+            log("")
+            log_process("")
+        elif action.name == "move":
+            log_process("Manual Movement")
+            valid_keys = {"w": "Forward", "a": "Left", "s": "Backwards", "d": "Right"}
+            move_key = action.values["move_key"].lower()
+            if move_key not in valid_keys.keys():
+                log(f"Not a valid movement! ({','.join(valid_keys)})")
+                await async_sleep(5)
+                log("")
+                log_process("")
+                CFG.action_running = False
+                return False
+            move_time = action.values["move_time"]
+            log(f"Moving {valid_keys[move_key]} for {move_time} FC Units")
+            await check_active()
+            ACFG.move(direction_key=move_key, amount=move_time)
+            log("")
+            log_process("")
+        elif action.name == "mouse_click":
+            await chat_mouse_click()
+            log_process("")
+            log("")
+        elif action.name == "mouse_hide":
+            ACFG.resetMouse()
+            log_process("")
+            log("")
+        elif action.name == "mouse_move":
+            params = action.values
             had_to_move, area = await move_mouse_chat_cmd(params["x"], params["y"])
             await async_sleep(2)
             if had_to_move:
@@ -193,21 +172,28 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
                     print(format_exc())
             log_process("")
             log("")
-        elif action == "click":
-            await chat_mouse_click()
+        elif action.name == "mute":
+            await mute_toggle(action.values["set_muted"])
+        elif action.name == "rejoin":
+            log_process("Rejoining!")
+            kill_process(force=True)
+            await async_sleep(5)
             log_process("")
             log("")
-        elif action == "backpack":
-            await click_backpack_button()
+            await handle_join_new_server()
+        elif action.name == "respawn":
+            await respawn_character()
             log_process("")
             log("")
-        elif "item" in action:
-            item_number = action["item"]
-            await click_item(item_number)
+        elif action.name == "respawn_force":
+            await force_respawn_character()
             log_process("")
             log("")
-        elif action == "hidemouse":
-            ACFG.resetMouse()
+        elif action.name == "sit":
+            await click_sit_button()
+        elif action.name == "use":
+            log_process("Pressing Use (e)")
+            ACFG.use()
             log_process("")
             log("")
         else:

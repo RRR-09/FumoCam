@@ -42,7 +42,7 @@ class Discord:
 
 
 class ActionQueueItem:
-    def __init__(self, name: str, values: dict):
+    def __init__(self, name: str, values: dict = {}):
         self.name = name
         self.values = values
 
@@ -288,7 +288,7 @@ class MainBotConfig:
         {"command": "!hidemouse", "help": "Moves mouse off-screen."},
     ]
 
-    async def add_action_queue(item):
+    async def add_action_queue(self, item: ActionQueueItem):
         print("Attempted to add action queue item too early!")
         print(item)
 
