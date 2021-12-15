@@ -1,8 +1,45 @@
-from health import *  # Optimized import, contains all other src files down the line of dependency
-from twitch_integration import *
+from asyncio import sleep as async_sleep
+from time import sleep
+from traceback import format_exc
+
+import pyautogui
+
+from actions import (
+    chat_mouse_click,
+    do_advert,
+    do_anti_afk,
+    move_mouse_chat_cmd,
+    mute_toggle,
+    respawn_character,
+    send_chat,
+)
+from commands import (
+    click_backpack_button,
+    click_item,
+    click_sit_button,
+    force_respawn_character,
+)
+from config import ActionQueueItem
+from health import (
+    ACFG,
+    CFG,
+    auto_nav,
+    check_for_better_server,
+    handle_join_new_server,
+    toggle_collisions,
+)
+from twitch_integration import twitch_main
+from utilities import (
+    check_active,
+    do_crash_check,
+    kill_process,
+    log,
+    log_process,
+    output_log,
+)
 
 
-async def queue_movement(action):  # todo: Simplify
+async def queue_movement(action):  # TODO: Simplify
     CFG.action_running = True
     log_process("Manual Movement")
     valid_keys = {"w": "Forward", "a": "Left", "s": "Backwards", "d": "Right"}
@@ -23,7 +60,7 @@ async def queue_movement(action):  # todo: Simplify
     CFG.action_running = False
 
 
-async def queue_leap(action):  # todo: Simplify
+async def queue_leap(action):  # TODO: Simplify
     CFG.action_running = True
     log_process("Leap Forward")
     time_forward = action["forward_time"]
@@ -36,7 +73,7 @@ async def queue_leap(action):  # todo: Simplify
     CFG.action_running = False
 
 
-async def do_process_queue():  # todo: Investigate benefits of multithreading over single-threaded/async
+async def do_process_queue():  # TODO: Investigate benefits of multithreading over single-threaded/async
     if len(CFG.action_queue) == 0 or CFG.action_running:
         return
     CFG.action_running = True
@@ -49,7 +86,9 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             action = CFG.action_queue[0]
         except IndexError:
             log_process("ERROR")
-            log("Error! You may have to re-input any commands\nyou requested from the bot.")
+            log(
+                "Error! You may have to re-input any commands\nyou requested from the bot."
+            )
             sleep(5)
             log("")
             log_process("")
@@ -59,22 +98,24 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         elif action == "advert":
             await do_advert()
         elif "turn_camera_direction" in action:
-            turn_direction = action['turn_camera_direction']
-            turn_time = action['turn_camera_time']
-            log_process(f"{turn_time} degrees {turn_direction.upper()}")            
+            turn_direction = action["turn_camera_direction"]
+            turn_time = action["turn_camera_time"]
+            log_process(f"{turn_time} degrees {turn_direction.upper()}")
             ACFG.look(direction=turn_direction, amount=turn_time)
             log_process("")
         elif "pitch_camera_direction" in action:
-            pitch_direction = action['pitch_camera_direction']
-            pitch_degrees = action['pitch_camera_degrees']
-            log_process(f"Tilting {pitch_degrees} degrees {pitch_direction.upper()}")            
+            pitch_direction = action["pitch_camera_direction"]
+            pitch_degrees = action["pitch_camera_degrees"]
+            log_process(f"Tilting {pitch_degrees} degrees {pitch_direction.upper()}")
             ACFG.pitch(amount=pitch_degrees, up=pitch_direction == "up")
             log_process("")
         elif "zoom_camera_direction" in action:
-            zoom_direction = "in" if action['zoom_camera_direction'] == "i" else "out"
-            zoom_time = action['zoom_camera_time']
+            zoom_direction = "in" if action["zoom_camera_direction"] == "i" else "out"
+            zoom_time = action["zoom_camera_time"]
             log_process(f"Zooming {zoom_direction} {zoom_time}%")
-            ACFG.zoom(zoom_direction_key=action['zoom_camera_direction'], amount=zoom_time)
+            ACFG.zoom(
+                zoom_direction_key=action["zoom_camera_direction"], amount=zoom_time
+            )
             log_process("")
         elif "autonav" in action:
             location = action["autonav"]
@@ -141,12 +182,14 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
             await handle_join_new_server()
         elif "chat_move_mouse" in action:
             params = action["chat_move_mouse"]
-            had_to_move, area = await move_mouse_chat_cmd(params["x"],params["y"])
+            had_to_move, area = await move_mouse_chat_cmd(params["x"], params["y"])
             await async_sleep(2)
             if had_to_move:
                 try:
-                    await params["twitch_ctx"].send(f"[Can't move near '{area}'! Moved mouse to safe range nearby.]")
-                except:
+                    await params["twitch_ctx"].send(
+                        f"[Can't move near '{area}'! Moved mouse to safe range nearby.]"
+                    )
+                except Exception:
                     print(format_exc())
             log_process("")
             log("")
@@ -173,7 +216,10 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
         if remove_duplicates:
             original_queue = CFG.action_queue
             for action_queue_item in original_queue:
-                if isinstance(action_queue_item, dict) and list(action.keys())[-1] in action_queue_item:
+                if (
+                    isinstance(action_queue_item, dict)
+                    and list(action.keys())[-1] in action_queue_item
+                ):
                     CFG.action_queue.remove(action_queue_item)
                 elif action == action_queue_item:
                     CFG.action_queue.remove(action_queue_item)
@@ -181,7 +227,7 @@ async def do_process_queue():  # todo: Investigate benefits of multithreading ov
     CFG.action_running = False
 
 
-async def add_action_queue(item):
+async def add_action_queue(item: ActionQueueItem):
     CFG.action_queue.append(item)
     await do_process_queue()
 
