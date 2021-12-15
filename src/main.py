@@ -27,7 +27,7 @@ from health import (
     handle_join_new_server,
     toggle_collisions,
 )
-from twitch_integration import twitch_main, CFG
+from twitch_integration import CFG, twitch_main
 from utilities import (
     check_active,
     do_crash_check,
@@ -92,9 +92,7 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             zoom_direction = "in" if zoom_key == "i" else "out"
             zoom_amount = action.values["zoom_amount"]
             log_process(f"Zooming {zoom_direction} {zoom_amount}%")
-            ACFG.zoom(
-                zoom_direction_key=zoom_key, amount=zoom_amount
-            )
+            ACFG.zoom(zoom_direction_key=zoom_key, amount=zoom_amount)
             log_process("")
         elif action.name == "check_for_better_server":
             crashed = await do_crash_check()

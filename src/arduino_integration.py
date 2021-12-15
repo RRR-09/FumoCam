@@ -271,7 +271,7 @@ class ArduinoConfig:
         self.arduino_interface(payload, payload["hold_time"])
 
     def zoom(self, zoom_direction_key: str, amount: float):
-        zoom_direction_multiplier = (1.0 if zoom_direction_key == "o" else -1.0)
+        zoom_direction_multiplier = 1.0 if zoom_direction_key == "o" else -1.0
         CFG.zoom_level += amount * zoom_direction_multiplier
         CFG.zoom_level = min(
             CFG.zoom_max, max(CFG.zoom_min, CFG.zoom_level)

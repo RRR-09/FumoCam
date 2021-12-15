@@ -565,7 +565,9 @@ async def handle_join_new_server(crash=False):
     log("")
 
 
-async def auto_nav(location: str, do_checks: bool = True, slow_spawn_detect: bool = True):
+async def auto_nav(
+    location: str, do_checks: bool = True, slow_spawn_detect: bool = True
+):
     # await check_active()
     log_process("AutoNav")
     if do_checks:

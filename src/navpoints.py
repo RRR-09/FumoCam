@@ -1,7 +1,8 @@
 # TODO: Change from functions to variables (like dict or something)
-from arduino_integration import ACFG
-from utilities import log_process, log
 from time import sleep
+
+from arduino_integration import ACFG
+from utilities import log, log_process
 
 
 def treehouse_to_main():

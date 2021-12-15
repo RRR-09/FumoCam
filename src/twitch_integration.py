@@ -367,12 +367,15 @@ class TwitchBot(commands.Bot):
 
         # Chat with CamDev Tag
         elif is_dev:
-            action = ActionQueueItem("chat_with_name", {"name": "[CamDev]:", "msgs": [msg]})
+            action = ActionQueueItem(
+                "chat_with_name", {"name": "[CamDev]:", "msgs": [msg]}
+            )
 
         # Standard chat
         else:
             action = ActionQueueItem(
-                "chat_with_name", {"name": f"{ctx.message.author.display_name}:", "msgs": [msg]}
+                "chat_with_name",
+                {"name": f"{ctx.message.author.display_name}:", "msgs": [msg]},
             )
         await CFG.add_action_queue(action)
 
@@ -442,9 +445,7 @@ class TwitchBot(commands.Bot):
                 await ctx.send("[Error! Invalid number specified.]")
                 return
 
-        action = ActionQueueItem(
-            "move", {"move_key": move_key, "move_time": move_time}
-        )
+        action = ActionQueueItem("move", {"move_key": move_key, "move_time": move_time})
         await CFG.add_action_queue(action)
 
     @commands.command()
