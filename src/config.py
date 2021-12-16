@@ -25,9 +25,9 @@ check_dotenv()
 
 
 class Twitch:
-    channel_name = "becomefumocam"
+    channel_name = os.getenv("TWITCH_CHAT_CHANNEL")
     username = "BecomeFumoCamBot"
-    admins = ["becomefumocam", os.getenv("OWNER_USERNAME")]
+    admins = ["becomefumocam", os.getenv("TWITCH_OWNER_USERNAME")]
 
 
 class OBS:
@@ -96,7 +96,7 @@ class MainBotConfig:
     Path(browser_profile_path).mkdir(parents=True, exist_ok=True)
     browser_cookies_path = browser_profile_path / "browser_cookies.json"
 
-    censored_words = [  # todo: Attempt to inject into chat censor API
+    censored_words = [  # TODO: Attempt to inject into chat censor API
         "gay",
         "nigger",
         "nheggar",
@@ -178,11 +178,7 @@ class MainBotConfig:
         "treehouse": 50,
         "train": 0,
     }
-    player_id = "BD7F4C1D8063321CDFE702866B105EFB"  # F_umoCam02
-    # player_id = "877C2AD2DB86BC486676330B47AFD9F8"  # F_umoCamBeta01
-    # player_id = "D5E4A52E9B12F1E36D7269325943AE35"   # BecomeF_umoCam
-    # player_id = "A9AFD097DCB5C13B801697A4104C3A61"   # F_umoCam04
-    # player_id = "CD456AA86FE893389524D51774A0916D"    # F_umoCam05
+    player_id = os.getenv("PLAYER_ID")
     player_switch_cap = 50
     player_difference_to_switch = 20
     pytesseract_path = os.path.join(
