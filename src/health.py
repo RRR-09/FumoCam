@@ -88,7 +88,6 @@ async def check_if_should_change_servers(
         if current_server_id == "" or current_server_id == "undefined":
             if highest_player_server_playing == 0:
                 return False, "[WARN] Could not poll Roblox servers. Is Roblox down?"
-            print(servers)
             return_message = (
                 f"[WARN] Could not find FumoCam. Are we in a server?\n"
                 f"Original Server ID: {original_current_server_id}\n"
@@ -120,7 +119,6 @@ async def get_current_server_id(game_id: int = CFG.game_id) -> str:
         return "ERROR"
     if response.status_code == 200:
         response_result = response.json()
-        print(response_result)
         servers = response_result["data"]
         if len(servers) == 0:
             return "ERROR"
