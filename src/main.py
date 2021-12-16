@@ -40,7 +40,7 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
     CFG.action_running = True
     remove_duplicates = False
     while len(CFG.action_queue) > 0:
-        print(CFG.action_queue)
+        print(f"Running Action Queue:\n{CFG.action_queue}\n")
         await check_active()
         await async_sleep(0.1)
         try:
@@ -96,7 +96,7 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
                 await check_for_better_server()
                 await check_active()
             else:
-                CFG.action_queue.insert(1, "handle_crash")
+                CFG.action_queue.insert(1, ActionQueueItem("handle_crash"))
         elif action.name == "chat":
             for message in action.values["msgs"]:
                 await send_chat(message)
@@ -204,12 +204,13 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
 
 async def add_action_queue(item: ActionQueueItem):
     CFG.action_queue.append(item)
+    print("Process Queue")
     await do_process_queue()
 
 
 async def async_main():
     print("[Async_Main] Start")
-    await CFG.add_action_queue({"mute": False})
+    await CFG.add_action_queue(ActionQueueItem("mute", {"set_muted": False}))
 
 
 def main():

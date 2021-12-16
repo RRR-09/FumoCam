@@ -165,7 +165,7 @@ async def check_for_better_server():
                 break
         if current_server_id == "N/A":
             log_process("Could not find FumoCam in any servers")
-            await CFG.add_action_queue("handle_crash")
+            await CFG.add_action_queue(ActionQueueItem("handle_crash"))
             return False
         else:
             log_process("")
@@ -201,9 +201,9 @@ async def check_for_better_server():
                     break
             if should_change_servers:
                 notify_admin(change_server_status_text)
-                await CFG.add_action_queue("handle_join_new_server")
+                await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
         else:
-            await CFG.add_action_queue("handle_join_new_server")
+            await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
     log("")
     log_process("")
 
@@ -351,7 +351,7 @@ async def click_character_select_button(check_open_state: Union[bool, None] = No
 
 async def ocr_for_character(character: str = "") -> bool:
     desired_character = (
-        CFG.character_select_desired.lower() if character is None else character.lower()
+        CFG.character_select_desired.lower() if not character else character.lower()
     )
 
     character_select_pos = await get_character_select_button_pos()
@@ -364,7 +364,7 @@ async def ocr_for_character(character: str = "") -> bool:
 
     await async_sleep(0.5)
 
-    monitor = CFG.screen_res["mss_monitor"]
+    monitor = CFG.screen_res["mss_monitor"].copy()
     screen_width = monitor["width"]
     screen_height = monitor["height"]
     monitor["width"] = int(CFG.character_select_width * screen_width)
@@ -380,10 +380,10 @@ async def ocr_for_character(character: str = "") -> bool:
     for attempts in range(CFG.character_select_max_scroll_attempts):
         log(
             f"Scanning list for '{desired_character.capitalize()}'"
-            f"{attempts}/{CFG.character_select_max_scroll_attempts}"
+            f" ({attempts}/{CFG.character_select_max_scroll_attempts})"
         )
         for _ in range(CFG.character_select_scan_attempts):  # Attempt multiple OCRs
-            screenshot = np.array(take_screenshot_binary())
+            screenshot = np.array(await take_screenshot_binary(monitor))
 
             gray = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)
             gray, img_bin = cv.threshold(
@@ -605,8 +605,6 @@ async def auto_nav(
             log("Disabling collisions")
             await toggle_collisions()
             await async_sleep(0.5)
-        log("Jumping to clear any respawn locks")
-        ACFG.jump()
         await async_sleep(1)
         log("Respawning")
         await respawn_character(notify_chat=False)
@@ -647,7 +645,7 @@ async def auto_nav(
 
 
 async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
-    monitor = CFG.screen_res["mss_monitor"]
+    monitor = CFG.screen_res["mss_monitor"].copy()
     screen_width = monitor["width"]
     monitor["width"] = int(CFG.character_select_width * screen_width)
     monitor["left"] = int(
@@ -659,7 +657,7 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
     _, button_img = cv.threshold(button_img, 211, 255, 3)
 
     for __ in range(CFG.settings_menu_max_find_attempts):
-        screenshot = np.array(take_screenshot_binary())
+        screenshot = np.array(await take_screenshot_binary(monitor))
         screenshot = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)
         _, screenshot = cv.threshold(screenshot, 211, 255, 3)
 
@@ -703,14 +701,14 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
         else:
             log(
                 "Could not find settings button!\n"
-                "(Best match {round(best_match['max_val']*100,2)}% confidence)\n({center_x}, {center_y}"
+                f"(Best match {round(match_max_val*100,2)}% confidence)\n({center_x}, {center_y}"
             )
             await async_sleep(5)
             log("")
             return None
     except Exception:
         error_log(format_exc())
-        log("Could not find settings button!")
+        log("Could not find settings button! (Error)")
         return None
 
 
@@ -777,7 +775,7 @@ async def ocr_for_settings(option: str = "") -> bool:
         return False
     button_x, button_y = settings_button_pos
 
-    monitor = CFG.screen_res["mss_monitor"]
+    monitor = CFG.screen_res["mss_monitor"].copy()
     screen_width = monitor["width"]
     screen_height = monitor["height"]
     print(screen_width)
@@ -793,7 +791,7 @@ async def ocr_for_settings(option: str = "") -> bool:
         log(
             f"Finding '{desired_option.capitalize()}' (Attempt #{attempts}/{CFG.settings_menu_ocr_max_attempts})"
         )
-        screenshot = np.array(take_screenshot_binary())
+        screenshot = np.array(await take_screenshot_binary(monitor))
 
         gray = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)  # PyTesseract
         gray, img_bin = cv.threshold(gray, 100, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)

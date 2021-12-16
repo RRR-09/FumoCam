@@ -21,9 +21,9 @@ from utilities import (
 ACFG.initalize_serial_interface(do_log=False)
 
 
-async def send_chat(message: str):
+async def send_chat(message: str, bypass: bool = True):
     await check_active()
-    for word in CFG.censored_words:  # todo: More effective censoring
+    for word in CFG.censored_words:  # TODO: More effective censoring
         if word in message:
             message = message.replace(word, "*" * len(word))
     ACFG.send_message(message)
@@ -41,6 +41,7 @@ async def do_anti_afk():
 async def do_advert():
     for message in CFG.advertisement:
         await send_chat(message)
+        await async_sleep(len(message) * CFG.chat_name_sleep_factor)
 
 
 async def respawn_character(notify_chat: bool = True):
@@ -48,6 +49,8 @@ async def respawn_character(notify_chat: bool = True):
     log_process("Respawning")
     if notify_chat:
         await send_chat("[Respawning!]")
+    await async_sleep(0.75)
+    ACFG.jump()
     await async_sleep(0.75)
     ACFG.keyPress("KEY_ESC")
     await async_sleep(0.5)
@@ -110,12 +113,23 @@ async def test_chat_mouse_pos(
     had_to_move, area = False, ""
     need_test = True
     while need_test:
+        # Code is deliberatly very redundant for readability, logic is complex
         need_test = False
         for region in CFG.mouse_blocked_regions:
-            if target_x <= region.x1 and target_x >= region.x2:
+            target_right_of_region_left = target_x > region.x1
+            target_left_of_region_right = target_x < region.x2
+            target_in_between_region_widths = (
+                target_right_of_region_left and target_left_of_region_right
+            )
+            if not (target_in_between_region_widths):
                 continue
 
-            if target_y <= region.y1 and target_y >= region.y2:
+            target_below_region_top = target_y > region.y1
+            target_above_region_bottom = target_y < region.y2
+            target_in_between_region_heights = (
+                target_below_region_top and target_above_region_bottom
+            )
+            if not (target_in_between_region_heights):
                 continue
 
             need_test = True
@@ -123,26 +137,29 @@ async def test_chat_mouse_pos(
             region_width = region.x2 - region.x1
             region_height = region.y2 - region.y1
 
-            if region_width < region_height:
+            taller_than_wide = region_width < region_height
+            if taller_than_wide:
                 region_x_center = (region.x1 + region.x2) / 2
-                if (
-                    target_x > region_x_center
-                    and region.x2 + CFG.mouse_blocked_safety_padding
-                    < CFG.screen_res["width"]
-                ):
-                    target_x = region.x2
+                right_of_region_center = target_x > region_x_center
+                right_of_region_is_on_screen = (
+                    region.x2 + CFG.mouse_blocked_safety_padding
+                ) < CFG.screen_res["width"]
+
+                if right_of_region_center and right_of_region_is_on_screen:
+                    target_x = region.x2  # Target right of region
                 else:
-                    target_x = region.x1
+                    target_x = region.x1  # Target left of region
             else:
                 region_y_center = (region.y1 + region.y2) / 2
-                if (
-                    target_y > region_y_center
-                    and region.y2 + CFG.mouse_blocked_safety_padding
-                    < CFG.screen_res["height"]
-                ):
-                    target_y = region.y2
+                below_region_center = target_y > region_y_center
+                region_bottom_is_on_screen = (
+                    region.y2 + CFG.mouse_blocked_safety_padding
+                ) < CFG.screen_res["height"]
+
+                if below_region_center and region_bottom_is_on_screen:
+                    target_y = region.y2  # Target bottom of region
                 else:
-                    target_y = region.y1
+                    target_y = region.y1  # Target top of region
 
             # If we have to move multiple times, only log the first reason
             if not had_to_move:
@@ -181,6 +198,7 @@ async def move_mouse_chat_cmd(x: int, y: int):
 async def chat_mouse_click():
     log_process("Left Clicking")
     mouse_x, mouse_y = get_mouse_position()[0], get_mouse_position()[1]
+    print("Got mouse position")
     had_to_move, area, _, __ = await test_chat_mouse_pos(mouse_x, mouse_y)
     if had_to_move:
         log(f"Mouse is in unsafe spot (near {area}), relocating...")

@@ -73,8 +73,8 @@ class MainBotConfig:
     action_queue: List[ActionQueueItem] = []
     action_running = False
     advertisement = [
-        "This bot is live on T witch! Go to the roblox profile for a link or Google",
-        '"BecomeFumoCam"!',
+        "This bot is live on T witch! Go to its Roblox profile for a link, or Google:",
+        '"BecomeFumosCam"',
     ]
     audio_muted = False
     backpack_button_position = (0.87, 0.89)
@@ -134,7 +134,6 @@ class MainBotConfig:
     chat_name_sleep_factor = (
         0.05  # Seconds to wait per char in users name before sending their message
     )
-    # chat_bypasses = {}  # Bypass filters for harmless words
 
     crashed = False
 

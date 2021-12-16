@@ -4,9 +4,10 @@ from math import floor
 from subprocess import call as call_proc  # nosec
 from time import sleep, strftime, time
 from traceback import format_exc
-from typing import Union
+from typing import Dict, Union
 
 from mss import mss
+from numpy import ndarray
 from psutil import process_iter
 from pydirectinput import press as press_key
 from pygetwindow import getActiveWindow, getAllWindows
@@ -117,9 +118,19 @@ async def take_screenshot() -> str:
     return file_name
 
 
-async def take_screenshot_binary():
+async def take_screenshot_binary(monitor: Union[Dict, None] = None) -> ndarray:
+    if monitor is None:
+        monitor = CFG.screen_res["mss_monitor"].copy()
     with mss() as sct:
-        screenshot = sct.grab(CFG.screen_res["mss_monitor"])
+        screenshot = sct.grab(monitor)
+    return screenshot
+
+
+def take_screenshot_binary_blocking(monitor: Union[Dict, None] = None) -> ndarray:
+    if monitor is None:
+        monitor = CFG.screen_res["mss_monitor"].copy()
+    with mss() as sct:
+        screenshot = sct.grab(monitor)
     return screenshot
 
 

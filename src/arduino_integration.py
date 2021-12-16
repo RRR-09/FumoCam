@@ -49,7 +49,7 @@ class ArduinoConfig:
                 self.interface.close()
             self.interface.open()
             if self.interface_ready is False or do_log:
-                log("Intialized")
+                log("Precision Chip Intialized")
             self.interface_ready = True
         except serial.serialutil.SerialException:
             log("Failed to establish interface, retrying...")

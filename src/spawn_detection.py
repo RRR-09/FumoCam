@@ -7,7 +7,7 @@ from typing import Dict
 import cv2 as cv
 import numpy as np
 
-from utilities import check_active, take_screenshot_binary
+from utilities import check_active, take_screenshot_binary_blocking
 
 
 def apply_edge_filter(original_image: np.ndarray, edge_filter: Dict = {}) -> np.ndarray:
@@ -37,7 +37,7 @@ def apply_edge_filter(original_image: np.ndarray, edge_filter: Dict = {}) -> np.
 
 def get_screenshot():
     try:
-        return np.array(take_screenshot_binary)
+        return np.array(take_screenshot_binary_blocking())
     except Exception:
         print(f"Error with screenshot: {format_exc()}")
         return False

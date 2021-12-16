@@ -508,10 +508,10 @@ class TwitchBot(commands.Bot):
 async def routine_anti_afk():
     print("[Subroutine] AntiAFK")
     try:
-        await CFG.add_action_queue("anti_afk")
+        await CFG.add_action_queue(ActionQueueItem("anti_afk"))
         CFG.anti_afk_runs += 1
         if CFG.anti_afk_runs % 3 == 0:
-            await CFG.add_action_queue("advert")
+            await CFG.add_action_queue(ActionQueueItem("advert"))
             print("[Subroutine] Queued Advert")
             CFG.anti_afk_runs = 0
     except Exception:
@@ -525,7 +525,7 @@ async def routine_check_better_server():
         while CFG.crashed:
             print("[Better Server Check] Currently crashed, waiting...")
             await async_sleep(60)
-        await CFG.add_action_queue("check_for_better_server")
+        await CFG.add_action_queue(ActionQueueItem("check_for_better_server"))
     except Exception:
         error_log(traceback.format_exc())
 
@@ -539,17 +539,21 @@ async def routine_clock():
 
 @routines.routine(time=datetime(year=1970, month=1, day=1, hour=3, minute=58))
 async def routine_reboot():
-    action_queue_item = {"chat": ["[System restart in 2 minutes]"]}
+    action_queue_item = ActionQueueItem(
+        "chat", {"msgs": ["[System restart in 2 minutes]"]}
+    )
     await CFG.add_action_queue(action_queue_item)
     await async_sleep(60)
 
-    action_queue_item = {"chat": ["[System restart in 1 minute]"]}
+    action_queue_item = ActionQueueItem(
+        "chat", {"msgs": ["[System restart in 1 minute]"]}
+    )
     await CFG.add_action_queue(action_queue_item)
     await async_sleep(60)
 
     log_process("System Shutdown")
     log("Initiating shutdown sequence")
-    action_queue_item = {"chat": ["[System restarting]"]}
+    action_queue_item = ActionQueueItem("chat", {"msgs": ["[System restarting]"]})
     await CFG.add_action_queue(action_queue_item)
     await async_sleep(10)
     system("shutdown /f /r /t 0")  # nosec
@@ -564,7 +568,7 @@ async def routine_crash_check():
         crashed = await do_crash_check()
         if crashed:
             print("[Routine] Crash detected")
-            await CFG.add_action_queue("handle_crash")
+            await CFG.add_action_queue(ActionQueueItem("handle_crash"))
             await async_sleep(60)
     except Exception:
         error_log(traceback.format_exc())
