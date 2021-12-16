@@ -79,8 +79,14 @@ async def check_if_should_change_servers(
         if current_server_id == "N/A":
             current_server_id = ""
         for server in servers:
-            server_id = server["id"]
-            server_playing = server["playing"]
+            server_id = server.get("id", "undefined")
+            server_playing = server.get("playing", -1)
+            if server_id == "undefined" or server_playing == -1:
+                notify_admin(
+                    f"Handled Error in `check_if_should_change_servers`\nServers:\n`{servers}`\nProblem:\n`{server}`"
+                )
+                continue
+
             if current_server_id == server_id:
                 current_server_id = server_id
                 current_server_playing = server_playing
