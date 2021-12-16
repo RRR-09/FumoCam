@@ -57,10 +57,11 @@ async def force_get_best_server() -> str:
 
 
 async def check_if_should_change_servers(
-    current_server_id: str = "N/A",
+    original_current_server_id: str = "N/A",
 ) -> Tuple[bool, str]:
-    original_current_server_id = current_server_id
-    current_server_id = "" if original_current_server_id else original_current_server_id
+    current_server_id = (
+        "" if original_current_server_id == "N/A" else original_current_server_id
+    )
     current_server_playing = 0
     highest_player_server_playing = 0
 
@@ -75,7 +76,8 @@ async def check_if_should_change_servers(
 
         response_result = response.json()
         servers = response_result["data"]
-
+        if current_server_id == "N/A":
+            current_server_id = ""
         for server in servers:
             server_id = server["id"]
             server_playing = server["playing"]
@@ -124,7 +126,7 @@ async def get_current_server_id(game_id: int = CFG.game_id) -> str:
             return "ERROR"
         for server in servers:
             if CFG.player_id in server["playerTokens"]:
-                current_server_id = str(server["id"])
+                current_server_id = server["id"]
                 break
         if current_server_id != "ERROR":
             print(current_server_id)
