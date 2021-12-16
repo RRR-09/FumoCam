@@ -17,7 +17,7 @@ except FileNotFoundException:
     )
 # Ignore "Import "OpenHardwareMonitor.Hardware" could not be resolved", is imported dynamically by above line
 # Ignore "module level import not at top of file", is impossible to be before clr.AddReference
-import OpenHardwareMonitor.Hardwaremodule  # type: ignore # noqa: E402
+import OpenHardwareMonitor.Hardware  # type: ignore # noqa: E402
 
 run_as_admin()
 
