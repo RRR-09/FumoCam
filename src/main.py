@@ -40,7 +40,7 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
     CFG.action_running = True
     remove_duplicates = False
     while len(CFG.action_queue) > 0:
-        print(f"Running Action Queue:\n{CFG.action_queue}\n")
+        print(f"Running Action Queue:\n{[item.name for item in CFG.action_queue]}\n")
         await check_active()
         await async_sleep(0.1)
         try:
