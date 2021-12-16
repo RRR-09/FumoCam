@@ -9,7 +9,9 @@ from arduino_integration import ACFG, CFG
 from health import (
     change_characters,
     check_for_better_server,
+    check_if_game_loaded,
     click_character_in_menu,
+    get_best_server,
     get_current_server_id,
     join_target_server,
     toggle_collisions,
@@ -123,7 +125,10 @@ def test_loading_cookies_for_browser():
     driver.get(CFG.game_instances_url)
 
     for cookie in cookies:
-        driver.add_cookie(cookie)
+        try:
+            driver.add_cookie(cookie)
+        except Exception:
+            print(f"ERROR ADDING COOKIE: \n{cookie}\n")
     driver.refresh()
     script = """Roblox.GameLauncher.joinGameInstance(6238705697, "099cf062-e26f-4ace-b627-6ebfa2295270")"""
     driver.execute_script(script)
@@ -150,12 +155,64 @@ def test_mute(mute=None):
     asyncio.get_event_loop().run_until_complete(mute_toggle(mute=mute))
 
 
+def test_get_player_token():
+    async def test():
+        total_diffs = []
+        print(
+            "This will use log in to the least popular server in an attempt to get your token.\n"
+            "If someone else joins before you do, it will be impossible to tell, so the program will retry.\n"
+            "It's recommended to run this 2 or 3 times to make sure we deduced the right token."
+        )
+        input("Press enter to begin.")
+
+        while True:
+            server_before_join = await get_best_server(get_worst=True)
+            print(server_before_join)
+            print(f"[DEBUG] BEFORE:\n{server_before_join['playerTokens']}\n")
+            await join_target_server(server_before_join["id"])
+            game_loaded = await check_if_game_loaded()
+            if not game_loaded:
+                raise Exception("Could not load into game!")
+            await async_sleep(1)
+            server_after_join = await get_best_server(get_worst=True)
+
+            if server_after_join["id"] != server_before_join["id"]:
+                print("Ideal servers became different, retrying...")
+                total_diffs = []
+            else:
+                print(f"[DEBUG] AFTER:\n{server_after_join['playerTokens']}\n")
+                current_diffs = []
+                for id in server_after_join["playerTokens"]:
+                    if id not in server_before_join["playerTokens"]:
+                        current_diffs.append(id)
+
+                for id in total_diffs:
+                    if id not in current_diffs:
+                        total_diffs.remove(id)
+                    else:
+                        current_diffs.remove(id)
+
+                total_diffs = current_diffs
+
+            kill_process(force=True)
+            print(f"[DEBUG] Diffs: {total_diffs}")
+            if len(total_diffs) == 1:
+                break
+            wait_time = 20
+            print(f"[DEBUG] Waiting {wait_time}s to avoid ratelimit/inaccuracy...")
+            await async_sleep(wait_time)
+
+        print(f'\n\n\n\n\nYOUR ID IS: "{total_diffs[0]}"')
+
+    asyncio.get_event_loop().run_until_complete(test())
+
+
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
     # test_get_cookies_for_browser()
-    test_loading_cookies_for_browser()
-    # test_check_for_better_server()
+    # test_loading_cookies_for_browser()
+    test_get_player_token()
 
     # test_mute(mute=True)
 

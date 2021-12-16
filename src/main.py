@@ -13,17 +13,13 @@ from actions import (
     respawn_character,
     send_chat,
 )
-from commands import (
-    click_backpack_button,
-    click_item,
-    click_sit_button,
-    force_respawn_character,
-)
+from commands import click_backpack_button, click_item, click_sit_button
 from config import ActionQueueItem
 from health import (
     ACFG,
     auto_nav,
     check_for_better_server,
+    force_respawn_character,
     handle_join_new_server,
     toggle_collisions,
 )

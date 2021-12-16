@@ -1,7 +1,6 @@
 from asyncio import sleep as async_sleep
 
-from actions import ACFG, CFG, send_chat
-from health import change_characters
+from actions import ACFG, CFG
 from utilities import check_active, log, log_process
 
 
@@ -74,12 +73,3 @@ async def click_item(item_number: int):
     ACFG.moveMouseAbsolute(x=item_x, y=item_y)
     ACFG.left_click()
     CFG.backpack_open = False
-
-
-async def force_respawn_character():
-    await check_active()
-    await async_sleep(0.5)
-    log_process("Force-Respawning")
-    await send_chat("[Respawning!]")
-    await change_characters(respawn=True)
-    log_process("")

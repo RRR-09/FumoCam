@@ -14,7 +14,7 @@ from selenium import webdriver
 
 from actions import respawn_character, send_chat
 from commands import ACFG, CFG
-from config import OBS
+from config import OBS, ActionQueueItem
 from navpoints import (  # TODO: Make this better/scalable
     comedy_to_main,
     main_to_classic,
@@ -226,7 +226,11 @@ async def open_roblox_with_selenium_browser(js_code: str) -> bool:
     driver.get(CFG.game_instances_url)
 
     for cookie in cookies:
-        driver.add_cookie(cookie)
+        try:
+            driver.add_cookie(cookie)
+        except Exception:
+            print(f"ERROR ADDING COOKIE: \n{cookie}\n")
+
     driver.refresh()
     driver.execute_script(js_code)
 
@@ -265,24 +269,29 @@ async def join_target_server(instance_id: int):
     return success
 
 
-async def get_best_server() -> Dict:
-    server_obj = {"id": "", "maxPlayers": 100, "playing": 0, "fps": 59, "ping": 100}
-    highest_player_count_server = server_obj
+async def get_best_server(get_worst: bool = False) -> Dict:
+    server_obj = {
+        "id": "",
+        "maxPlayers": 100,
+        "playing": 0 if not get_worst else 100,
+        "fps": 59,
+        "ping": 100,
+    }
+    best_server = server_obj
     url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
     response = get(url, timeout=10)
     if response.status_code == 200:
         response_result = response.json()
         servers = response_result["data"]
         for server in servers:
-            print(server)
-            if (
-                "playing" in server
-                and server["playing"] > highest_player_count_server["playing"]
-            ):
-                highest_player_count_server = server
-    if highest_player_count_server == server_obj:
+            if "playing" in server:
+                if (not get_worst) and server["playing"] > best_server["playing"]:
+                    best_server = server
+                if get_worst and server["playing"] < best_server["playing"]:
+                    best_server = server
+    if best_server == server_obj:
         return {}
-    return highest_player_count_server
+    return best_server
 
 
 async def click_character_select_button(check_open_state: Union[bool, None] = None):
@@ -513,24 +522,43 @@ async def change_characters(respawn: bool = False):
         ACFG.zoom("i", CFG.zoom_out_ui_cv)
 
 
-async def server_spawn():
-    await async_sleep(5)
+async def check_if_game_loaded() -> bool:
+    game_loaded = False
     log("Loading into game")
-    # Sanity check, server_spawn is only triggered when it finds the button
-    if await get_character_select_button_pos() is None:
+
+    for attempt in range(CFG.max_attempts_game_loaded):
+        if await get_character_select_button_pos() is not None:
+            game_loaded = True
+            break
+        log(f"Loading into game (Check #{attempt}/{CFG.max_attempts_game_loaded})")
+        await async_sleep(1)
+
+    if not game_loaded:
         log("Failed to load into game.")
-        await async_sleep(5)
         notify_admin("Failed to load into game")
-        await CFG.add_action_queue("handle_crash")
+        await async_sleep(5)
+        await CFG.add_action_queue(ActionQueueItem("handle_crash"))
+        log("")
         return False
-    await async_sleep(5)
+    log("")
+    return True
+
+
+async def server_spawn() -> bool:
+    game_loaded = await check_if_game_loaded()
+    if not game_loaded:
+        return False
+
     if CFG.disable_collisions_on_spawn:
         CFG.collisions_disabled = False
         await toggle_collisions()
-    await async_sleep(3)
+
     await change_characters()
+
     ACFG.resetMouse()
+
     await auto_nav("shrimp", do_checks=False)
+
     return True
 
 
@@ -568,7 +596,6 @@ async def handle_join_new_server(crash=False):
 async def auto_nav(
     location: str, do_checks: bool = True, slow_spawn_detect: bool = True
 ):
-    # await check_active()
     log_process("AutoNav")
     if do_checks:
         await check_active(force_fullscreen=False)
@@ -859,6 +886,15 @@ async def toggle_collisions() -> bool:
     return True
 
 
+async def force_respawn_character():
+    await check_active()
+    await async_sleep(0.5)
+    log_process("Force-Respawning")
+    await send_chat("[Respawning!]")
+    await change_characters(respawn=True)
+    log_process("")
+
+
 if __name__ == "__main__":
     import asyncio
 
@@ -866,8 +902,5 @@ if __name__ == "__main__":
         await check_active(force_fullscreen=False)
         sleep(0.5)
         await auto_nav("treehouse", do_checks=False, slow_spawn_detect=False)
-
-        # ACFG.zoom("o", 105)
-        # ACFG.zoom("i", 50)
 
     asyncio.get_event_loop().run_until_complete(test())

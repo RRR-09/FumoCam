@@ -153,10 +153,12 @@ class MainBotConfig:
     game_instances_url = (
         "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     )
+    max_attempts_better_server = 20
     max_attempts_character_selection = 30
+    max_attempts_game_loaded = 20
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 20
-    max_attempts_better_server = 20
+
     mouse_software_emulation = True
     mouse_blocked_regions = [
         BlockedMouseRegion(name="Chat", x1=0, y1=0, x2=340, y2=240),
