@@ -115,6 +115,14 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             await handle_join_new_server(crash=True)
             remove_duplicates = True
         elif action.name == "handle_join_new_server":
+            if await check_active():
+                msg = f"[There is a server with >{CFG.player_difference_to_switch} more players!]"
+                await send_chat(msg)
+                await async_sleep(len(msg) * CFG.chat_name_sleep_factor)
+                msg = "[Sorry, I have to switch! Hope to see you there!]"
+                await send_chat(msg)
+                await async_sleep(len(msg) * CFG.chat_name_sleep_factor)
+                await async_sleep(5)
             await handle_join_new_server()
             remove_duplicates = True
         elif action.name == "jump":

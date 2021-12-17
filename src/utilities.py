@@ -146,7 +146,7 @@ def kill_process(executable: str = "RobloxPlayerBeta.exe", force: bool = False):
 
 async def check_active(
     title: str = "Roblox", title_ending: str = None, force_fullscreen: bool = True
-):
+) -> bool:
     print(f"[check_active] {title} | {title_ending}")
     active_window = getActiveWindow()
     if active_window is not None:
@@ -167,7 +167,7 @@ async def check_active(
                     await async_sleep(0.3)
                 await check_active(title)
             print(f"{active_window.title} already active")
-            return
+            return True
     for window in getAllWindows():
         title_active = title_ending is None and window.title == title
         title_ending_active = title_ending is not None and window.title.endswith(
@@ -209,6 +209,8 @@ async def check_active(
                     press_key("f11")
                     print("Maximizing window with F11")
                 await check_active(title)
+            return True
+    return False
 
 
 def notify_admin(
