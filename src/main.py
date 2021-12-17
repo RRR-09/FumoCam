@@ -1,9 +1,10 @@
 from asyncio import sleep as async_sleep
+from subprocess import check_output  # nosec
 from time import sleep
 from traceback import format_exc
 
 import pyautogui
-from subprocess import check_output
+
 from actions import (
     chat_mouse_click,
     do_advert,
@@ -217,8 +218,10 @@ async def add_action_queue(item: ActionQueueItem):
 
 
 async def update_version():
-    version = (check_output(["git", "rev-list", "--count", "HEAD"])).decode().split("\n")[0]
-    output_log("version", f"v{version}")
+    git_version = check_output(["git", "rev-list", "--count", "HEAD"])  # nosec
+    version_string = git_version.decode().split("\n")[0]
+    output_log("version", f"v{version_string}")
+
 
 async def async_main():
     print("[Async_Main] Start")
