@@ -156,7 +156,7 @@ def main_to_treehouse():
     ACFG.move("a", 0.8, raw=True)
     ACFG.move("w", 0.125, raw=True)
     ACFG.leap(forward_time=0.3, jump_time=0.15, direction_key="d")
-    ACFG.move("d", 1.5, raw=True)
+    ACFG.move("d", 1.7, raw=True)
     ACFG.move("w", 0.5, raw=True)
     ACFG.move("a", 0.5, raw=True)
 
