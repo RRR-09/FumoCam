@@ -8,8 +8,7 @@ from typing import Dict, Union
 
 from mss import mss
 from mss import tools as mss_tools
-from numpy import array as np_array
-from numpy import ndarray
+from mss.screenshot import ScreenShot
 from psutil import process_iter
 from pydirectinput import press as press_key
 from pygetwindow import getActiveWindow, getAllWindows
@@ -120,7 +119,7 @@ async def take_screenshot() -> str:
     return file_name
 
 
-async def take_screenshot_binary(monitor: Union[Dict, None] = None) -> ndarray:
+async def take_screenshot_binary(monitor: Union[Dict, None] = None) -> ScreenShot:
     if monitor is None:
         monitor = CFG.screen_res["mss_monitor"].copy()
     with mss() as sct:
@@ -128,7 +127,7 @@ async def take_screenshot_binary(monitor: Union[Dict, None] = None) -> ndarray:
     return screenshot
 
 
-def take_screenshot_binary_blocking(monitor: Union[Dict, None] = None) -> ndarray:
+def take_screenshot_binary_blocking(monitor: Union[Dict, None] = None) -> ScreenShot:
     if monitor is None:
         monitor = CFG.screen_res["mss_monitor"].copy()
     with mss() as sct:
@@ -235,8 +234,8 @@ def notify_admin(message: str) -> bool:
     try:
         filename = f"{time()}.png"
         screenshot = take_screenshot_binary_blocking()
-        screenshot_binary = mss_tools.to_png(screenshot.rgb, screenshot.size)
-        if screenshot_binary is not None:
+        if screenshot is not None:
+            screenshot_binary = mss_tools.to_png(screenshot.rgb, screenshot.size)
             post(
                 webhook_url,
                 files={f"_{filename}": (filename, screenshot_binary)},
