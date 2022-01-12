@@ -7,6 +7,8 @@ from traceback import format_exc
 from typing import Dict, Union
 
 from mss import mss
+from mss import tools as mss_tools
+from numpy import array as np_array
 from numpy import ndarray
 from psutil import process_iter
 from pydirectinput import press as press_key
@@ -213,9 +215,8 @@ async def check_active(
     return False
 
 
-def notify_admin(
-    message: str,
-) -> bool:  # TODO: Make !dev a seperate, always-running process
+def notify_admin(message: str) -> bool:
+    # TODO: Make !dev a seperate, always-running process
     webhook_url = os.getenv("DISCORD_WEBHOOK_DEV_CHANNEL", None)
     if webhook_url is None:
         return False
@@ -230,6 +231,25 @@ def notify_admin(
         print(err)
     else:
         print(f"[Dev Notified] {message}")
+
+    try:
+        filename = f"{time()}.png"
+        screenshot = take_screenshot_binary_blocking()
+        screenshot_binary = mss_tools.to_png(screenshot.rgb, screenshot.size)
+        if screenshot_binary is not None:
+            post(
+                webhook_url,
+                files={f"_{filename}": (filename, screenshot_binary)},
+            )
+            try:
+                result.raise_for_status()
+            except HTTPError as error:
+                print(error)
+            else:
+                print(f"[Logged Screenshot] {message}")
+    except Exception:
+        print(format_exc())
+
     return True
 
 
