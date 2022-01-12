@@ -705,10 +705,12 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
             log("")
             return center_x, center_y
         else:
-            log(
+            error_msg = (
                 "Could not find settings button!\n"
                 f"(Best match {round(match_max_val*100,2)}% confidence)\n({center_x}, {center_y}"
             )
+            log(error_msg)
+            notify_admin(error_msg)
             await async_sleep(5)
             log("")
             return None
@@ -798,6 +800,24 @@ async def ocr_for_settings(option: str = "") -> bool:
             f"Finding '{desired_option.capitalize()}' (Attempt #{attempts}/{CFG.settings_menu_ocr_max_attempts})"
         )
         screenshot = np.array(await take_screenshot_binary(monitor))
+
+        menu_green = {
+            "upper_bgra": np.array([212, 255, 158, 255]),
+            "lower_bgra": np.array([74, 92, 69, 255]),
+        }
+        green_mask = cv.inRange(
+            screenshot, menu_green["lower_bgra"], menu_green["upper_bgra"]
+        )
+        screenshot[green_mask > 0] = (255, 255, 255, 255)
+
+        menu_red = {
+            "upper_bgra": np.array([85, 85, 255, 255]),
+            "lower_bgra": np.array([45, 50, 120, 255]),
+        }
+        red_mask = cv.inRange(
+            screenshot, menu_red["lower_bgra"], menu_red["upper_bgra"]
+        )
+        screenshot[red_mask > 0] = (255, 255, 255, 255)
 
         gray = cv.cvtColor(screenshot, cv.COLOR_BGR2GRAY)  # PyTesseract
         gray, img_bin = cv.threshold(gray, 100, 255, cv.THRESH_BINARY | cv.THRESH_OTSU)
