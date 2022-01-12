@@ -14,6 +14,7 @@ from health import (
     get_best_server,
     get_current_server_id,
     join_target_server,
+    ocr_for_settings,
     toggle_collisions,
 )
 from twitch_integration import twitch_main
@@ -56,6 +57,15 @@ def test_character_select_full(click_mouse=True):
         await change_characters()
 
     asyncio.get_event_loop().run_until_complete(do_test(click_mouse=click_mouse))
+
+
+def test_ocr_settings():
+    async def test():
+        await check_active(force_fullscreen=False)
+        sleep(1)
+        await ocr_for_settings()
+
+    asyncio.get_event_loop().run_until_complete(test())
 
 
 def test_toggle_collisions():
@@ -229,7 +239,7 @@ if __name__ == "__main__":
     # test_check_for_better_server()
     # test_character_select_full(click_mouse=True)
     # toggle_collisions()
-    # test_toggle_collisions()
+    # test_ocr_settings()
 
     # click_sit_button()
     # test_respawn()
