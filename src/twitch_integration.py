@@ -452,7 +452,8 @@ class TwitchBot(commands.Bot):
     async def nav(self, ctx: commands.Context):
         args = await self.get_args(ctx)
         if not args or args[0].lower() not in CFG.nav_locations:
-            await ctx.send('[Please specify a valid location! (i.e. "!nav shrimp")]')
+            await ctx.send('[Please specify a valid location!]')
+            await ctx.send(f'[{", ".join(list(CFG.nav_locations.keys()))}]')
             return
         location = args[0].lower()
         await ctx.send("[Requested AutoNav! If we fail, re-run the command!]")
