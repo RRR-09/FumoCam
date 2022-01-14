@@ -207,6 +207,8 @@ class MainBotConfig:
     except Exception:
         print(f"{twitch_blacklist_path} malformed or missing")
 
+    updates_url = os.getenv("HASHNODE_UPDATES_URL")
+
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
     vlc_executable_name = "vlc.exe"
