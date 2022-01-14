@@ -19,6 +19,11 @@ from utilities import discord_log, error_log, log, log_process, notify_admin, ou
 class TwitchBot(commands.Bot):
     def __init__(self, token: str, channel_name: str):
         super().__init__(token=token, prefix="!", initial_channels=[channel_name])
+        self.help_msgs = [
+            f"For a full list of commands, visit {CFG.help_url}",
+            "If you just want to play around, try '!m hello', '!move w 2', or '!nav shrimp'",
+            f"For previous updates, visit {CFG.updates_url}",
+        ]
 
     async def event_ready(self):
         print(f'[Twitch] Logged in as "{self.nick}"')
@@ -39,6 +44,16 @@ class TwitchBot(commands.Bot):
         else:
             if message.content.startswith("!dev"):
                 await self.manual_dev_command(message)
+
+        if await self.is_new_user(message.author.name):
+            for msg in self.help_msgs:
+                await message.channel.send(msg)
+
+            await message.channel.send(
+                f"Welcome to the stream {message.author.mention}!"
+                "This is a 24/7 bot you can control with chat commands! See above."
+            )
+
         try:
             await log_task
         except Exception:
@@ -60,6 +75,14 @@ class TwitchBot(commands.Bot):
         print(f'"{commands.errors.CommandNotFound}"')
         traceback.print_exception(type(error), error, error.__traceback__)
         error_log(f"({type(error)})\n{error}\n{error.__traceback__}")
+
+    async def is_new_user(self, username):
+        if username in CFG.twitch_chatters:
+            return False
+        CFG.twitch_chatters.add(username)
+        with open("twitch_chatters.json", "w") as f:
+            json.dump(CFG.twitch_chatters, f)
+        return True
 
     async def do_discord_log(self, message: TwitchMessage):
         author = message.author.display_name
@@ -98,11 +121,8 @@ class TwitchBot(commands.Bot):
 
     @commands.command()
     async def help(self, ctx: commands.Context):
-        ctx.send(f"For a full list of commands, visit {CFG.help_url}")
-        ctx.send(
-            "If you just want to play around, try '!m hello', '!move w 2', or '!nav shrimp'"
-        )
-        ctx.send(f"For previous updates, visit {CFG.updates_url}")
+        for msg in self.help_msgs:
+            ctx.send(msg)
 
     @commands.command()
     async def backpack(self, ctx: commands.Context):

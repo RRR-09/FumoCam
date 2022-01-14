@@ -210,6 +210,13 @@ class MainBotConfig:
     except Exception:
         print(f"{twitch_blacklist_path} malformed or missing")
 
+    twitch_chatters = set()
+    try:
+        with open(OBS.output_folder / "twitch_chatters.json", "r") as f:
+            twitch_chatters = json.load(f)
+    except Exception:
+        print(f"{OBS.output_folder / 'twitch_chatters.json'} malformed or missing")
+
     updates_url = os.getenv("HASHNODE_UPDATES_URL")
 
     sound_control_executable_name = "SoundVolumeView.exe"
