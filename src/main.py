@@ -1,9 +1,12 @@
 from asyncio import sleep as async_sleep
+from json import loads as json_loads
 from subprocess import check_output  # nosec
 from time import sleep
 from traceback import format_exc
 
 import pyautogui
+from lxml.html import document_fromstring  # nosec
+from requests import get
 
 from actions import (
     chat_mouse_click,
@@ -223,9 +226,47 @@ async def update_version():
     output_log("version", f"v{version_string}")
 
 
+async def get_updates_log():
+    # TODO: Hacky mess, we need something better
+
+    x = get(
+        CFG.updates_url, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"}
+    )
+    if x.status_code != 200:
+        output_log("updates_header", "HTTP ERROR")
+        output_log("updates_body", f"Could not reach {CFG.updates_url}")
+        return
+
+    parsed = document_fromstring(x.text)
+    page_data = parsed.get_element_by_id("__NEXT_DATA__").text_content()
+    page_data_json = json_loads(page_data)
+    page_content = (
+        page_data_json.get("props", {})
+        .get("pageProps", {})
+        .get("staticPageContent", {})
+    )
+    page_content_json = json_loads(page_content)
+    page_content_markdown = page_content_json.get(
+        "contentMarkdown", "### ERROR\n ERROR"
+    )
+    updates = page_content_markdown.replace("   * ", "- ").split("### ")
+    if updates[0] == "":
+        updates.pop(0)
+
+    latest_update = updates[0].split("\n", 1)
+
+    if len(latest_update) != 2:
+        output_log("updates_header", "PARSE ERROR")
+        output_log("updates_body", updates[0])
+        return
+    output_log("updates_header", latest_update[0])
+    output_log("updates_body", f"{latest_update[1]}\n")
+
+
 async def async_main():
     print("[Async_Main] Start")
     await update_version()
+    await get_updates_log()
     await CFG.add_action_queue(ActionQueueItem("mute", {"set_muted": False}))
 
 

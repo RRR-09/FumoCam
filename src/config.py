@@ -152,6 +152,9 @@ class MainBotConfig:
     game_instances_url = (
         "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
     )
+
+    help_url = os.getenv("HELP_URL")
+
     max_attempts_better_server = 20
     max_attempts_character_selection = 30
     max_attempts_game_loaded = 20
@@ -207,6 +210,15 @@ class MainBotConfig:
     except Exception:
         print(f"{twitch_blacklist_path} malformed or missing")
 
+    twitch_chatters = set()
+    try:
+        with open(OBS.output_folder / "twitch_chatters.json", "r") as f:
+            twitch_chatters = json.load(f)
+    except Exception:
+        print(f"{OBS.output_folder / 'twitch_chatters.json'} malformed or missing")
+
+    updates_url = os.getenv("HASHNODE_UPDATES_URL")
+
     sound_control_executable_name = "SoundVolumeView.exe"
     vlc_path = Path("C:\\", "Program Files", "VideoLAN", "VLC")
     vlc_executable_name = "vlc.exe"
@@ -231,59 +243,6 @@ class MainBotConfig:
     zoom_out_ui_cv: float = (
         50  # Amount to zoom out for safety when interacting with UI (Computervision)
     )
-
-    commands_list = [
-        {"command": "!m Your Message", "help": 'Sends "Your Message" in-game'},
-        {
-            "command": "!left 90 or !right 360",
-            "help": "Turn camera x degrees left or right",
-        },
-        {"command": "!up 45 or !down 180", "help": "Turn camera x degrees up or down"},
-        {
-            "command": "!zoomin 100 or !zoomout 100",
-            "help": "Zoom camera in or out 100%",
-        },
-        {
-            "command": "!dev Your Message",
-            "help": 'EMERGENCY ONLY, Sends "Your Message" to devs discord account',
-        },
-        {
-            "command": "!move w 10",
-            "help": "Moves forwards # FumoCam units. Max 10. (!move a, !move d, !move s)",
-        },
-        {
-            "command": "!nav LocationName",
-            "help": f"AutoNavigates to a location. ({', '.join(list(nav_locations.keys()))})",
-        },
-        {
-            "command": "!leap 0.7 0.5",
-            "help": "At the same time, moves forwards for 0.7s and jumps for 0.5s",
-        },
-        {"command": "!jump", "help": "Jumps. Helpful if stuck on something."},
-        {"command": "!grief", "help": "Toggles anti-grief."},
-        {
-            "command": "!respawn",
-            "help": "Respawns using Roblox respawn. Use !respawnforce if completely stuck.",
-        },
-        {"command": "!respawnforce", "help": "Respawns. Helpful if completely stuck."},
-        {"command": "!use", "help": 'Presses "e".'},
-        {"command": "!sit", "help": "Clicks the sit button."},
-        {
-            "command": "!mute",
-            "help": "Music will still play, but toggles mute in-game sound effects.",
-        },
-        {"command": "!click", "help": "Clicks wherever the mouse is on screen."},
-        {
-            "command": "!mouse -30 50",
-            "help": "FROM SCREEN CENTER, moves mouse 30 pixels left, 50 pixels down.",
-        },
-        {"command": "!backpack", "help": "Toggles the backpack."},
-        {
-            "command": "!item 1",
-            "help": "(OPEN BACKPACK FIRST), Clicks item 1 (goes up to 8)",
-        },
-        {"command": "!hidemouse", "help": "Moves mouse off-screen."},
-    ]
 
     async def add_action_queue(self, item: ActionQueueItem):
         print("Attempted to add action queue item too early!")

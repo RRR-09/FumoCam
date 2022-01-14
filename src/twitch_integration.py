@@ -19,6 +19,11 @@ from utilities import discord_log, error_log, log, log_process, notify_admin, ou
 class TwitchBot(commands.Bot):
     def __init__(self, token: str, channel_name: str):
         super().__init__(token=token, prefix="!", initial_channels=[channel_name])
+        self.help_msgs = [
+            f"For a full list of commands, visit {CFG.help_url}",
+            "If you just want to play around, try '!m hello', '!move w 2', or '!nav shrimp'",
+            f"For previous updates, visit {CFG.updates_url}",
+        ]
 
     async def event_ready(self):
         print(f'[Twitch] Logged in as "{self.nick}"')
@@ -39,6 +44,16 @@ class TwitchBot(commands.Bot):
         else:
             if message.content.startswith("!dev"):
                 await self.manual_dev_command(message)
+
+        if await self.is_new_user(message.author.name):
+            for msg in self.help_msgs:
+                await message.channel.send(msg)
+
+            await message.channel.send(
+                f"Welcome to the stream {message.author.mention}!"
+                "This is a 24/7 bot you can control with chat commands! See above."
+            )
+
         try:
             await log_task
         except Exception:
@@ -60,6 +75,14 @@ class TwitchBot(commands.Bot):
         print(f'"{commands.errors.CommandNotFound}"')
         traceback.print_exception(type(error), error, error.__traceback__)
         error_log(f"({type(error)})\n{error}\n{error.__traceback__}")
+
+    async def is_new_user(self, username):
+        if username in CFG.twitch_chatters:
+            return False
+        CFG.twitch_chatters.add(username)
+        with open("twitch_chatters.json", "w") as f:
+            json.dump(CFG.twitch_chatters, f)
+        return True
 
     async def do_discord_log(self, message: TwitchMessage):
         author = message.author.display_name
@@ -86,7 +109,6 @@ class TwitchBot(commands.Bot):
             routine_check_better_server,
             routine_clock,
             routine_crash_check,
-            routine_help,
             routine_reboot,
         ]
         for subroutine in subroutines:
@@ -96,6 +118,12 @@ class TwitchBot(commands.Bot):
             subroutine.start()
 
     # Basic Commands
+
+    @commands.command()
+    async def help(self, ctx: commands.Context):
+        for msg in self.help_msgs:
+            ctx.send(msg)
+
     @commands.command()
     async def backpack(self, ctx: commands.Context):
         await ctx.send(
@@ -564,7 +592,6 @@ async def routine_reboot():
 async def routine_crash_check():
     if CFG.crashed:
         return
-    print("[Subroutine] Crash Check")
     try:
         crashed = await do_crash_check()
         if crashed:
@@ -573,26 +600,6 @@ async def routine_crash_check():
             await async_sleep(60)
     except Exception:
         error_log(traceback.format_exc())
-
-
-@routines.routine(seconds=5)
-async def routine_help():
-    for command in CFG.commands_list:
-        await async_sleep(0.25)
-        current_command_in_list = (
-            f"{(CFG.commands_list.index(command) + 1)}/{len(CFG.commands_list)}"
-        )
-        output_log(
-            "commands_help_label", f"TWITCH CHAT COMMANDS [{current_command_in_list}]"
-        )
-        await async_sleep(0.1)
-        output_log("commands_help_title", command["command"])
-        await async_sleep(0.1)
-        output_log("commands_help_desc", command["help"])
-        if "time" in command:
-            await async_sleep(int(command["time"]))
-            continue
-        await async_sleep(5)
 
 
 def twitch_main():
