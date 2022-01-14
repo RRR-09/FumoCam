@@ -86,7 +86,6 @@ class TwitchBot(commands.Bot):
             routine_check_better_server,
             routine_clock,
             routine_crash_check,
-            routine_help,
             routine_reboot,
         ]
         for subroutine in subroutines:
@@ -96,6 +95,15 @@ class TwitchBot(commands.Bot):
             subroutine.start()
 
     # Basic Commands
+
+    @commands.command()
+    async def help(self, ctx: commands.Context):
+        ctx.send(f"For a full list of commands, visit {CFG.help_url}")
+        ctx.send(
+            "If you just want to play around, try '!m hello', '!move w 2', or '!nav shrimp'"
+        )
+        ctx.send(f"For previous updates, visit {CFG.updates_url}")
+
     @commands.command()
     async def backpack(self, ctx: commands.Context):
         await ctx.send(
@@ -572,26 +580,6 @@ async def routine_crash_check():
             await async_sleep(60)
     except Exception:
         error_log(traceback.format_exc())
-
-
-@routines.routine(seconds=5)
-async def routine_help():
-    for command in CFG.commands_list:
-        await async_sleep(0.25)
-        current_command_in_list = (
-            f"{(CFG.commands_list.index(command) + 1)}/{len(CFG.commands_list)}"
-        )
-        output_log(
-            "commands_help_label", f"TWITCH CHAT COMMANDS [{current_command_in_list}]"
-        )
-        await async_sleep(0.1)
-        output_log("commands_help_title", command["command"])
-        await async_sleep(0.1)
-        output_log("commands_help_desc", command["help"])
-        if "time" in command:
-            await async_sleep(int(command["time"]))
-            continue
-        await async_sleep(5)
 
 
 def twitch_main():
