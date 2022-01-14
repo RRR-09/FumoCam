@@ -121,7 +121,7 @@ class TwitchBot(commands.Bot):
     @commands.command()
     async def help(self, ctx: commands.Context):
         for msg in self.help_msgs:
-            ctx.send(msg)
+            await ctx.send(msg)
 
     @commands.command()
     async def backpack(self, ctx: commands.Context):
