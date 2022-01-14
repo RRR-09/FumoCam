@@ -591,7 +591,6 @@ async def routine_reboot():
 async def routine_crash_check():
     if CFG.crashed:
         return
-    print("[Subroutine] Crash Check")
     try:
         crashed = await do_crash_check()
         if crashed:
