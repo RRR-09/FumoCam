@@ -701,12 +701,12 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
         center_y = int(top + (height / 2))
 
         if match_max_val >= CFG.settings_menu_find_threshold:
-            print(f"Found button. ({round(match_max_val*100,2)}%)")
+            print(f"Found gear icon. ({round(match_max_val*100,2)}%)")
             log("")
             return center_x, center_y
         else:
             error_msg = (
-                "Could not find settings button!\n"
+                "Could not find gear icon!\n"
                 f"(Best match {round(match_max_val*100,2)}% confidence)\n({center_x}, {center_y}"
             )
             log(error_msg)
@@ -716,7 +716,7 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
             return None
     except Exception:
         error_log(format_exc())
-        log("Could not find settings button! (Error)")
+        log("Could not find gear icon! (Error)")
         return None
 
 
@@ -725,8 +725,22 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
 
     settings_button_pos = await get_settings_button_pos()
     if settings_button_pos is None:
-        return False
-    button_x, button_y = settings_button_pos
+        if check_open_state is not None:
+            # invert, we want to click the opposite first to acheive the desired state
+            desired_pos_name = f"settings_{'closed' if check_open_state else 'opened'}"
+            desired_pos = CFG.settings_menu_positions.get(desired_pos_name)
+            if desired_pos is None:
+                return False
+
+            log(
+                "Couldn't find the gear icon visually.\n"
+                f"Using last positon for {'closed' if check_open_state else 'opened'} menu."
+            )
+            button_x, button_y = desired_pos["x"], desired_pos["y"]
+        else:
+            return False  # We can't verify where to click if we don't know what state we want it in
+    else:
+        button_x, button_y = settings_button_pos
 
     ACFG.moveMouseAbsolute(x=int(button_x), y=int(button_y))
     ACFG.left_click()
@@ -755,10 +769,22 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
                 int(new_button_y / 2) < int(last_button_y / 2)
             ):
                 success = True
+                CFG.settings_menu_positions["settings_opened"] = {
+                    "x": int(new_button_x),
+                    "y": int(new_button_y),
+                }
+                with open(CFG.settings_menu_positions_path, "w") as f:
+                    json.dump(CFG.settings_menu_positions, f)
                 break  # If we want it open and the new pos is further up the screen than before
             elif check_open_state is False and (
                 int(new_button_y / 2) > int(last_button_y / 2)
             ):
+                CFG.settings_menu_positions["settings_closed"] = {
+                    "x": int(new_button_x),
+                    "y": int(new_button_y),
+                }
+                with open(CFG.settings_menu_positions_path, "w") as f:
+                    json.dump(CFG.settings_menu_positions, f)
                 success = True
                 break  # If we want it closed and the new pos is further down the screen than before
             else:
@@ -766,8 +792,12 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
                 ACFG.left_click()
                 await async_sleep(2)
                 _, last_button_y = new_button_x, new_button_y
+
         if not success:
-            log("Unable to toggle settings menu!")
+            if settings_button_pos is None:
+                log("Still could not find gear icon, hopefully worked anyway!")
+            else:
+                log("Unable to toggle settings menu!")
             await async_sleep(2)
         log("")
     else:
@@ -840,15 +870,30 @@ async def ocr_for_settings(option: str = "") -> bool:
     if not found_option:
         log(f"Failed to find '{desired_option.capitalize()}'.\n Notifying Dev...")
         notify_admin(f"Failed to find `{desired_option}`")
-        await async_sleep(5)
-        return False
+        if desired_option in CFG.settings_menu_positions:
+            log(
+                f"Failed to find '{desired_option.capitalize()}'.\n Using last known position..."
+            )
+            desired_option_height = CFG.settings_menu_positions[desired_option]["y"]
+        else:
+            await async_sleep(5)
+            return False
+    else:
+        # We found the option
+        ocr_index = ocr_data["text"].index(desired_option)
 
-    # We found the option, lets click it
-    ocr_index = ocr_data["text"].index(desired_option)
+        option_top = ocr_data["top"][ocr_index]
+        option_half = ocr_data["height"][ocr_index] / 2
+        desired_option_height = int(option_top + option_half + height_offset)
 
-    option_top = ocr_data["top"][ocr_index]
-    option_half = ocr_data["height"][ocr_index] / 2
-    desired_option_height = int(option_top + option_half + height_offset)
+        CFG.settings_menu_positions[desired_option] = {
+            "x": int(button_x),
+            "y": int(desired_option_height),
+        }
+        with open(CFG.settings_menu_positions_path, "w") as f:
+            json.dump(CFG.settings_menu_positions, f)
+
+    # Click the option
     ACFG.moveMouseAbsolute(x=int(button_x), y=int(desired_option_height))
     await async_sleep(0.5)
     ACFG.left_click()
