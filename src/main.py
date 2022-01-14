@@ -229,7 +229,9 @@ async def update_version():
 async def get_updates_log():
     # TODO: Hacky mess, we need something better
 
-    x = get(CFG.updates_url)
+    x = get(
+        CFG.updates_url, headers={"Cache-Control": "no-cache", "Pragma": "no-cache"}
+    )
     if x.status_code != 200:
         output_log("updates_header", "HTTP ERROR")
         output_log("updates_body", f"Could not reach {CFG.updates_url}")
