@@ -15,6 +15,7 @@ from config import ActionQueueItem, Twitch
 from health import CFG, do_crash_check
 from utilities import discord_log, error_log, log, log_process, notify_admin, output_log
 
+
 class TwitchBot(commands.Bot):
     def __init__(self, token: str, channel_name: str):
         super().__init__(token=token, prefix="!", initial_channels=[channel_name])
@@ -479,7 +480,7 @@ class TwitchBot(commands.Bot):
     async def nav(self, ctx: commands.Context):
         args = await self.get_args(ctx)
         if not args or args[0].lower() not in CFG.nav_locations:
-            await ctx.send('[Please specify a valid location!]')
+            await ctx.send("[Please specify a valid location!]")
             await ctx.send(f'[{", ".join(list(CFG.nav_locations.keys()))}]')
             return
         location = args[0].lower()
