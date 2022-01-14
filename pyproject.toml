@@ -30,6 +30,7 @@ pytesseract = "^0.3.8"
 imutils = "^0.5.4"
 # Dependency security patches
 aiohttp = "^3.7.4"
+# HTML parsing for updates
 lxml = "^4.7.1"
 
 [tool.poetry.dev-dependencies]
@@ -57,5 +58,5 @@ profile = "black"
 python_version = "3.9"
 
 [[tool.mypy.overrides]]
-module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*", "cv2.*", "imutils.*", "twitchio.*", "clr.*"]
+module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*", "cv2.*", "imutils.*", "twitchio.*", "clr.*", "lxml.*"]
 ignore_missing_imports = true
