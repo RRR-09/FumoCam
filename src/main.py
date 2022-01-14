@@ -259,8 +259,8 @@ async def get_updates_log():
         output_log("updates_header", "PARSE ERROR")
         output_log("updates_body", updates[0])
         return
-    output_log("updates_header", latest_update[0])
-    output_log("updates_body", f"{latest_update[1]}\n")
+    output_log("updates_header", f"UPDATE LOG ({latest_update[0]})")
+    output_log("updates_body", f"{latest_update[1]}\n\n\n")
 
 
 async def async_main():

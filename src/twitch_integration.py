@@ -15,7 +15,6 @@ from config import ActionQueueItem, Twitch
 from health import CFG, do_crash_check
 from utilities import discord_log, error_log, log, log_process, notify_admin, output_log
 
-
 class TwitchBot(commands.Bot):
     def __init__(self, token: str, channel_name: str):
         super().__init__(token=token, prefix="!", initial_channels=[channel_name])
@@ -50,7 +49,7 @@ class TwitchBot(commands.Bot):
                 await message.channel.send(msg)
 
             await message.channel.send(
-                f"Welcome to the stream {message.author.mention}!"
+                f"Welcome to the stream {message.author.mention}! "
                 "This is a 24/7 bot you can control with chat commands! See above."
             )
 
@@ -80,8 +79,8 @@ class TwitchBot(commands.Bot):
         if username in CFG.twitch_chatters:
             return False
         CFG.twitch_chatters.add(username)
-        with open("twitch_chatters.json", "w") as f:
-            json.dump(CFG.twitch_chatters, f)
+        with open(CFG.twitch_chatters_path, "w") as f:
+            json.dump(list(CFG.twitch_chatters), f)
         return True
 
     async def do_discord_log(self, message: TwitchMessage):

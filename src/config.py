@@ -211,11 +211,13 @@ class MainBotConfig:
         print(f"{twitch_blacklist_path} malformed or missing")
 
     twitch_chatters = set()
+    twitch_chatters_path = OBS.output_folder / "twitch_chatters.json"
     try:
-        with open(OBS.output_folder / "twitch_chatters.json", "r") as f:
-            twitch_chatters = json.load(f)
+        with open(twitch_chatters_path, "r") as f:
+            twitch_chatters_list = json.load(f)
+            twitch_chatters = set(twitch_chatters_list)
     except Exception:
-        print(f"{OBS.output_folder / 'twitch_chatters.json'} malformed or missing")
+        print(f"{twitch_chatters_path} malformed or missing")
 
     updates_url = os.getenv("HASHNODE_UPDATES_URL")
 
