@@ -204,10 +204,10 @@ class MainBotConfig:
         print(f"{settings_menu_positions_path} malformed or missing")
 
     settings_menu_max_find_attempts = 3
-    settings_menu_find_threshold = 0.70
-    settings_menu_max_click_attempts = 10
+    settings_menu_find_threshold = 0.50
+    settings_menu_max_click_attempts = 2
     settings_menu_button_height = 0.065
-    settings_menu_ocr_max_attempts = 3
+    settings_menu_ocr_max_attempts = 2
 
     sit_button_position = (0.79, 0.89)
     sitting_status = False

@@ -122,6 +122,7 @@ async def take_screenshot() -> str:
 async def take_screenshot_binary(monitor: Union[Dict, None] = None) -> ScreenShot:
     if monitor is None:
         monitor = CFG.screen_res["mss_monitor"].copy()
+    print(monitor)
     with mss() as sct:
         screenshot = sct.grab(monitor)
     return screenshot

@@ -650,7 +650,7 @@ async def auto_nav(
     await async_sleep(3)
 
 
-async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
+async def get_settings_button_pos(only_once=False) -> Union[None, Tuple[int, int]]:
     monitor = CFG.screen_res["mss_monitor"].copy()
     screen_width = monitor["width"]
     monitor["width"] = int(CFG.character_select_width * screen_width)
@@ -687,6 +687,8 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
 
         if match_max_val >= CFG.settings_menu_find_threshold:
             break
+        if only_once:
+            break
         await async_sleep(1)
 
     try:
@@ -705,6 +707,8 @@ async def get_settings_button_pos() -> Union[None, Tuple[int, int]]:
             log("")
             return center_x, center_y
         else:
+            if only_once:
+                return None
             error_msg = (
                 "Could not find gear icon!\n"
                 f"(Best match {round(match_max_val*100,2)}% confidence)\n({center_x}, {center_y}"
@@ -752,16 +756,12 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
         await async_sleep(2)
         _, last_button_y = button_x, button_y
         success = False
-        for i in range(CFG.character_select_max_click_attempts):
+        for i in range(CFG.settings_menu_max_click_attempts):
+            
             new_settings_button_pos = await get_settings_button_pos()
+            
             if new_settings_button_pos is None:
-                for i in range(CFG.settings_menu_max_find_attempts):
-                    new_settings_button_pos = await get_settings_button_pos()
-                    if new_settings_button_pos is not None:
-                        break
-                    await async_sleep(2)
-
-            if new_settings_button_pos is None:
+                log(f"Findng gear icon\nAttempt #{i+1}/{CFG.settings_menu_max_click_attempts}")
                 continue
             new_button_x, new_button_y = new_settings_button_pos
 
@@ -808,10 +808,17 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
 async def ocr_for_settings(option: str = "") -> bool:
     desired_option = (CFG.settings_menu_grief_text if not option else option).lower()
 
-    settings_button_pos = await get_settings_button_pos()
+    settings_button_pos = await get_settings_button_pos(only_once=True)
     if settings_button_pos is None:
-        return False
-    button_x, button_y = settings_button_pos
+        pos = CFG.settings_menu_positions.get("settings_opened")
+        if pos is None:
+            return False
+        else:
+            button_x, button_y = int(pos["x"]), int(pos["y"])
+            print(button_x)
+            print(button_y)
+    else:
+        button_x, button_y = settings_button_pos
 
     monitor = CFG.screen_res["mss_monitor"].copy()
     screen_width = monitor["width"]
