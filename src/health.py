@@ -80,7 +80,10 @@ async def check_if_should_change_servers(
             current_server_id = ""
         for server in servers:
             server_id = server.get("id", "undefined")
-            server_playing = server.get("playing", -1)
+            if server.get("playerTokens") is None:
+                server_playing = -1
+            else:
+                server_playing = len(server["playerTokens"])
             if server_id == "undefined" or server_playing == -1:
                 notify_admin(
                     f"Handled Error in `check_if_should_change_servers`\nServers:\n`{servers}`\nProblem:\n`{server}`"
@@ -90,7 +93,10 @@ async def check_if_should_change_servers(
             if current_server_id == server_id:
                 current_server_id = server_id
                 current_server_playing = server_playing
-            elif "playing" in server and server_playing > highest_player_server_playing:
+            elif (
+                "playerTokens" in server
+                and server_playing > highest_player_server_playing
+            ):
                 highest_player_server_playing = server_playing
         log("")
         if current_server_id == "" or current_server_id == "undefined":
@@ -279,7 +285,7 @@ async def get_best_server(get_worst: bool = False) -> Dict:
     server_obj = {
         "id": "",
         "maxPlayers": 100,
-        "playing": 0 if not get_worst else 100,
+        "playerTokens": [] if not get_worst else [0] * 100,
         "fps": 59,
         "ping": 100,
     }
@@ -290,10 +296,14 @@ async def get_best_server(get_worst: bool = False) -> Dict:
         response_result = response.json()
         servers = response_result["data"]
         for server in servers:
-            if "playing" in server:
-                if (not get_worst) and server["playing"] > best_server["playing"]:
+            if "playerTokens" in server:
+                if (not get_worst) and len(server["playerTokens"]) > len(
+                    best_server["playerTokens"]
+                ):
                     best_server = server
-                if get_worst and server["playing"] < best_server["playing"]:
+                if get_worst and len(server["playerTokens"]) < len(
+                    best_server["playerTokens"]
+                ):
                     best_server = server
     if best_server == server_obj:
         return {}
@@ -757,11 +767,13 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
         _, last_button_y = button_x, button_y
         success = False
         for i in range(CFG.settings_menu_max_click_attempts):
-            
+
             new_settings_button_pos = await get_settings_button_pos()
-            
+
             if new_settings_button_pos is None:
-                log(f"Findng gear icon\nAttempt #{i+1}/{CFG.settings_menu_max_click_attempts}")
+                log(
+                    f"Findng gear icon\nAttempt #{i+1}/{CFG.settings_menu_max_click_attempts}"
+                )
                 continue
             new_button_x, new_button_y = new_settings_button_pos
 
