@@ -298,11 +298,11 @@ async def get_best_server(get_worst: bool = False) -> Dict:
         for server in servers:
             if "playerTokens" in server:
                 if (not get_worst) and len(server["playerTokens"]) > len(
-                    best_server["playerTokens"]
+                    best_server.get("playerTokens", [])
                 ):
                     best_server = server
                 if get_worst and len(server["playerTokens"]) < len(
-                    best_server["playerTokens"]
+                    best_server.get("playerTokens", [])
                 ):
                     best_server = server
     if best_server == server_obj:
