@@ -297,12 +297,14 @@ async def get_best_server(get_worst: bool = False) -> Dict:
         servers = response_result["data"]
         for server in servers:
             if "playerTokens" in server:
+                best_server_player_tokens = best_server.get("playerTokens", [])
+                assert isinstance(best_server_player_tokens, list)  # mypy fix
                 if (not get_worst) and len(server["playerTokens"]) > len(
-                    best_server.get("playerTokens", [])
+                    best_server_player_tokens
                 ):
                     best_server = server
                 if get_worst and len(server["playerTokens"]) < len(
-                    best_server.get("playerTokens", [])
+                    best_server_player_tokens
                 ):
                     best_server = server
     if best_server == server_obj:
