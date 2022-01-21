@@ -1,5 +1,6 @@
 import json
 import os
+import sqlite3
 from pathlib import Path
 from typing import Dict, List
 
@@ -107,6 +108,28 @@ class MainBotConfig:
         "jjgay",
         "niggaHomosexual",
     ]
+
+    chat_bracket_like_chars = ["|", "!", "l", "I"]
+    chat_bracket_like_chars_left = chat_bracket_like_chars + ["[", "{", "("]
+    chat_bracket_like_chars_right = chat_bracket_like_chars + ["]", "}", ")"]
+    chat_db = sqlite3.connect(OBS.output_folder / "chat_messages.sqlite")
+    chat_db_cursor = chat_db.cursor()
+    try:
+        chat_db_cursor.execute(
+            "CREATE TABLE messages(time REAL, time_friendly TEXT, author TEXT, message TEXT, author_confidence REAL)"
+        )
+    except Exception:  # nosec
+        pass  # TODO: figure out db-exists exception
+
+    chat_dimensions = screen_res["mss_monitor"].copy()
+    chat_dimensions["top"] = int(screen_res["height"] * 0.05)
+    chat_dimensions["width"] = int(screen_res["width"] * 0.29)
+    chat_dimensions["height"] = int(screen_res["height"] * 0.22)
+    chat_messages_in_memory: List[Dict] = []
+    chat_message_corrections = {"[e": "/e"}
+    chat_start_ocr_time = 0
+    chat_fuzzy_threshold = 0.60
+
     character_select_image_path = os.path.join(resources_path, "character_select.png")
     character_select_scroll_down_amount = 0
     character_select_scroll_down_scale = -200
