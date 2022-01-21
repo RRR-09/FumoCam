@@ -264,7 +264,7 @@ class ArduinoConfig:
             }
             self.arduino_interface(payload, 4)  # Arbitrary max time for safety
 
-    def send_message(self, message: str, ocr: bool = True):
+    def send_message(self, message: str, ocr: bool = False):
         message = message[:100]  # 100 char ingame limit
         if ocr:
             payload = {"type": "msg_ocr", "len": len(message), "msg": message}

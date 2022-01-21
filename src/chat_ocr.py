@@ -37,6 +37,7 @@ async def deactivate_ocr():
         CFG.chat_ocr_active = False
         await check_active()
         ACFG.keyPress("KEY_RETURN")
+        CFG.chat_last_non_idle_time = time()
 
 
 async def fuzzy_match(string_one, string_two):
