@@ -17,7 +17,7 @@ from actions import (
     respawn_character,
     send_chat,
 )
-from chat_ocr import deactivate_ocr
+from chat_ocr import activate_ocr, can_activate_ocr, deactivate_ocr
 from commands import click_backpack_button, click_item, click_sit_button
 from config import ActionQueueItem
 from health import (
@@ -223,6 +223,10 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             ACFG.use()
             log_process("")
             log("")
+        elif action.name == "activate_ocr":
+            if await can_activate_ocr():
+                await activate_ocr()
+                CFG.chat_ocr_activation_queued = False
         elif action.name == "ocr_chat":
             print("reached")
             await send_chat("[A.I.]", ocr=True)

@@ -133,9 +133,14 @@ class MainBotConfig:
     chat_start_ocr_time = 0
     chat_idle_time_required = 30
     chat_block_functions = ["anti_afk"]
-    chat_ignore_functions: List[str] = ["ocr_chat", "check_for_better_server"]
+    chat_ignore_functions = [
+        "ocr_chat",
+        "check_for_better_server",
+        "activate_ocr",
+    ]
     chat_last_non_idle_time = time()
     chat_ocr_active = False
+    chat_ocr_activation_queued = False
 
     character_select_image_path = os.path.join(resources_path, "character_select.png")
     character_select_scroll_down_amount = 0

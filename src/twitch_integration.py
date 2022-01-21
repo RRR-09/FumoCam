@@ -6,13 +6,12 @@ from datetime import datetime
 from math import floor
 from os import getenv, system
 from time import strftime, time
-from winsound import Beep
 
 from twitchio import Chatter as TwitchChatter
 from twitchio import Message as TwitchMessage
 from twitchio.ext import commands, routines
 
-from chat_ocr import activate_ocr, can_activate_ocr, do_chat_ocr
+from chat_ocr import can_activate_ocr, do_chat_ocr
 from config import ActionQueueItem, Twitch
 from health import CFG, do_crash_check
 from utilities import discord_log, error_log, log, log_process, notify_admin, output_log
@@ -576,11 +575,9 @@ async def routine_ocr():
         return
 
     if not CFG.chat_ocr_active:
-        Beep(100, 50)
-        if await can_activate_ocr():
-            await activate_ocr()
+        if not CFG.chat_ocr_activation_queued and await can_activate_ocr():
+            await CFG.add_action_queue(ActionQueueItem("activate_ocr"))
     else:
-        Beep(50, 100)
         try:
             await do_chat_ocr()
         except Exception:
