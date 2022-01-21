@@ -231,9 +231,13 @@ class ArduinoConfig:
         }
         self.arduino_interface(payload, 4)  # Arbitrary max time for safety
 
-    def keyPress(self, key: str, amount: float = 0.2):
+    def keyHold(self, key: str, amount: float = 0.2):
         payload = {"type": "keyhold", "key": key, "hold_time": amount}
         self.arduino_interface(payload, amount)
+
+    def keyPress(self, key: str):
+        payload = {"type": "keypress", "key": key}
+        self.arduino_interface(payload, 1)
 
     def resetMouse(self, move_to_bottom_right: bool = True):
         if CFG.mouse_software_emulation:
@@ -260,10 +264,14 @@ class ArduinoConfig:
             }
             self.arduino_interface(payload, 4)  # Arbitrary max time for safety
 
-    def send_message(self, message: str):
+    def send_message(self, message: str, ocr: bool = True):
         message = message[:100]  # 100 char ingame limit
-        payload = {"type": "msg", "len": len(message), "msg": message}
-        self.arduino_interface(payload, len(message) * self.msg_letter_wait_time)
+        if ocr:
+            payload = {"type": "msg_ocr", "len": len(message), "msg": message}
+            self.arduino_interface(payload, len(message) * self.msg_letter_wait_time)
+        else:
+            payload = {"type": "msg", "len": len(message), "msg": message}
+            self.arduino_interface(payload, len(message) * self.msg_letter_wait_time)
         sleep(0.75)
 
     def use(self):

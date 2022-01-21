@@ -1,49 +1,48 @@
 from asyncio import sleep as async_sleep
 from datetime import datetime
+from random import choice as random_choice
 from time import time
 
 import cv2 as cv
+import Levenshtein
 
 # import mss.tools
 import numpy as np
 import pytesseract
 
-from config import CFG
+from config import CFG, ActionQueueItem
+from health import ACFG
 from utilities import check_active, take_screenshot_binary
 
 pytesseract.pytesseract.tesseract_cmd = CFG.pytesseract_path
 
 
-async def levenshtein(s, t, ratio_calc=False):
-    s = s.lower().replace(" ", "")
-    t = t.lower().replace(" ", "")
-    # end customization
-    rows = len(s) + 1
-    cols = len(t) + 1
-    distance = np.zeros((rows, cols), dtype=int)
+async def can_activate_ocr():
+    if time() - CFG.chat_last_non_idle_time > CFG.chat_idle_time_required:
+        return True
 
-    for i in range(1, rows):
-        for k in range(1, cols):
-            distance[i][0] = i
-            distance[0][k] = k
 
-    for col in range(1, cols):
-        for row in range(1, rows):
-            if s[row - 1] == t[col - 1]:
-                cost = 0
-            else:
-                cost = 2 if ratio_calc else 1
-            distance[row][col] = min(
-                distance[row - 1][col] + 1,
-                distance[row][col - 1] + 1,
-                distance[row - 1][col - 1] + cost,
-            )
+async def activate_ocr():
+    while CFG.action_running:
+        async_sleep(1)
+    await check_active()
+    CFG.chat_ocr_active = True
+    print("OCR Activated")
+    ACFG.keyPress("/")
 
-    if ratio_calc:
-        ratio = ((len(s) + len(t)) - distance[row][col]) / (len(s) + len(t))
-        return ratio
-    else:
-        return distance[row][col]  # amount of edits away
+
+async def deactivate_ocr():
+    if CFG.chat_ocr_active:
+        print("OCR Deactivated")
+        CFG.chat_ocr_active = False
+        await check_active()
+        ACFG.keyPress("KEY_RETURN")
+
+
+async def fuzzy_match(string_one, string_two):
+    string_one = string_one.lower().replace(" ", "")
+    string_two = string_two.lower().replace(" ", "")
+    return Levenshtein.ratio(string_one, string_two)
 
 
 async def do_chat_ocr(screenshot=None):
@@ -176,8 +175,6 @@ async def process_ocr_data(ocr_data):
         if author_confidence < 50:  # likely a continuation of the message
             if len(messages) > 0:
                 messages[-1]["message"] += f" {line}"
-            print("giveup3")
-            print(line)
         else:
             messages.append(
                 {
@@ -197,9 +194,8 @@ async def log_processed_messages(messages):
     if len(CFG.chat_messages_in_memory) != 0:
         last_messages = CFG.chat_messages_in_memory[-8:]
         matches = {}
-        proc_time_start = time()
         for new_index, new_msg in enumerate(messages):
-            for old_index, old_msg in last_messages:
+            for old_index, old_msg in enumerate(last_messages):
                 if old_index in matches:
                     continue
                 if (
@@ -209,17 +205,18 @@ async def log_processed_messages(messages):
                     matches[old_index] = new_index
                     break
                 else:
-                    message_ratio = levenshtein(new_msg["message"], old_msg["message"])
-                    author_ratio = levenshtein(new_msg["author"], old_msg["author"])
+                    message_ratio = await fuzzy_match(
+                        new_msg["message"], old_msg["message"]
+                    )
+                    author_ratio = await fuzzy_match(
+                        new_msg["author"], old_msg["author"]
+                    )
                     if (
                         message_ratio > CFG.chat_fuzzy_threshold
                         and author_ratio > CFG.chat_fuzzy_threshold
                     ):
                         matches[old_index] = new_index
                         break
-
-        proc_time_end = time()
-        print(f"Time for lookup: {proc_time_end-proc_time_start}")
 
         if len(matches) >= 3:
             linked_to_past_messages = True
@@ -250,10 +247,11 @@ async def log_processed_messages(messages):
                     "%Y-%m-%d %I:%M:%S%p"
                 )
                 new_messages[index]["time_friendly"] = friendly_time
-            # for i in new_messages:
-            #     print(i)
+            for i in new_messages:
+                print(i)
             CFG.chat_messages_in_memory += new_messages
-            await insert_messages_to_db(new_messages)
+            insert_messages_to_db(new_messages)
+            await do_logic_on_messages(messages)
 
     if len(CFG.chat_messages_in_memory) == 0 or not linked_to_past_messages:
         messages_with_times = []
@@ -271,10 +269,11 @@ async def log_processed_messages(messages):
         for i in messages_with_times:
             print(i)
         CFG.chat_messages_in_memory += messages_with_times
-        await insert_messages_to_db(messages_with_times)
+        insert_messages_to_db(messages_with_times)
+        await do_logic_on_messages(messages)
 
 
-async def insert_messages_to_db(messages):
+def insert_messages_to_db(messages):
     message_sets = []
     for msg in messages:
         message_set = (
@@ -290,6 +289,22 @@ async def insert_messages_to_db(messages):
         "INSERT INTO messages VALUES(?,?,?,?,?);", message_sets
     )
     CFG.chat_db.commit()
+
+
+async def do_logic_on_messages(messages):
+    response = None
+    for obj in messages:
+        message = obj["message"]
+        author = obj["author"]
+        if 0.6 > fuzzy_match(CFG.regex_alpha.sub("", author.lower()), "fumocam"):
+            if "awoo" in message.lower():
+                response = random_choice(  # nosec
+                    ["awoo", "awoo c:", "awoooo", "awoo!", "awoo! c:", "awoooo!"]
+                )
+                break
+    if response is not None:
+        action_item = ActionQueueItem("ocr_chat", {"msgs": [response]})
+        await CFG.add_action_queue(action_item)
 
 
 if __name__ == "__main__":

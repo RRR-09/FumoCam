@@ -90,6 +90,23 @@ void keyhold(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
   Keyboard.release(key); // release
 }
 
+
+void keypress(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
+  const char* input_key = payload["key"];
+  char key = input_key[0];  
+  if (!strcmp(input_key, "KEY_LEFT_ARROW")) {
+    key = KEY_LEFT_ARROW;
+  } else if (!strcmp(input_key, "KEY_RIGHT_ARROW")) {
+    key = KEY_RIGHT_ARROW;
+  } else if (!strcmp(input_key, "KEY_ESC")) {
+    key = KEY_ESC;
+  } else if (!strcmp(input_key, "KEY_RETURN")) {
+    key = KEY_RETURN;
+  }
+  
+  Keyboard.write(key); // press and hold
+}
+
 void moveMouse(int amount_x, int amount_y, double move_speed) {
   int move_x_times = (abs(amount_x) / 127);
   bool left = amount_x < 0;
@@ -186,6 +203,20 @@ void chat(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
   Keyboard.write(KEY_RETURN);
 }
 
+
+void chat_ocr(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {  
+  const int msg_len = payload["len"];
+  const char* msg = payload["msg"];
+  for(int i = 0; i < msg_len; i++) {
+    Keyboard.write(msg[i]);
+    delay(10);
+  }
+  delay(50);
+  Keyboard.write(KEY_RETURN);
+  delay(50);
+  Keyboard.write('/');
+}
+
 void loop() {
   if (Serial.available() > 0) {
     // Read serial input
@@ -232,8 +263,12 @@ void loop() {
     char* type = parsed_payload["type"];
     if (!strcmp(type, "keyhold")) {
       keyhold(parsed_payload);
+    } else if (!strcmp(type, "keypress")) {
+      keypress(parsed_payload);
     } else if (!strcmp(type, "msg")) {
       chat(parsed_payload);
+    } else if (!strcmp(type, "msg_ocr")) {
+      chat_ocr(parsed_payload);
     } else if (!strcmp(type, "pitch")) {
       pitch(parsed_payload);
     } else if (!strcmp(type, "resetMouse")) {

@@ -2,6 +2,8 @@ import json
 import os
 import sqlite3
 from pathlib import Path
+from re import compile as re_compile
+from time import time
 from typing import Dict, List
 
 from dotenv import dotenv_values, load_dotenv
@@ -125,10 +127,15 @@ class MainBotConfig:
     chat_dimensions["top"] = int(screen_res["height"] * 0.05)
     chat_dimensions["width"] = int(screen_res["width"] * 0.29)
     chat_dimensions["height"] = int(screen_res["height"] * 0.22)
+    chat_fuzzy_threshold = 0.80
     chat_messages_in_memory: List[Dict] = []
     chat_message_corrections = {"[e": "/e"}
     chat_start_ocr_time = 0
-    chat_fuzzy_threshold = 0.60
+    chat_idle_time_required = 30
+    chat_block_functions = ["anti_afk"]
+    chat_ignore_functions: List[str] = ["ocr_chat", "check_for_better_server"]
+    chat_last_non_idle_time = time()
+    chat_ocr_active = False
 
     character_select_image_path = os.path.join(resources_path, "character_select.png")
     character_select_scroll_down_amount = 0
@@ -213,6 +220,8 @@ class MainBotConfig:
         "C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe"
     )
     respawn_character_select_offset = -0.1
+
+    regex_alpha = re_compile("[^a-zA-Z]")
 
     settings_menu_image_path = os.path.join(resources_path, "gear.jpg")
     settings_menu_width = 0.3

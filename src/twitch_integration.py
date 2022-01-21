@@ -6,11 +6,13 @@ from datetime import datetime
 from math import floor
 from os import getenv, system
 from time import strftime, time
+from winsound import Beep
 
 from twitchio import Chatter as TwitchChatter
 from twitchio import Message as TwitchMessage
 from twitchio.ext import commands, routines
 
+from chat_ocr import activate_ocr, can_activate_ocr, do_chat_ocr
 from config import ActionQueueItem, Twitch
 from health import CFG, do_crash_check
 from utilities import discord_log, error_log, log, log_process, notify_admin, output_log
@@ -110,6 +112,7 @@ class TwitchBot(commands.Bot):
             routine_clock,
             routine_crash_check,
             routine_reboot,
+            routine_ocr,
         ]
         for subroutine in subroutines:
             print(
@@ -540,6 +543,7 @@ async def routine_anti_afk():
         await CFG.add_action_queue(ActionQueueItem("anti_afk"))
         CFG.anti_afk_runs += 1
         if CFG.anti_afk_runs % 3 == 0:
+            await CFG.add_action_queue(ActionQueueItem("chat", {"msgs": ["/clear"]}))
             await CFG.add_action_queue(ActionQueueItem("advert"))
             print("[Subroutine] Queued Advert")
             CFG.anti_afk_runs = 0
@@ -564,6 +568,23 @@ async def routine_clock():
     current_time = strftime("%I:%M:%S%p EST")
     days_since_creation = floor((time() - CFG.epoch_time) / (60 * 60 * 24))
     output_log("clock", f"Day {days_since_creation}\n{current_time}")
+
+
+@routines.routine(seconds=4, wait_first=True)
+async def routine_ocr():
+    if CFG.action_running or CFG.crashed:
+        return
+
+    if not CFG.chat_ocr_active:
+        Beep(100, 50)
+        if await can_activate_ocr():
+            await activate_ocr()
+    else:
+        Beep(50, 100)
+        try:
+            await do_chat_ocr()
+        except Exception:
+            error_log(traceback.format_exc())
 
 
 @routines.routine(time=datetime(year=1970, month=1, day=1, hour=3, minute=58))

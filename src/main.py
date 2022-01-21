@@ -1,7 +1,7 @@
 from asyncio import sleep as async_sleep
 from json import loads as json_loads
 from subprocess import check_output  # nosec
-from time import sleep
+from time import sleep, time
 from traceback import format_exc
 
 import pyautogui
@@ -17,6 +17,7 @@ from actions import (
     respawn_character,
     send_chat,
 )
+from chat_ocr import deactivate_ocr
 from commands import click_backpack_button, click_item, click_sit_button
 from config import ActionQueueItem
 from health import (
@@ -58,6 +59,26 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             log("")
             log_process("")
             return
+        if CFG.chat_ocr_active:
+            for func_name in CFG.chat_block_functions:
+                if func_name == action.name:
+                    continue
+
+            found_ignore = False
+            for func_name in CFG.chat_ignore_functions:
+                if func_name == action.name:
+                    found_ignore = True
+                    break
+            if not found_ignore:
+                await deactivate_ocr()
+                sleep(5)
+        else:
+            if (
+                func_name not in CFG.chat_block_functions
+                or func_name in CFG.chat_ignore_functions
+            ):
+                CFG.chat_last_non_idle_time = time()
+
         if action.name == "anti_afk":
             await do_anti_afk()
         elif action.name == "advert":
@@ -202,6 +223,13 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             ACFG.use()
             log_process("")
             log("")
+        elif action.name == "ocr_chat":
+            print("reached")
+            await send_chat("[A.I.]", ocr=True)
+            await async_sleep(0.25)
+            for message in action.values["msgs"]:
+                await send_chat(message, ocr=True)
+            print("reached end")
         else:
             print("queue failed")
         CFG.action_queue.pop(0)

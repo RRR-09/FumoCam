@@ -21,12 +21,15 @@ from utilities import (
 ACFG.initalize_serial_interface(do_log=False)
 
 
-async def send_chat(message: str, bypass: bool = True):
+async def send_chat(message: str, ocr=False):
     await check_active()
     for word in CFG.censored_words:  # TODO: More effective censoring
         if word in message:
             message = message.replace(word, "*" * len(word))
-    ACFG.send_message(message)
+    if ocr:
+        ACFG.send_message(message, ocr=True)
+    else:
+        ACFG.send_message(message)
 
 
 async def do_anti_afk():
