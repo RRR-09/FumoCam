@@ -296,7 +296,10 @@ async def do_logic_on_messages(messages):
     for obj in messages:
         message = obj["message"]
         author = obj["author"]
-        if 0.6 > fuzzy_match(CFG.regex_alpha.sub("", author.lower()), "fumocam"):
+        author_name = CFG.regex_alpha.sub("", author.lower())
+        author_fumocam_ratio = await fuzzy_match(author_name, "fumocam")
+        if 0.6 > author_fumocam_ratio:
+            print(f"ratio: {author_fumocam_ratio}\nname:{author_name}")
             if "awoo" in message.lower():
                 response = random_choice(  # nosec
                     ["awoo", "awoo c:", "awoooo", "awoo!", "awoo! c:", "awoooo!"]

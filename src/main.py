@@ -74,8 +74,8 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
                 sleep(5)
         else:
             if (
-                func_name not in CFG.chat_block_functions
-                or func_name in CFG.chat_ignore_functions
+                action.name not in CFG.chat_block_functions
+                or action.name in CFG.chat_ignore_functions
             ):
                 CFG.chat_last_non_idle_time = time()
 
