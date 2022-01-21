@@ -23,12 +23,10 @@ async def can_activate_ocr():
 
 
 async def activate_ocr():
-    while CFG.action_running:
-        async_sleep(1)
     await check_active()
+    ACFG.keyPress("/")
     CFG.chat_ocr_active = True
     print("OCR Activated")
-    ACFG.keyPress("/")
 
 
 async def deactivate_ocr():
