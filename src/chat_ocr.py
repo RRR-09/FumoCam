@@ -293,6 +293,9 @@ def insert_messages_to_db(messages):
 
 async def do_logic_on_messages(messages):
     response = None
+    # if (time() - CFG.chat_last_fun_logic) <= CFG.chat_fun_logic_delay:
+        # return
+    
     for obj in messages:
         message = obj["message"]
         author = obj["author"]
@@ -300,7 +303,7 @@ async def do_logic_on_messages(messages):
         author_fumocam_ratio = await fuzzy_match(author_name, "fumocam")
         if 0.6 > author_fumocam_ratio:
             print(f"ratio: {author_fumocam_ratio}\nname:{author_name}")
-            if "awoo" in message.lower():
+            if "awoo" in message.lower() and "fumo" in message.lower() and "cam" in message.lower():
                 response = random_choice(  # nosec
                     ["awoo", "awoo c:", "awoooo", "awoo!", "awoo! c:", "awoooo!"]
                 )

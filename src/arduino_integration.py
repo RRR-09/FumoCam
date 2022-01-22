@@ -266,6 +266,7 @@ class ArduinoConfig:
 
     def send_message(self, message: str, ocr: bool = False):
         message = message[:100]  # 100 char ingame limit
+        message = message.encode("ascii", "ignore").decode("ascii", "ignore")
         if ocr:
             payload = {"type": "msg_ocr", "len": len(message), "msg": message}
             self.arduino_interface(payload, len(message) * self.msg_letter_wait_time)

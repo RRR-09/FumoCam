@@ -138,6 +138,8 @@ class MainBotConfig:
         "check_for_better_server",
         "activate_ocr",
     ]
+    chat_last_fun_logic = time()
+    chat_fun_logic_delay = 30
     chat_last_non_idle_time = time()
     chat_ocr_active = False
     chat_ocr_activation_queued = False
