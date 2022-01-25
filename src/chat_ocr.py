@@ -6,12 +6,14 @@ import cv2 as cv
 import numpy as np
 import pytesseract
 
-from ai.chat_logic import logic_core
+from ai.chat_logic import ChatLogic
 from config import CFG, ActionQueueItem
 from health import ACFG
 from utilities import check_active, fuzzy_match, output_log, take_screenshot_binary
 
 pytesseract.pytesseract.tesseract_cmd = CFG.pytesseract_path
+
+chat_logic = ChatLogic(CFG, fuzzy_match)
 
 
 async def can_activate_ocr():
@@ -287,7 +289,7 @@ async def do_logic_on_messages(messages):
     response_messages = []
     response_message_objs = []
     for obj in messages:
-        response = await logic_core(obj)
+        response = await chat_logic(obj)
         if response is None:
             continue
 
