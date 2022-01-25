@@ -2,6 +2,7 @@
 output/
 resources/.browser_profile
 resources/SoundVolumeView.cfg
+src/ai/
 
 # .idea folder
 .idea/
