@@ -569,7 +569,7 @@ async def routine_clock():
     output_log("clock", f"Day {days_since_creation}\n{current_time}")
 
 
-@routines.routine(seconds=1, wait_first=True)
+@routines.routine(seconds=3, wait_first=True)
 async def routine_ocr():
     if (
         CFG.action_running
