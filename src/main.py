@@ -70,8 +70,10 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
                     found_ignore = True
                     break
             if not found_ignore:
+                log_process("Deactivating chat A.I")
                 await deactivate_ocr()
-                sleep(5)
+                sleep(1)
+                log_process("")
         else:
             if (
                 action.name not in CFG.chat_block_functions
@@ -85,6 +87,7 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             await do_advert()
         elif action.name == "autonav":
             await auto_nav(action.values["location"], slow_spawn_detect=False)
+            CFG.chat_last_non_idle_time = time()
             log_process("")
             log("")
         elif action.name == "backpack_toggle":
@@ -223,16 +226,24 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             ACFG.use()
             log_process("")
             log("")
-        elif action.name == "activate_ocr":            
+        elif action.name == "activate_ocr":
+            log_process("Activating Chat A.I.")
             await activate_ocr()
             CFG.chat_ocr_activation_queued = False
+            log_process("")
         elif action.name == "ocr_chat":
-            print("reached")
-            await send_chat("[A.I.]", ocr=True)
-            await async_sleep(0.25)
+            CFG.chat_cleared_after_response = False
+            await send_chat("[A.I. v2]", ocr=True)
+            await async_sleep(0.1)
+
             for message in action.values["msgs"]:
                 await send_chat(message, ocr=True)
-            print("reached end")
+            await send_chat("/clear", ocr=True)
+
+            output_log("chat_ai", "[Chat AI]\nActive")
+
+            CFG.chat_ocr_ready = True
+            CFG.chat_cleared_after_response = True
         else:
             print("queue failed")
         CFG.action_queue.pop(0)
@@ -296,6 +307,7 @@ async def get_updates_log():
 
 async def async_main():
     print("[Async_Main] Start")
+    output_log("chat_ai", "")
     await update_version()
     await get_updates_log()
     await CFG.add_action_queue(ActionQueueItem("mute", {"set_muted": False}))

@@ -569,9 +569,14 @@ async def routine_clock():
     output_log("clock", f"Day {days_since_creation}\n{current_time}")
 
 
-@routines.routine(seconds=4, wait_first=True)
+@routines.routine(seconds=1, wait_first=True)
 async def routine_ocr():
-    if CFG.action_running or CFG.crashed:
+    if (
+        CFG.action_running
+        or CFG.crashed
+        or (not CFG.chat_cleared_after_response)
+        or (not CFG.chat_ocr_ready)
+    ):
         return
 
     if not CFG.chat_ocr_active:
@@ -579,8 +584,12 @@ async def routine_ocr():
             await CFG.add_action_queue(ActionQueueItem("activate_ocr"))
     else:
         try:
+            # HACK: psuedo-blocking, make non-async
+            CFG.chat_ocr_ready = False
             await do_chat_ocr()
         except Exception:
+            CFG.chat_ocr_ready = True
+            CFG.chat_cleared_after_response = True
             error_log(traceback.format_exc())
 
 

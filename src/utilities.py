@@ -6,6 +6,7 @@ from time import sleep, strftime, time
 from traceback import format_exc
 from typing import Dict, Union
 
+from Levenshtein import ratio as lev_ratio
 from mss import mss
 from mss import tools as mss_tools
 from mss.screenshot import ScreenShot
@@ -352,3 +353,9 @@ async def discord_log(
 
 def is_process_running(name: str) -> bool:
     return len([proc for proc in process_iter() if proc.name() == name]) > 0
+
+
+async def fuzzy_match(string_one, string_two):
+    string_one = string_one.lower().replace(" ", "")
+    string_two = string_two.lower().replace(" ", "")
+    return lev_ratio(string_one, string_two)
