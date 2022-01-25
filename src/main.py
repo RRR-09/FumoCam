@@ -240,7 +240,8 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
                 await send_chat(message, ocr=True)
             await send_chat("/clear", ocr=True)
 
-            output_log("chat_ai", "[Chat AI]\nActive")
+            output_log("chat_ai_title", "[Chat AI]")
+            output_log("chat_ai_subtitle", "Active")
 
             CFG.chat_ocr_ready = True
             CFG.chat_cleared_after_response = True
@@ -307,7 +308,8 @@ async def get_updates_log():
 
 async def async_main():
     print("[Async_Main] Start")
-    output_log("chat_ai", "")
+    output_log("chat_ai_title", "")
+    output_log("chat_ai_subtitle", "")
     await update_version()
     await get_updates_log()
     await CFG.add_action_queue(ActionQueueItem("mute", {"set_muted": False}))

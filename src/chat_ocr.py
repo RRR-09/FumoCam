@@ -27,7 +27,8 @@ async def activate_ocr():
     CFG.chat_ocr_active = True
     CFG.chat_ocr_ready = True
     print("OCR Activated")
-    output_log("chat_ai", "[Chat AI]\nActive")
+    output_log("chat_ai_title", "[Chat AI]")
+    output_log("chat_ai_subtitle", "Active")
 
 
 async def deactivate_ocr():
@@ -38,7 +39,8 @@ async def deactivate_ocr():
         ACFG.keyPress("KEY_RETURN")
         CFG.chat_last_non_idle_time = time()
         CFG.chat_messages_in_memory = []
-        output_log("chat_ai", "")
+        output_log("chat_ai_title", "")
+        output_log("chat_ai_subtitle", "")
 
 
 async def do_chat_ocr(screenshot=None):
@@ -301,7 +303,8 @@ async def do_logic_on_messages(messages):
 
     if response_messages:
         insert_interactions_to_db(response_message_objs)
-        output_log("chat_ai", "[Chat AI]\nResponding...")
+        output_log("chat_ai_title", "[Chat AI]")
+        output_log("chat_ai_subtitle", "Responding...")
         action_item = ActionQueueItem("ocr_chat", {"msgs": response_messages})
         await CFG.add_action_queue(action_item)
     else:
