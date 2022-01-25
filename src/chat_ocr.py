@@ -289,7 +289,7 @@ async def do_logic_on_messages(messages):
     response_messages = []
     response_message_objs = []
     for obj in messages:
-        response = await chat_logic(obj)
+        response = await chat_logic.logic_core(obj)
         if response is None:
             continue
 
