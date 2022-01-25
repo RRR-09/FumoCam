@@ -99,10 +99,15 @@ async def process_ocr_data(ocr_data):
         found_likely_name_start = False
         found_likely_name_end = False
 
-        potential_split = ":" in line
-        if potential_split:
+        potential_split = False
+        if ":" in line:
+            potential_split = True
             author, message = line.split(":", 1)
             author_confidence += 30
+        elif ";" in line:
+            potential_split = True
+            author_confidence += 10
+            author, message = line.split(":", 1)
         else:  # very low confidence
             first_chars_trimmed = line[2:]  # dont detect opening bracket by mistake
             for character in CFG.chat_bracket_like_chars_right:
