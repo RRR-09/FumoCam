@@ -64,6 +64,8 @@ class TwitchBot(commands.Bot):
         if message.author.name not in CFG.twitch_blacklist:
             try:
                 await commands_task
+            except commands.errors.CommandNotFound:
+                pass
             except Exception:
                 print(traceback.format_exc())
                 notify_admin(f"```{traceback.format_exc()}```")
