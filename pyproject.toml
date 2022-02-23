@@ -60,5 +60,5 @@ known_first_party="ai.chat_logic"
 python_version = "3.9"
 
 [[tool.mypy.overrides]]
-module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*", "cv2.*", "imutils.*", "twitchio.*", "clr.*", "lxml.*", "Levenshtein.*"]
+module = ["pytesseract.*", "mss.*", "pyautogui.*", "pydirectinput.*", "pygetwindow.*", "serial.*", "cv2.*", "imutils.*", "twitchio.*", "clr.*", "lxml.*", "Levenshtein.*", "ai.*"]
 ignore_missing_imports = true
