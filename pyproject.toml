@@ -53,6 +53,7 @@ build-backend = "poetry.core.masonry.api"
 [tool.isort]
 src_paths=["src"]
 profile = "black"
+known_first_party="ai.chat_logic"
 
 
 [tool.mypy]
