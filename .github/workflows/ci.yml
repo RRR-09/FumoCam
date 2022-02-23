@@ -40,7 +40,7 @@ jobs:
         if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
 
       - name: Imports Sorted (isort)
-        run: poetry run isort --check -v src
+        run: poetry run isort --check -v --diff src
 
       - name: PEP8 Compliance (flake8)
         run: poetry run flake8 src
