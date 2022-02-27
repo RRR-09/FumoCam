@@ -105,16 +105,19 @@ class ArduinoConfig:
         payload = {"type": "leftClick"}
         self.arduino_interface(payload, 2)  # Arbitrary max time for safety
 
-    def left_click_software(self, do_click: bool = True):
-        """
-        Even pydirectinput cant click normally.
-        This is a work-around that actually clicks in the area the cursor was moved.
-        """
+    def mouse_alt_tab(self):
         alt_tab_duration = 0.5
         pyautogui.hotkey("alt", "tab")
         sleep(alt_tab_duration)
         pyautogui.hotkey("alt", "tab")
         sleep(alt_tab_duration * 2)
+
+    def left_click_software(self, do_click: bool = True):
+        """
+        Even pydirectinput cant click normally.
+        This is a work-around that actually clicks in the area the cursor was moved.
+        """
+        self.mouse_alt_tab()
         if do_click:
             pydirectinput.click()
 
@@ -123,11 +126,7 @@ class ArduinoConfig:
         Even pydirectinput cant click normally.
         This is a work-around that actually clicks in the area the cursor was moved.
         """
-        alt_tab_duration = 0.5
-        pyautogui.hotkey("alt", "tab")
-        sleep(alt_tab_duration)
-        pyautogui.hotkey("alt", "tab")
-        sleep(alt_tab_duration * 2)
+        self.mouse_alt_tab()
         pydirectinput.click(button="middle")
 
     def leap(

@@ -10,9 +10,12 @@ from actions import mute_toggle, respawn_character
 from arduino_integration import ACFG, CFG
 from health import (
     change_characters,
+    check_character_menu,
     check_for_better_server,
     check_if_game_loaded,
     click_character_in_menu,
+    click_character_select_button,
+    force_respawn_character,
     get_best_server,
     get_current_server_id,
     join_target_server,
@@ -65,7 +68,26 @@ def test_ocr_settings():
     async def test():
         await check_active(force_fullscreen=False)
         sleep(1)
-        await ocr_for_settings()
+        await ocr_for_settings(click_option=False)
+
+    asyncio.get_event_loop().run_until_complete(test())
+
+
+def test_ocr_character():
+    async def test():
+        await check_active(force_fullscreen=False)
+        sleep(1)
+        # await ocr_for_character(click_option=False)
+        print(await check_character_menu(True))
+
+    asyncio.get_event_loop().run_until_complete(test())
+
+
+def test_character_button():
+    async def test():
+        await check_active(force_fullscreen=False)
+        sleep(1)
+        await click_character_select_button(True)
 
     asyncio.get_event_loop().run_until_complete(test())
 
@@ -86,6 +108,15 @@ def test_respawn(click_mouse=True):
         await respawn_character()
 
     asyncio.get_event_loop().run_until_complete(do_test(click_mouse=click_mouse))
+
+
+def test_force_respawn():
+    async def do_test():
+        await check_active()
+        await async_sleep(1)
+        await force_respawn_character()
+
+    asyncio.get_event_loop().run_until_complete(do_test())
 
 
 def test_join_target_server():
@@ -289,8 +320,11 @@ if __name__ == "__main__":
     # test_character_select_full()
     # test_check_for_better_server()
     # test_character_select_full(click_mouse=True)
-    test_toggle_collisions()
+    test_force_respawn()
+    # test_toggle_collisions()
     # test_ocr_settings()
+    # test_ocr_character()
+    # test_character_button()
 
     # click_sit_button()
     # test_respawn()

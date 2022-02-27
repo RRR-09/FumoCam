@@ -154,13 +154,17 @@ class MainBotConfig:
     chat_ocr_ready = True  # Ready for another OCR loop (False when OCR loop running)
     chat_start_ocr_time = time()
 
-    character_select_button_position = {"x": screen_res["center_x"], "y": 5}
-    character_select_image_path = os.path.join(resources_path, "character_select.png")
+    character_select_button_position = {"x": screen_res["center_x"], "y": 40}
+    character_select_scroll_position = {
+        "x": screen_res["center_x"],
+        "y": screen_res["center_y"],
+    }
     character_select_scroll_down_amount = 0
     character_select_scroll_down_scale = -200
     character_select_screen_height_to_click = 0
     character_select_scroll_speed = 0.2
 
+    character_select_initial = "Alice"
     character_select_desired = "Momiji"
     character_select_width = 0.28
     character_select_button_height = 0.035
@@ -172,9 +176,9 @@ class MainBotConfig:
     try:
         with open(OBS.output_folder / "character_select.json", "r") as f:
             prev_char_select = json.load(f)
-        character_select_screen_height_to_click = (
-            prev_char_select["desired_character_height"] / screen_res["height"]
-        )
+        character_select_screen_height_to_click = prev_char_select[
+            "desired_character_height"
+        ]
         character_select_scroll_down_amount = prev_char_select["scroll_amount"]
     except Exception:
         print(f"{OBS.output_folder / 'character_select.json'} malformed or missing")
@@ -237,7 +241,7 @@ class MainBotConfig:
     pytesseract_path = os.path.join(
         "C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe"
     )
-    respawn_character_select_offset = -0.1
+    respawn_character_select_offset = 0.1
 
     regex_alpha = re_compile("[^a-zA-Z]")
 
