@@ -518,7 +518,18 @@ async def change_characters(respawn: bool = False):
 
 
 async def check_ui_loaded():
-    return True
+    screenshot = np.array(await take_screenshot_binary(CFG.window_ui_loaded))
+    screenshot = cv.cvtColor(screenshot, cv.COLOR_RGBA2RGB)
+
+    color_threshold = cv.inRange(screenshot, (236, 235, 253), (255, 255, 255))
+    screenshot[color_threshold > 0] = (255, 255, 255)
+
+    white_pixels = np.sum(screenshot == 255)
+    non_white_pixels = np.sum(screenshot != 255)
+    total_pixels = white_pixels + non_white_pixels
+    percentage = white_pixels / total_pixels
+    ui_loaded = percentage > 0.7
+    return ui_loaded
 
 
 async def check_if_game_loaded() -> bool:
@@ -526,7 +537,7 @@ async def check_if_game_loaded() -> bool:
     log("Loading into game")
 
     for attempt in range(CFG.max_attempts_game_loaded):
-        if await check_ui_loaded() is not None:
+        if await check_ui_loaded():
             game_loaded = True
             break
         log(f"Loading into game (Check #{attempt}/{CFG.max_attempts_game_loaded})")

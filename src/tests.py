@@ -285,11 +285,27 @@ def test_window_area():
         # monitor["top"] += vertical_offset
         # monitor["height"] -= vertical_offset * 2
 
+        # CHARACTER SELECT WHITESPACE
+        horizontal_offset = int(CFG.screen_res["center_x"]) - 5
+        monitor["left"] += horizontal_offset
+        monitor["width"] -= horizontal_offset * 2
+        vertical_offset = int(0.045 * CFG.screen_res["height"])
+        monitor["top"] += vertical_offset
+        monitor["height"] = vertical_offset + 2
+
         print(monitor)
         screenshot = np.array(take_screenshot_binary_blocking(monitor))
-        screenshot = cv.resize(
-            screenshot, None, fx=0.5, fy=0.5, interpolation=cv.INTER_CUBIC
-        )
+        screenshot = cv.cvtColor(screenshot, cv.COLOR_RGBA2RGB)
+
+        color_threshold = cv.inRange(screenshot, (236, 235, 253), (255, 255, 255))
+        screenshot[color_threshold > 0] = (255, 255, 255)
+
+        white_pixels = np.sum(screenshot == 255)
+        non_white_pixels = np.sum(screenshot != 255)
+        total_pixels = white_pixels + non_white_pixels
+        percentage = white_pixels / total_pixels
+        ui_loaded = percentage > 0.7
+
         cv.imshow("screen", screenshot)
         cv.imwrite("test_screenshot.jpg", screenshot)
         cv.waitKey(0)
@@ -304,7 +320,7 @@ if __name__ == "__main__":
     # test_loading_cookies_for_browser()
     # test_get_player_token()
 
-    # test_window_area()
+    test_window_area()
 
     # test_mute(mute=True)
 
@@ -320,7 +336,7 @@ if __name__ == "__main__":
     # test_character_select_full()
     # test_check_for_better_server()
     # test_character_select_full(click_mouse=True)
-    test_force_respawn()
+    # test_force_respawn()
     # test_toggle_collisions()
     # test_ocr_settings()
     # test_ocr_character()

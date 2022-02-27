@@ -210,7 +210,7 @@ class MainBotConfig:
 
     max_attempts_better_server = 20
     max_attempts_character_selection = 30
-    max_attempts_game_loaded = 20
+    max_attempts_game_loaded = 50
     max_attempts_sit_button = 3
     max_seconds_browser_launch = 20
 
@@ -331,6 +331,15 @@ class MainBotConfig:
     window_backpack_vertical_offset = int(0.137 * screen_res["height"])
     window_backpack["top"] += window_backpack_vertical_offset
     window_backpack["height"] -= window_backpack_vertical_offset * 2
+
+    # Window area for white pixels on UI element to indicate fully loaded
+    window_ui_loaded = screen_res["mss_monitor"].copy()
+    window_ui_loaded_horizontal_offset = int(screen_res["center_x"]) - 5
+    window_ui_loaded["left"] += window_ui_loaded_horizontal_offset
+    window_ui_loaded["width"] -= window_ui_loaded_horizontal_offset * 2
+    window_ui_loaded_vertical_offset = int(0.045 * screen_res["height"])
+    window_ui_loaded["top"] += window_ui_loaded_vertical_offset
+    window_ui_loaded["height"] = window_ui_loaded_vertical_offset + 2
 
     zoom_default: float = 30
     zoom_level: float = 50  # TODO: validate this is roughly correct on spawn
