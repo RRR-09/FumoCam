@@ -2,6 +2,8 @@ import asyncio
 from asyncio import sleep as async_sleep
 from time import sleep
 
+import cv2 as cv
+import numpy as np
 import pyautogui
 
 from actions import mute_toggle, respawn_character
@@ -18,7 +20,7 @@ from health import (
     toggle_collisions,
 )
 from twitch_integration import twitch_main
-from utilities import check_active, kill_process
+from utilities import check_active, kill_process, take_screenshot_binary_blocking
 
 
 def test_turn_camera(direction="left", amount=45):
@@ -69,9 +71,12 @@ def test_ocr_settings():
 
 
 def test_toggle_collisions():
-    check_active()
-    sleep(1)
-    asyncio.get_event_loop().run_until_complete(toggle_collisions())
+    async def do_test():
+        await check_active()
+        await async_sleep(1)
+        await toggle_collisions()
+
+    asyncio.get_event_loop().run_until_complete(do_test())
 
 
 def test_respawn(click_mouse=True):
@@ -217,12 +222,58 @@ def test_get_player_token():
     asyncio.get_event_loop().run_until_complete(test())
 
 
+def test_window_area():
+    async def test():
+        await check_active(force_fullscreen=False)
+        sleep(1)
+
+        monitor = CFG.screen_res["mss_monitor"].copy()
+
+        # SETTINGS
+        # horizontal_offset = int(0.13 * CFG.screen_res["width"])
+        # monitor["left"] += horizontal_offset
+        # monitor["width"] -= horizontal_offset * 2
+        # vertical_offset = int(0.15 * CFG.screen_res["height"])
+        # monitor["top"] += vertical_offset
+        # monitor["height"] -= vertical_offset * 2
+
+        # CHARACTER SELECT
+        # horizontal_offset = int(0.33 * CFG.screen_res["width"])
+        # monitor["left"] += horizontal_offset
+        # monitor["width"] -= horizontal_offset * 2
+        # top_offset = int(0.31 * CFG.screen_res["height"])
+        # monitor["top"] += top_offset
+        # bottom_offset = int(0.14 * CFG.screen_res["height"])
+        # monitor["height"] -= top_offset + bottom_offset
+
+        # BACKPACK
+        # horizontal_offset = int(0.14 * CFG.screen_res["width"])
+        # monitor["left"] += horizontal_offset
+        # monitor["width"] -= horizontal_offset * 2
+        # vertical_offset = int(0.137 * CFG.screen_res["height"])
+        # monitor["top"] += vertical_offset
+        # monitor["height"] -= vertical_offset * 2
+
+        print(monitor)
+        screenshot = np.array(take_screenshot_binary_blocking(monitor))
+        screenshot = cv.resize(
+            screenshot, None, fx=0.5, fy=0.5, interpolation=cv.INTER_CUBIC
+        )
+        cv.imshow("screen", screenshot)
+        cv.imwrite("test_screenshot.jpg", screenshot)
+        cv.waitKey(0)
+
+    asyncio.get_event_loop().run_until_complete(test())
+
+
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
     # test_get_cookies_for_browser()
     # test_loading_cookies_for_browser()
-    test_get_player_token()
+    # test_get_player_token()
+
+    # test_window_area()
 
     # test_mute(mute=True)
 
@@ -238,7 +289,7 @@ if __name__ == "__main__":
     # test_character_select_full()
     # test_check_for_better_server()
     # test_character_select_full(click_mouse=True)
-    # toggle_collisions()
+    test_toggle_collisions()
     # test_ocr_settings()
 
     # click_sit_button()

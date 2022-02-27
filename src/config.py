@@ -154,6 +154,7 @@ class MainBotConfig:
     chat_ocr_ready = True  # Ready for another OCR loop (False when OCR loop running)
     chat_start_ocr_time = time()
 
+    character_select_button_position = {"x": screen_res["center_x"], "y": 5}
     character_select_image_path = os.path.join(resources_path, "character_select.png")
     character_select_scroll_down_amount = 0
     character_select_scroll_down_scale = -200
@@ -242,7 +243,8 @@ class MainBotConfig:
 
     settings_menu_image_path = os.path.join(resources_path, "gear.jpg")
     settings_menu_width = 0.3
-    settings_menu_grief_text = "Anti-Grief"
+    settings_menu_grief_text = "grief"
+    settings_menu_grief_label = "Anti-Grief"
 
     settings_menu_positions = {}
     settings_menu_positions_path = OBS.output_folder / "settings_menu_positions.json"
@@ -252,6 +254,10 @@ class MainBotConfig:
     except Exception:
         print(f"{settings_menu_positions_path} malformed or missing")
 
+    settings_button_position = {
+        "x": screen_res["center_x"],
+        "y": screen_res["height"] - 40,
+    }
     settings_menu_max_find_attempts = 3
     settings_menu_find_threshold = 0.50
     settings_menu_max_click_attempts = 2
@@ -291,6 +297,36 @@ class MainBotConfig:
         "maplemedictv",
         "becomefumocam",
     ]
+
+    # Window area for settings menu
+    window_settings = screen_res["mss_monitor"].copy()
+    window_settings_horizontal_offset = int(0.13 * screen_res["width"])
+    window_settings["left"] += window_settings_horizontal_offset
+    window_settings["width"] -= window_settings_horizontal_offset * 2
+    window_settings_vertical_offset = int(0.15 * screen_res["height"])
+    window_settings["top"] += window_settings_vertical_offset
+    window_settings["height"] -= window_settings_vertical_offset * 2
+
+    # Window area for character select
+    window_character = screen_res["mss_monitor"].copy()
+    window_character_horizontal_offset = int(0.33 * screen_res["width"])
+    window_character["left"] += window_character_horizontal_offset
+    window_character["width"] -= window_character_horizontal_offset * 2
+    window_character_top_offset = int(0.31 * screen_res["height"])
+    window_character["top"] += window_character_top_offset
+    window_character_bottom_offset = int(0.14 * screen_res["height"])
+    window_character["height"] -= (
+        window_character_top_offset + window_character_bottom_offset
+    )
+
+    # Window area for backpack
+    window_backpack = screen_res["mss_monitor"].copy()
+    window_backpack_horizontal_offset = int(0.14 * screen_res["width"])
+    window_backpack["left"] += window_backpack_horizontal_offset
+    window_backpack["width"] -= window_backpack_horizontal_offset * 2
+    window_backpack_vertical_offset = int(0.137 * screen_res["height"])
+    window_backpack["top"] += window_backpack_vertical_offset
+    window_backpack["height"] -= window_backpack_vertical_offset * 2
 
     zoom_default: float = 30
     zoom_level: float = 50  # TODO: validate this is roughly correct on spawn
