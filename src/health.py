@@ -63,7 +63,7 @@ async def check_if_should_change_servers(
     highest_player_server_playing = 0
 
     log("Querying Roblox API for server list")
-    url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
+    url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public"
     try:
         response = get(url, timeout=10)
     except Exception:
@@ -122,7 +122,7 @@ async def check_if_should_change_servers(
 
 async def get_current_server_id(game_id: int = CFG.game_id) -> str:
     current_server_id = "N/A"
-    url = f"https://games.roblox.com/v1/games/{game_id}/servers/Public?sortOrder=Asc&limit=10"
+    url = f"https://games.roblox.com/v1/games/{game_id}/servers/Public"
     try:
         response = get(url, timeout=10)
     except Exception:
@@ -132,6 +132,7 @@ async def get_current_server_id(game_id: int = CFG.game_id) -> str:
         response_result = response.json()
         servers = response_result["data"]
         if len(servers) == 0:
+            print("No servers found")
             return "ERROR"
         for server in servers:
             if CFG.player_id in server["playerTokens"]:
@@ -287,7 +288,7 @@ async def get_best_server(get_worst: bool = False) -> Dict:
         "ping": 100,
     }
     best_server = server_obj
-    url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public?sortOrder=Asc&limit=10"
+    url = f"https://games.roblox.com/v1/games/{CFG.game_id}/servers/Public"
     response = get(url, timeout=10)
     if response.status_code == 200:
         response_result = response.json()
