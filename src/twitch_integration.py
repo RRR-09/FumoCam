@@ -567,8 +567,8 @@ async def routine_check_better_server():
 @routines.routine(seconds=1, wait_first=True)
 async def routine_clock():
     current_time = strftime("%I:%M:%S%p EST")
-    days_since_creation = floor((time() - CFG.epoch_time) / (60 * 60 * 24))
-    output_log("clock", f"Day {days_since_creation}\n{current_time}")
+    CFG.days_since_creation = floor((time() - CFG.epoch_time) / (60 * 60 * 24))
+    output_log("clock", f"Day {CFG.days_since_creation}\n{current_time}")
 
 
 @routines.routine(seconds=3, wait_first=True)

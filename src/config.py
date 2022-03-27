@@ -81,6 +81,10 @@ class MainBotConfig:
         "This bot is live on T witch! Go to its Roblox profile for a link, or Google:",
         '"BecomeFumosCam"',
     ]
+    birthday_advertisement = [
+        "It's FumoCam's birthday! We're live on T witch, go to my Roblox profile for a link,",
+        ' or Google: "BecomeFumosCam"',
+    ]
     audio_muted = False
     backpack_button_position = (0.87, 0.89)
     backpack_item_positions = {

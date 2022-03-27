@@ -42,7 +42,10 @@ async def do_anti_afk():
 
 
 async def do_advert():
-    for message in CFG.advertisement:
+    advert = CFG.advertisement
+    if CFG.days_since_creation % 365 == 0:
+        advert = CFG.birthday_advertisement
+    for message in advert:
         await send_chat(message)
         await async_sleep(len(message) * CFG.chat_name_sleep_factor)
 
