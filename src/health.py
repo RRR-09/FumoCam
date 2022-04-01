@@ -404,6 +404,8 @@ async def ocr_for_character(character: str = "", click_option: bool = True) -> b
                         break
                     else:
                         return True
+            if found_character:
+                break
             sleep(0.1)
 
         if click_option and found_character:
@@ -751,6 +753,8 @@ async def ocr_for_settings(option: str = "", click_option: bool = True) -> bool:
                     break
                 else:
                     return True
+        if found_option:
+            break
         await async_sleep(0.25)
 
     if not found_option:
