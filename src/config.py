@@ -195,6 +195,12 @@ class MainBotConfig:
 
     collisions_disabled = True
 
+    chat_overrides = {
+        "tealfoxgamer20109497": "tealfoxgamer",
+        "twitch": "t witch",
+        "Twitch": "T witch",
+    }
+
     current_emote = "/e dance3"
     event_timer_running = False
     epoch_time = 1616817600
