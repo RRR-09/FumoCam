@@ -199,6 +199,7 @@ class MainBotConfig:
         "tealfoxgamer20109497": "tealfoxgamer",
         "twitch": "t witch",
         "Twitch": "T witch",
+        "ObjectClock": "Caroline",
     }
 
     current_emote = "/e dance3"
