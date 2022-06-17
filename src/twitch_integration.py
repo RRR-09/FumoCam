@@ -398,7 +398,7 @@ class TwitchBot(commands.Bot):
                 return
 
         # Chat with CamDev Tag
-        elif is_dev:
+        elif ctx.message.author.display_name == "BecomeFumoCam":
             action = ActionQueueItem(
                 "chat_with_name", {"name": "[CamDev]:", "msgs": [msg]}
             )
