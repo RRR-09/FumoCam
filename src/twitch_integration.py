@@ -405,7 +405,7 @@ class TwitchBot(commands.Bot):
 
         # Standard chat
         else:
-            if ctx.message.author.display_name not in CFG.chat_trusted_users:
+            if ctx.message.author.display_name.lower() not in CFG.chat_trusted_users:
                 await ctx.send("[Sorry! As a temporary security measure, users without the 'Trusted' role cannot send chat messages.]")
                 await ctx.send("[Please check back in a few days!]")
                 return

@@ -157,11 +157,13 @@ class MainBotConfig:
     chat_ocr_activation_queued = False  # True when ocr_active False, but queued
     chat_ocr_ready = True  # Ready for another OCR loop (False when OCR loop running)
     chat_start_ocr_time = time()
-    chat_trusted_user_path = resources_path / 'character_select.json'
+    chat_trusted_user_path = resources_path / 'trusted_users.json'
     chat_trusted_users = set()
     try:
         with open(chat_trusted_user_path, "r") as f:
-            chat_trusted_users = set(json.load(f).keys())
+            user_data = json.load(f)
+            user_list = [key.lower() for key in user_data.keys()]
+            chat_trusted_users = set(user_list)
     except Exception:
         print(f"{chat_trusted_user_path} malformed or missing")
 
