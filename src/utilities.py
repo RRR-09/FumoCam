@@ -257,7 +257,7 @@ def whitelist_request(requests: List[str], message, username) -> bool:
     webhook_url = os.getenv("DISCORD_WEBHOOK_WHITELIST_CHANNEL", None)
     if webhook_url is None:
         return False
-    whitelist_text = "\n".join(f"`/whitelist {word}`" for word in requests)
+    whitelist_text = "\n".join(f"`!whitelist {word}`" for word in requests)
     webhook_data = {
         "content": f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n{whitelist_text}",
         "username": Discord.webhook_username,
