@@ -51,8 +51,8 @@ def get_random_name(CFG: MainBotConfig, seed_string):
     """
     Returns a random 2-word username, based on the second parameter (seed_string)
     """
-    prefixes = list(CFG.chat_whitelist_datasets["random_prefix"])
-    suffixes = list(CFG.chat_whitelist_datasets["random_suffix"])
+    prefixes = list(CFG.chat_whitelist_datasets["random_prefixes"])
+    suffixes = list(CFG.chat_whitelist_datasets["random_suffixes"])
 
     seed_string = seed_string.lower().encode("ascii", "ignore").decode("ascii")
     seed_number = sum([ord(char) for char in seed_string])
