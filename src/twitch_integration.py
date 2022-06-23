@@ -471,7 +471,6 @@ class TwitchBot(commands.Bot):
                     "msgs": [censored_message],
                 },
             )
-            return
 
         # Standard ("Trusted") chat
         else:
