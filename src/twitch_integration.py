@@ -11,10 +11,19 @@ from twitchio import Chatter as TwitchChatter
 from twitchio import Message as TwitchMessage
 from twitchio.ext import commands, routines
 
+import chat_whitelist
 from chat_ocr import can_activate_ocr, do_chat_ocr
 from config import ActionQueueItem, Twitch
 from health import CFG, do_crash_check
-from utilities import discord_log, error_log, log, log_process, notify_admin, output_log
+from utilities import (
+    discord_log,
+    error_log,
+    log,
+    log_process,
+    notify_admin,
+    output_log,
+    whitelist_request,
+)
 
 
 class TwitchBot(commands.Bot):
@@ -80,12 +89,22 @@ class TwitchBot(commands.Bot):
         error_log(f"({type(error)})\n{error}\n{error.__traceback__}")
 
     async def is_new_user(self, username):
+        username = username.lower()
         if username in CFG.twitch_chatters:
             return False
         CFG.twitch_chatters.add(username)
         with open(CFG.twitch_chatters_path, "w") as f:
             json.dump(list(CFG.twitch_chatters), f)
         return True
+
+    async def username_whitelist_requested(self, username):
+        username = username.lower()
+        if username in CFG.twitch_username_whitelist_requested:
+            return True
+        CFG.twitch_username_whitelist_requested.add(username)
+        with open(CFG.twitch_username_whitelist_requested_path, "w") as f:
+            json.dump(list(CFG.twitch_username_whitelist_requested), f)
+        return False
 
     async def do_discord_log(self, message: TwitchMessage):
         author = message.author.display_name
@@ -403,13 +422,59 @@ class TwitchBot(commands.Bot):
                 "chat_with_name", {"name": "[CamDev]:", "msgs": [msg]}
             )
 
-        # Standard chat
-        else:
-            if ctx.message.author.display_name.lower() not in CFG.chat_trusted_users:
-                await ctx.send("[Sorry! As a temporary security measure, users without the 'Trusted' role cannot send chat messages.]")
-                await ctx.send("[Please check back in a few days!]")
+        # Non-trusted chat (whitelist only)
+        elif not chat_whitelist.user_is_trusted(CFG, ctx.message.author.display_name):
+            words_to_request_whitelist = []
+            real_name = ctx.message.author.display_name
+            username = real_name
+            if not chat_whitelist.username_in_whitelist(CFG, real_name):
+                username = chat_whitelist.get_random_name(CFG, real_name)
+                if not await self.username_whitelist_requested(real_name.lower()):
+                    await ctx.send(
+                        f"[Assigning random username '{username}'. Your real username "
+                        f"'{real_name}' is pending approval.]"
+                    )
+                    words_to_request_whitelist.append(real_name)
+
+            censored_words, censored_message = chat_whitelist.get_censored_string(
+                CFG, msg
+            )
+            words_to_request_whitelist += censored_words
+
+            blacklisted_words = []
+            for word in censored_words:
+                if word in chat_whitelist.word_in_blacklist(CFG, word):
+                    blacklisted_words.append(word)
+
+            if blacklisted_words:
+                await ctx.send(
+                    "[You've attempted to send a message with blacklisted words ("
+                    f"{', '.join(blacklisted_words)}). The dev has been notified.]"
+                )
+                notify_admin(
+                    f"[BLACKLIST ALERT]\nUser: `{real_name}`\nMessage: {msg}\n"
+                    f"Blacklisted Words: `{', '.join(blacklisted_words)}`"
+                )
                 return
 
+            if censored_words:
+                await ctx.send(
+                    f"[Some words you used are not in the whitelist for new users and have been sent for "
+                    f"approval ({', '.join(censored_words)})]"
+                )
+                whitelist_request(censored_words, msg, real_name)
+
+            action = ActionQueueItem(
+                "chat_with_name",
+                {
+                    "name": f"{username}:",
+                    "msgs": [censored_message],
+                },
+            )
+            return
+
+        # Standard ("Trusted") chat
+        else:
             action = ActionQueueItem(
                 "chat_with_name",
                 {"name": f"{ctx.message.author.display_name}:", "msgs": [msg]},

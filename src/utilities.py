@@ -4,7 +4,7 @@ from math import floor
 from subprocess import call as call_proc  # nosec
 from time import sleep, strftime, time
 from traceback import format_exc
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from Levenshtein import ratio as lev_ratio
 from mss import mss
@@ -250,6 +250,25 @@ def notify_admin(message: str) -> bool:
     except Exception:
         print(format_exc())
 
+    return True
+
+
+def whitelist_request(requests: List[str], message, username) -> bool:
+    webhook_url = os.getenv("DISCORD_WEBHOOK_WHITELIST_CHANNEL", None)
+    if webhook_url is None:
+        return False
+    whitelist_text = "\n".join(f"`/whitelist {word}`" for word in requests)
+    webhook_data = {
+        "content": f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n{whitelist_text}",
+        "username": Discord.webhook_username,
+    }
+    result = post(webhook_url, json=webhook_data)
+    try:
+        result.raise_for_status()
+    except HTTPError as err:
+        print(err)
+    else:
+        print(f"[Whitelist request sent] {whitelist_text}")
     return True
 
 

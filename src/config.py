@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 from re import compile as re_compile
 from time import time
-from typing import Dict, List
+from typing import Dict, List, Set
 
 from dotenv import dotenv_values, load_dotenv
 from mss import mss
@@ -105,18 +105,6 @@ class MainBotConfig:
     Path(browser_profile_path).mkdir(parents=True, exist_ok=True)
     browser_cookies_path = browser_profile_path / "browser_cookies.json"
 
-    censored_words = [  # TODO: Attempt to inject into chat censor API
-        "gay",
-        "nigger",
-        "nheggar",
-        "ninggrer",
-        "fhucqing",
-        "simp",
-        "s!mp",
-        "jjgay",
-        "niggaHomosexual",
-    ]
-
     chat_bracket_like_chars = ["|", "!", "l", "I"]
     chat_bracket_like_chars_left = chat_bracket_like_chars + ["[", "{", "("]
     chat_bracket_like_chars_right = chat_bracket_like_chars + ["]", "}", ")"]
@@ -157,16 +145,36 @@ class MainBotConfig:
     chat_ocr_activation_queued = False  # True when ocr_active False, but queued
     chat_ocr_ready = True  # Ready for another OCR loop (False when OCR loop running)
     chat_start_ocr_time = time()
-    chat_trusted_user_path = resources_path / 'trusted_users.json'
-    chat_trusted_users = set()
-    try:
-        with open(chat_trusted_user_path, "r") as f:
-            user_data = json.load(f)
-            user_list = [key.lower() for key in user_data.keys()]
-            chat_trusted_users = set(user_list)
-    except Exception:
-        print(f"{chat_trusted_user_path} malformed or missing")
 
+    # Chat Whitelist
+    chat_whitelist_resource_path = resources_path / "resources"
+    chat_whitelist_dataset_paths = {
+        "dictionary": chat_whitelist_resource_path / "dictionary.json",
+        "random_prefixes": chat_whitelist_resource_path / "random_prefixes.json",
+        "random_suffixes": chat_whitelist_resource_path / "random_suffixes.json",
+        "rejected_words": chat_whitelist_resource_path / "rejected_words.json",
+        "trusted_users": chat_whitelist_resource_path / "trusted_users.json",
+        "whitelisted_words": chat_whitelist_resource_path / "whitelisted_words.json",
+    }
+    chat_whitelist_datasets: Dict[str, Set[str]] = {
+        "dictionary": set(),
+        "random_prefixes": set(),
+        "random_suffixes": set(),
+        "rejected_words": set(),
+        "trusted_users": set(),
+        "whitelisted_words": set(),
+    }
+
+    for dataset_type in chat_whitelist_dataset_paths:
+        dataset_path: Path = chat_whitelist_dataset_paths[dataset_type]
+        try:
+            with open(dataset_path, "r") as f:
+                data = json.load(f)
+                chat_whitelist_datasets[dataset_type] = set(data)
+        except Exception:
+            print(f"{dataset_path} malformed or missing")
+
+    # Character Select
     character_select_button_position = {"x": screen_res["center_x"], "y": 40}
     character_select_scroll_position = {
         "x": screen_res["center_x"],
@@ -301,6 +309,17 @@ class MainBotConfig:
 
     twitch_chatters = set()
     twitch_chatters_path = OBS.output_folder / "twitch_chatters.json"
+    try:
+        with open(twitch_chatters_path, "r") as f:
+            twitch_chatters_list = json.load(f)
+            twitch_chatters = set(twitch_chatters_list)
+    except Exception:
+        print(f"{twitch_chatters_path} malformed or missing")
+
+    twitch_username_whitelist_requested: Set[str] = set()
+    twitch_username_whitelist_requested_path = (
+        OBS.output_folder / "twitch_username_whitelist_requested.json"
+    )
     try:
         with open(twitch_chatters_path, "r") as f:
             twitch_chatters_list = json.load(f)
