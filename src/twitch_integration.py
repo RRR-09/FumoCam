@@ -443,7 +443,7 @@ class TwitchBot(commands.Bot):
 
             blacklisted_words = []
             for word in censored_words:
-                if word in chat_whitelist.word_in_blacklist(CFG, word):
+                if chat_whitelist.word_in_blacklist(CFG, word):
                     blacklisted_words.append(word)
 
             if blacklisted_words:
