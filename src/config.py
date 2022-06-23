@@ -321,9 +321,11 @@ class MainBotConfig:
         OBS.output_folder / "twitch_username_whitelist_requested.json"
     )
     try:
-        with open(twitch_chatters_path, "r") as f:
-            twitch_chatters_list = json.load(f)
-            twitch_chatters = set(twitch_chatters_list)
+        with open(twitch_username_whitelist_requested_path, "r") as f:
+            twitch_username_whitelist_requested_list = json.load(f)
+            twitch_username_whitelist_requested = set(
+                twitch_username_whitelist_requested
+            )
     except Exception:
         print(f"{twitch_chatters_path} malformed or missing")
 
