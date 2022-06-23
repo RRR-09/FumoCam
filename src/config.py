@@ -147,7 +147,7 @@ class MainBotConfig:
     chat_start_ocr_time = time()
 
     # Chat Whitelist
-    chat_whitelist_resource_path = resources_path / "resources"
+    chat_whitelist_resource_path = resources_path / "chat_whitelist"
     chat_whitelist_dataset_paths = {
         "dictionary": chat_whitelist_resource_path / "dictionary.json",
         "random_prefixes": chat_whitelist_resource_path / "random_prefixes.json",
