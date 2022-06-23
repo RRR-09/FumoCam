@@ -11,7 +11,7 @@ def username_in_whitelist(CFG: MainBotConfig, username):
     username = username.lower()
     if (
         username in CFG.chat_whitelist_datasets["whitelisted_words"]
-        or username in CFG.chat_whitelist_datasets["dictionary]"]
+        or username in CFG.chat_whitelist_datasets["dictionary"]
     ):
         return True
 
@@ -19,7 +19,7 @@ def username_in_whitelist(CFG: MainBotConfig, username):
         word = word.lower()
         if (
             word not in CFG.chat_whitelist_datasets["whitelisted_words"]
-            and word not in CFG.chat_whitelist_datasets["dictionary]"]
+            and word not in CFG.chat_whitelist_datasets["dictionary"]
         ):
             return False
 
