@@ -575,6 +575,32 @@ class TwitchBot(commands.Bot):
         else:
             await ctx.send("[You do not have permission!]")
 
+    @commands.command()
+    async def whitelist(self, ctx: commands.Context):
+        if not await self.is_dev(ctx.author):
+            await ctx.send("[You do not have permission!]")
+            return
+
+        args = await self.get_args(ctx)
+        if not args or args[0].lower():
+            await ctx.send("[Specify a word to whitelist!]")
+            return
+        before = len(CFG.chat_whitelist_datasets["whitelisted_words"])
+
+        word_to_whitelist = args[0].lower()
+
+        CFG.chat_whitelist_datasets["whitelisted_words"].add(word_to_whitelist)
+        with open(CFG.chat_whitelist_dataset_paths["whitelisted_words"], "w") as f:
+            json.dump(list(CFG.chat_whitelist_datasets["whitelisted_words"]), f)
+
+        after = len(CFG.chat_whitelist_datasets["whitelisted_words"])  # Sanity Check
+
+        await ctx.send(
+            f"[Added '{word_to_whitelist}' to whitelist! ({before}->{after})]"
+        )
+
+        return False
+
     async def zoom_handler(self, zoom_key, ctx: commands.Context):
         zoom_amount: float = 15
         max_zoom_amount: float = 100
