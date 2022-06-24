@@ -36,6 +36,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     space_bypassed_string = ""
     for word in string_to_check.split(" "):
         word_is_spaced = False
+        original_word = word
         clean_word = "".join(char for char in word if char.isalpha())
 
         # Handle people trying to space out non-whitelisted words
@@ -44,6 +45,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             continue
         elif len(space_bypassed_string) > 0:
             clean_word = space_bypassed_string
+            original_word = space_bypassed_string
             space_bypassed_string = ""
             word_is_spaced = True
 
@@ -54,7 +56,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
         ):
             blacklisted_words.append(clean_word.lower())
-            clean_word = word.replace(clean_word, "*" * len(clean_word))
+            clean_word = original_word.replace(clean_word, "*" * len(clean_word))
         elif word_is_spaced:
             # If we've checked the non-spaced word is fine,
             # retain the spacing
@@ -65,6 +67,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     # Finish adding any single-char last-words
     if len(space_bypassed_string) > 0:
         clean_word = space_bypassed_string
+        original_word = space_bypassed_string
         if (
             clean_word.strip() != ""
             and clean_word.lower()
@@ -72,7 +75,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
         ):
             blacklisted_words.append(clean_word.lower())
-            clean_word = word.replace(clean_word, "*" * len(clean_word))
+            clean_word = original_word.replace(clean_word, "*" * len(clean_word))
         else:
             # retain the spacing
             clean_word = " ".join(clean_word)
