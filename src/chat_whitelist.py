@@ -74,8 +74,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
         ):
             blacklisted_words.append(clean_word.lower())
             clean_word = word.replace(clean_word, "*" * len(clean_word))
-        elif word_is_spaced:
-            # If we've checked the non-spaced word is fine,
+        else:
             # retain the spacing
             clean_word = " ".join(clean_word)
 
