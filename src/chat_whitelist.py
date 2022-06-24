@@ -1,3 +1,4 @@
+from distutils.command.clean import clean
 from typing import List, Tuple
 
 from config import MainBotConfig
@@ -33,8 +34,32 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     string_to_check = string_to_check.encode("ascii", "ignore").decode("ascii")
     blacklisted_words = []
     censored_string_assembly = []
+    space_bypassed_string = ""
     for word in string_to_check.split(" "):
         clean_word = "".join(char for char in word if char.isalpha())
+
+        # Handle people trying to space out non-whitelisted words
+        if len(clean_word) <= 1:
+            space_bypassed_string += clean_word
+            continue
+        elif len(space_bypassed_string) > 0:
+            clean_word = space_bypassed_string
+            space_bypassed_string = ""
+
+        if (
+            clean_word.strip() != ""
+            and clean_word.lower()
+            not in CFG.chat_whitelist_datasets["whitelisted_words"]
+            and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
+        ):
+            blacklisted_words.append(clean_word.lower())
+            clean_word = word.replace(clean_word, "*" * len(clean_word))
+
+        censored_string_assembly.append(clean_word)
+
+    # Finish adding any single-char last-words
+    if len(space_bypassed_string) > 0:
+        clean_word = space_bypassed_string
         if (
             clean_word.strip() != ""
             and clean_word.lower()
