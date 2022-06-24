@@ -465,7 +465,7 @@ class TwitchBot(commands.Bot):
 
             if words_to_request_whitelist:
                 # Send request for either username or words
-                whitelist_request(censored_words, msg, real_name)
+                whitelist_request(words_to_request_whitelist, msg, real_name)
 
             action = ActionQueueItem(
                 "chat_with_name",
