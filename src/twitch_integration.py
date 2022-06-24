@@ -581,7 +581,7 @@ class TwitchBot(commands.Bot):
             return
 
         args = await self.get_args(ctx)
-        if not args or args[0].lower():
+        if not args:
             await ctx.send("[Specify a word to whitelist!]")
             return
         before = len(CFG.chat_whitelist_datasets["whitelisted_words"])
