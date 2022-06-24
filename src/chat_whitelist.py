@@ -36,6 +36,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     censored_string_assembly = []
     space_bypassed_string = ""
     for word in string_to_check.split(" "):
+        word_is_spaced = False
         clean_word = "".join(char for char in word if char.isalpha())
 
         # Handle people trying to space out non-whitelisted words
@@ -45,6 +46,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
         elif len(space_bypassed_string) > 0:
             clean_word = space_bypassed_string
             space_bypassed_string = ""
+            word_is_spaced = True
 
         if (
             clean_word.strip() != ""
@@ -54,6 +56,10 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
         ):
             blacklisted_words.append(clean_word.lower())
             clean_word = word.replace(clean_word, "*" * len(clean_word))
+        elif word_is_spaced:
+            # If we've checked the non-spaced word is fine,
+            # retain the spacing
+            clean_word = " ".join(clean_word)
 
         censored_string_assembly.append(clean_word)
 
@@ -68,6 +74,10 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
         ):
             blacklisted_words.append(clean_word.lower())
             clean_word = word.replace(clean_word, "*" * len(clean_word))
+        elif word_is_spaced:
+            # If we've checked the non-spaced word is fine,
+            # retain the spacing
+            clean_word = " ".join(clean_word)
 
         censored_string_assembly.append(clean_word)
 
