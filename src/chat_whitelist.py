@@ -36,7 +36,9 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     for word in string_to_check.split(" "):
         clean_word = "".join(char for char in word if char.isalpha())
         if (
-            clean_word.lower() not in CFG.chat_whitelist_datasets["whitelisted_words"]
+            clean_word.strip() != ""
+            and clean_word.lower()
+            not in CFG.chat_whitelist_datasets["whitelisted_words"]
             and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
         ):
             blacklisted_words.append(clean_word.lower())
