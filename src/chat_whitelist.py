@@ -1,4 +1,3 @@
-from distutils.command.clean import clean
 from typing import List, Tuple
 
 from config import MainBotConfig
