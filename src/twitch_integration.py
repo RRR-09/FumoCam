@@ -3,6 +3,7 @@ import traceback
 from asyncio import create_task
 from asyncio import sleep as async_sleep
 from datetime import datetime
+from enum import Enum
 from math import floor
 from os import getenv, system
 from time import strftime, time
@@ -24,6 +25,13 @@ from utilities import (
     output_log,
     whitelist_request,
 )
+
+
+class NameWhitelistRequest(Enum):
+    NOT_ON_RECORD = 1
+    NEEDS_MORE_MESSAGES = 2
+    READY_TO_REQUEST = 3
+    WHITELIST_REQUEST_SENT = 4
 
 
 class TwitchBot(commands.Bot):
@@ -99,18 +107,28 @@ class TwitchBot(commands.Bot):
 
     async def username_whitelist_requested(self, username):
         username = username.lower()
+        min_to_req_whitelist = 2
         if username in CFG.twitch_username_whitelist_requested:
-            return True
+            return NameWhitelistRequest.WHITELIST_REQUEST_SENT
         elif username not in CFG.twitch_username_whitelist_requested_pre:
             # Only trigger a whitelist req if they send more than one message in a session
             # (But say a whitelist req was made on the first message)
-            CFG.twitch_username_whitelist_requested_pre.add(username)
-            return False
+            CFG.twitch_username_whitelist_requested_pre[username] = 1
+            return NameWhitelistRequest.NOT_ON_RECORD
+        elif (
+            CFG.twitch_username_whitelist_requested_pre[username] + 1
+            < min_to_req_whitelist
+        ):
+            # Havent reached the desired amount to send a whitelist req
+            # Currently this code is redundant until the number is raised
+            amount = CFG.twitch_username_whitelist_requested_pre[username] + 1
+            CFG.twitch_username_whitelist_requested_pre[username] = amount
+            return NameWhitelistRequest.NEEDS_MORE_MESSAGES
 
         CFG.twitch_username_whitelist_requested.add(username)
         with open(CFG.twitch_username_whitelist_requested_path, "w") as f:
             json.dump(list(CFG.twitch_username_whitelist_requested), f)
-        return False
+        return NameWhitelistRequest.READY_TO_REQUEST
 
     async def do_discord_log(self, message: TwitchMessage):
         author = message.author.display_name
@@ -435,11 +453,17 @@ class TwitchBot(commands.Bot):
             username = real_name
             if not chat_whitelist.username_in_whitelist(CFG, real_name):
                 username = chat_whitelist.get_random_name(CFG, real_name)
-                if not await self.username_whitelist_requested(real_name.lower()):
+                whitelist_requested_status = await self.username_whitelist_requested(
+                    real_name.lower()
+                )
+                if whitelist_requested_status == NameWhitelistRequest.NOT_ON_RECORD:
                     await ctx.send(
                         f"[Assigning random username '{username}'. Your real username "
                         f"'{real_name}' is pending approval.]"
                     )
+                elif (
+                    whitelist_requested_status == NameWhitelistRequest.READY_TO_REQUEST
+                ):
                     words_to_request_whitelist.append(real_name)
 
             censored_words, censored_message = chat_whitelist.get_censored_string(
