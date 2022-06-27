@@ -23,6 +23,7 @@ from utilities import (
     log_process,
     notify_admin,
     output_log,
+    username_whitelist_request,
     whitelist_request,
 )
 
@@ -448,7 +449,6 @@ class TwitchBot(commands.Bot):
 
         # Non-trusted chat (whitelist only)
         elif not chat_whitelist.user_is_trusted(CFG, ctx.message.author.display_name):
-            words_to_request_whitelist = []
             real_name = ctx.message.author.display_name
             username = real_name
             if not chat_whitelist.username_in_whitelist(CFG, real_name):
@@ -464,12 +464,11 @@ class TwitchBot(commands.Bot):
                 elif (
                     whitelist_requested_status == NameWhitelistRequest.READY_TO_REQUEST
                 ):
-                    words_to_request_whitelist.append(real_name)
+                    username_whitelist_request(real_name)
 
             censored_words, censored_message = chat_whitelist.get_censored_string(
                 CFG, msg
             )
-            words_to_request_whitelist += censored_words
 
             blacklisted_words = []
             for word in censored_words:
@@ -493,9 +492,8 @@ class TwitchBot(commands.Bot):
                     f"approval ({', '.join(censored_words)})]"
                 )
 
-            if words_to_request_whitelist:
-                # Send request for either username or words
-                whitelist_request(words_to_request_whitelist, msg, real_name)
+            if censored_words:
+                whitelist_request(censored_words, msg, real_name)
 
             action = ActionQueueItem(
                 "chat_with_name",

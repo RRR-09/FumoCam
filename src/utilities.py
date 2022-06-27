@@ -253,13 +253,24 @@ def notify_admin(message: str) -> bool:
     return True
 
 
-def whitelist_request(requests: List[str], message, username) -> bool:
+def username_whitelist_request(message, username):
+    return whitelist_request([username], message, username, is_username_req=True)
+
+
+def whitelist_request(
+    requests: List[str], message, username, is_username_req=False
+) -> bool:
     webhook_url = os.getenv("DISCORD_WEBHOOK_WHITELIST_CHANNEL", None)
     if webhook_url is None:
         return False
     whitelist_text = [f"`!whitelist {word}`" for word in requests]
+    header_content = (
+        f"** **\n** **\n__Username Request__\n**{username}**\n```{message}```\n** **"
+        if is_username_req
+        else f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n** **"
+    )
     webhook_data = {
-        "content": f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n** **\n** **",
+        "content": header_content,
         "username": Discord.webhook_username,
     }
     result = post(webhook_url, json=webhook_data)
