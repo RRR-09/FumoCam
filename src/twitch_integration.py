@@ -101,6 +101,12 @@ class TwitchBot(commands.Bot):
         username = username.lower()
         if username in CFG.twitch_username_whitelist_requested:
             return True
+        elif username not in CFG.twitch_username_whitelist_requested_pre:
+            # Only trigger a whitelist req if they send more than one message in a session
+            # (But say a whitelist req was made on the first message)
+            CFG.twitch_username_whitelist_requested_pre.add(username)
+            return False
+
         CFG.twitch_username_whitelist_requested.add(username)
         with open(CFG.twitch_username_whitelist_requested_path, "w") as f:
             json.dump(list(CFG.twitch_username_whitelist_requested), f)

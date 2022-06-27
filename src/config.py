@@ -316,6 +316,9 @@ class MainBotConfig:
     except Exception:
         print(f"{twitch_chatters_path} malformed or missing")
 
+    # Many will send one message and leave, require 2 msgs in a session for whitelist
+    twitch_username_whitelist_requested_pre: Set[str] = set()
+
     twitch_username_whitelist_requested: Set[str] = set()
     twitch_username_whitelist_requested_path = (
         OBS.output_folder / "twitch_username_whitelist_requested.json"
