@@ -61,6 +61,9 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             # If we've checked the non-spaced word is fine,
             # retain the spacing
             clean_word = " ".join(clean_word)
+        else:
+            # If we're not censoring, leave numbers in
+            clean_word = "".join(char for char in word if char.isalnum())
 
         censored_string_assembly.append(clean_word)
 
