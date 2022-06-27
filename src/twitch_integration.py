@@ -464,7 +464,7 @@ class TwitchBot(commands.Bot):
                 elif (
                     whitelist_requested_status == NameWhitelistRequest.READY_TO_REQUEST
                 ):
-                    username_whitelist_request(real_name)
+                    username_whitelist_request(msg, real_name)
 
             censored_words, censored_message = chat_whitelist.get_censored_string(
                 CFG, msg
