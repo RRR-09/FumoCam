@@ -34,6 +34,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     blacklisted_words = []
     censored_string_assembly = []
     space_bypassed_string = ""
+    # punctuation = {"!", "?", ",", ".", ":", ";", "'", '"', "(", ")", "@", "#", "$", "%", "^", "&", "*",}
     for word in string_to_check.split(" "):
         word_is_spaced = False
         original_word = word
@@ -44,10 +45,21 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             space_bypassed_string += clean_word
             continue
         elif len(space_bypassed_string) > 0:
-            clean_word = space_bypassed_string
-            original_word = space_bypassed_string
-            space_bypassed_string = ""
-            word_is_spaced = True
+            space_bypassed_censored = space_bypassed_string
+            if (
+                space_bypassed_string.strip() != ""
+                and space_bypassed_string.lower()
+                not in CFG.chat_whitelist_datasets["whitelisted_words"]
+                and space_bypassed_string.lower()
+                not in CFG.chat_whitelist_datasets["dictionary"]
+            ):
+                blacklisted_words.append(space_bypassed_string.lower())
+                space_bypassed_censored = space_bypassed_string.replace(
+                    space_bypassed_string, "*" * len(space_bypassed_string)
+                )
+            space_bypassed_censored = " ".join(space_bypassed_censored)
+            censored_string_assembly.append(space_bypassed_censored)
+            space_bypassed_string = ""  # Clear space bypass buffer
 
         if (
             clean_word.strip() != ""
@@ -63,7 +75,8 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             clean_word = " ".join(clean_word)
         else:
             # If we're not censoring, leave numbers in
-            clean_word = "".join(char for char in word if char.isalnum())
+            # clean_word = "".join(char for char in word if char.isalnum())
+            clean_word = word.encode("ascii", "ignore").decode("ascii")
 
         censored_string_assembly.append(clean_word)
 
