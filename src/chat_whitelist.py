@@ -41,7 +41,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
         clean_word = "".join(char for char in word if char.isalpha())
 
         # Handle people trying to space out non-whitelisted words
-        if len(clean_word) <= 1:
+        if len(clean_word) == 1:
             space_bypassed_string += clean_word
             continue
         elif len(space_bypassed_string) > 0:
@@ -76,7 +76,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
         else:
             # If we're not censoring, leave numbers in
             # clean_word = "".join(char for char in word if char.isalnum())
-            clean_word = word.encode("ascii", "ignore").decode("ascii")
+            clean_word = word
 
         censored_string_assembly.append(clean_word)
 
