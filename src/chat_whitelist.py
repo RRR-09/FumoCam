@@ -67,8 +67,26 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             not in CFG.chat_whitelist_datasets["whitelisted_words"]
             and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
         ):
-            blacklisted_words.append(clean_word.lower())
-            clean_word = original_word.replace(clean_word, "*" * len(clean_word))
+            suffix_removal_success = False
+            if len(clean_word) >= 3:
+                # Allow suffix-extended characters, like "testtttttttttttttttt" qualifying as "test"
+                offset = 1
+                index = len(clean_word) - offset
+                while (index > 2) and clean_word[index] == clean_word[index - 1]:
+                    word_attempt = clean_word[offset:].lower()
+                    if (
+                        word_attempt in CFG.chat_whitelist_datasets["whitelisted_words"]
+                        or word_attempt in CFG.chat_whitelist_datasets["dictionary"]
+                    ):
+                        clean_word = word
+                        suffix_removal_success = True
+                        break
+                    offset -= 1
+                    index = len(clean_word) - offset
+
+            if not suffix_removal_success or len(clean_word) < 3:
+                blacklisted_words.append(clean_word.lower())
+                clean_word = original_word.replace(clean_word, "*" * len(clean_word))
         elif word_is_spaced:
             # If we've checked the non-spaced word is fine,
             # retain the spacing
