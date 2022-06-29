@@ -73,7 +73,8 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
                 offset = 1
                 index = len(clean_word) - offset
                 while (index > 2) and clean_word[index] == clean_word[index - 1]:
-                    word_attempt = clean_word[offset:].lower()
+                    word_attempt = clean_word[:offset].lower()
+                    print(word_attempt)
                     if (
                         word_attempt in CFG.chat_whitelist_datasets["whitelisted_words"]
                         or word_attempt in CFG.chat_whitelist_datasets["dictionary"]
@@ -81,7 +82,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
                         clean_word = word
                         suffix_removal_success = True
                         break
-                    offset -= 1
+                    offset += 1
                     index = len(clean_word) - offset
 
             if not suffix_removal_success or len(clean_word) < 3:
