@@ -4,7 +4,7 @@ from math import floor
 from subprocess import call as call_proc  # nosec
 from time import sleep, strftime, time
 from traceback import format_exc
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 from Levenshtein import ratio as lev_ratio
 from mss import mss
@@ -249,6 +249,54 @@ def notify_admin(message: str) -> bool:
                 print(f"[Logged Screenshot] {message}")
     except Exception:
         print(format_exc())
+
+    return True
+
+
+def username_whitelist_request(message, username):
+    return whitelist_request([username], message, username, is_username_req=True)
+
+
+def whitelist_request(
+    requests: List[str], message, username, is_username_req=False
+) -> bool:
+    webhook_url = os.getenv("DISCORD_WEBHOOK_WHITELIST_CHANNEL", None)
+    if webhook_url is None:
+        return False
+    whitelist_text = [f"`!whitelist {word}`" for word in requests]
+    header_content = (
+        f"** **\n** **\n__Username Request__\n**{username}**\n```{message}```\n** **"
+        if is_username_req
+        else f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n** **"
+    )
+    webhook_data = {
+        "content": header_content,
+        "username": Discord.webhook_username,
+    }
+    result = post(webhook_url, json=webhook_data)
+    try:
+        result.raise_for_status()
+    except HTTPError as err:
+        print(err)
+    else:
+        print("[Whitelist request header sent]")
+
+    MAX_WORDS = 3
+    if len(whitelist_text) > MAX_WORDS:
+        whitelist_text = ["\n".join(whitelist_text)]
+
+    for word in whitelist_text:
+        webhook_data = {
+            "content": word,
+            "username": Discord.webhook_username,
+        }
+        result = post(webhook_url, json=webhook_data)
+        try:
+            result.raise_for_status()
+        except HTTPError as err:
+            print(err)
+        else:
+            print(f"[Whitelist request command sent ({word})]")
 
     return True
 

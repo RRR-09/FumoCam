@@ -157,7 +157,7 @@ async def check_for_better_server():
             log_process(
                 f"Attempt {i+1}/{CFG.max_attempts_better_server} failed! Retrying better server check..."
             )
-            await async_sleep(5)
+            await async_sleep(10)
             current_server_id = await get_current_server_id()
             if current_server_id != "ERROR":
                 break

@@ -316,11 +316,11 @@ def test_window_area():
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
-    # test_get_cookies_for_browser()
+    test_get_cookies_for_browser()
     # test_loading_cookies_for_browser()
     # test_get_player_token()
 
-    test_window_area()
+    #test_window_area()
 
     # test_mute(mute=True)
 

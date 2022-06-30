@@ -3,6 +3,7 @@ import traceback
 from asyncio import create_task
 from asyncio import sleep as async_sleep
 from datetime import datetime
+from enum import Enum
 from math import floor
 from os import getenv, system
 from time import strftime, time
@@ -11,10 +12,27 @@ from twitchio import Chatter as TwitchChatter
 from twitchio import Message as TwitchMessage
 from twitchio.ext import commands, routines
 
+import chat_whitelist
 from chat_ocr import can_activate_ocr, do_chat_ocr
 from config import ActionQueueItem, Twitch
 from health import CFG, do_crash_check
-from utilities import discord_log, error_log, log, log_process, notify_admin, output_log
+from utilities import (
+    discord_log,
+    error_log,
+    log,
+    log_process,
+    notify_admin,
+    output_log,
+    username_whitelist_request,
+    whitelist_request,
+)
+
+
+class NameWhitelistRequest(Enum):
+    NOT_ON_RECORD = 1
+    NEEDS_MORE_MESSAGES = 2
+    READY_TO_REQUEST = 3
+    WHITELIST_REQUEST_SENT = 4
 
 
 class TwitchBot(commands.Bot):
@@ -80,12 +98,38 @@ class TwitchBot(commands.Bot):
         error_log(f"({type(error)})\n{error}\n{error.__traceback__}")
 
     async def is_new_user(self, username):
+        username = username.lower()
         if username in CFG.twitch_chatters:
             return False
         CFG.twitch_chatters.add(username)
         with open(CFG.twitch_chatters_path, "w") as f:
             json.dump(list(CFG.twitch_chatters), f)
         return True
+
+    async def username_whitelist_requested(self, username):
+        username = username.lower()
+        min_to_req_whitelist = 2
+        if username in CFG.twitch_username_whitelist_requested:
+            return NameWhitelistRequest.WHITELIST_REQUEST_SENT
+        elif username not in CFG.twitch_username_whitelist_requested_pre:
+            # Only trigger a whitelist req if they send more than one message in a session
+            # (But say a whitelist req was made on the first message)
+            CFG.twitch_username_whitelist_requested_pre[username] = 1
+            return NameWhitelistRequest.NOT_ON_RECORD
+        elif (
+            CFG.twitch_username_whitelist_requested_pre[username] + 1
+            < min_to_req_whitelist
+        ):
+            # Havent reached the desired amount to send a whitelist req
+            # Currently this code is redundant until the number is raised
+            amount = CFG.twitch_username_whitelist_requested_pre[username] + 1
+            CFG.twitch_username_whitelist_requested_pre[username] = amount
+            return NameWhitelistRequest.NEEDS_MORE_MESSAGES
+
+        CFG.twitch_username_whitelist_requested.add(username)
+        with open(CFG.twitch_username_whitelist_requested_path, "w") as f:
+            json.dump(list(CFG.twitch_username_whitelist_requested), f)
+        return NameWhitelistRequest.READY_TO_REQUEST
 
     async def do_discord_log(self, message: TwitchMessage):
         author = message.author.display_name
@@ -398,12 +442,68 @@ class TwitchBot(commands.Bot):
                 return
 
         # Chat with CamDev Tag
-        elif is_dev:
+        elif ctx.message.author.display_name == "BecomeFumoCam":
             action = ActionQueueItem(
                 "chat_with_name", {"name": "[CamDev]:", "msgs": [msg]}
             )
 
-        # Standard chat
+        # Non-trusted chat (whitelist only)
+        elif not chat_whitelist.user_is_trusted(CFG, ctx.message.author.display_name):
+            real_name = ctx.message.author.display_name
+            username = real_name
+            if not chat_whitelist.username_in_whitelist(CFG, real_name):
+                username = chat_whitelist.get_random_name(CFG, real_name)
+                whitelist_requested_status = await self.username_whitelist_requested(
+                    real_name.lower()
+                )
+                if whitelist_requested_status == NameWhitelistRequest.NOT_ON_RECORD:
+                    await ctx.send(
+                        f"[Assigning random username '{username}'. Your real username "
+                        f"'{real_name}' is pending approval.]"
+                    )
+                elif (
+                    whitelist_requested_status == NameWhitelistRequest.READY_TO_REQUEST
+                ):
+                    username_whitelist_request(msg, real_name)
+
+            censored_words, censored_message = chat_whitelist.get_censored_string(
+                CFG, msg
+            )
+
+            blacklisted_words = []
+            for word in censored_words:
+                if chat_whitelist.word_in_blacklist(CFG, word):
+                    blacklisted_words.append(word)
+
+            if blacklisted_words:
+                await ctx.send(
+                    "[You've attempted to send a message with blacklisted words ("
+                    f"{', '.join(blacklisted_words)}). The dev has been notified.]"
+                )
+                notify_admin(
+                    f"[BLACKLIST ALERT]\nUser: `{real_name}`\nMessage: {msg}\n"
+                    f"Blacklisted Words: `{', '.join(blacklisted_words)}`"
+                )
+                return
+
+            if censored_words:
+                await ctx.send(
+                    f"[Some words you used are not in the whitelist for new users and have been sent for "
+                    f"approval ({', '.join(censored_words)})]"
+                )
+
+            if censored_words:
+                whitelist_request(censored_words, msg, real_name)
+
+            action = ActionQueueItem(
+                "chat_with_name",
+                {
+                    "name": f"{username}:",
+                    "msgs": [censored_message],
+                },
+            )
+
+        # Standard ("Trusted") chat
         else:
             action = ActionQueueItem(
                 "chat_with_name",
@@ -505,6 +605,32 @@ class TwitchBot(commands.Bot):
         else:
             await ctx.send("[You do not have permission!]")
 
+    @commands.command()
+    async def whitelist(self, ctx: commands.Context):
+        if not await self.is_dev(ctx.author):
+            await ctx.send("[You do not have permission!]")
+            return
+
+        args = await self.get_args(ctx)
+        if not args:
+            await ctx.send("[Specify a word to whitelist!]")
+            return
+        before = len(CFG.chat_whitelist_datasets["whitelisted_words"])
+
+        word_to_whitelist = args[0].lower()
+
+        CFG.chat_whitelist_datasets["whitelisted_words"].add(word_to_whitelist)
+        with open(CFG.chat_whitelist_dataset_paths["whitelisted_words"], "w") as f:
+            json.dump(list(CFG.chat_whitelist_datasets["whitelisted_words"]), f)
+
+        after = len(CFG.chat_whitelist_datasets["whitelisted_words"])  # Sanity Check
+
+        await ctx.send(
+            f"[Added '{word_to_whitelist}' to whitelist! ({before}->{after})]"
+        )
+
+        return False
+
     async def zoom_handler(self, zoom_key, ctx: commands.Context):
         zoom_amount: float = 15
         max_zoom_amount: float = 100
@@ -552,7 +678,7 @@ async def routine_anti_afk():
         error_log(traceback.format_exc())
 
 
-@routines.routine(minutes=1)
+@routines.routine(minutes=2)
 async def routine_check_better_server():
     print("[Subroutine] Better Server Check")
     try:
