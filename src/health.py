@@ -614,7 +614,7 @@ async def auto_nav(
     if do_checks:
         await check_active(force_fullscreen=False)
         await async_sleep(0.5)
-        location_name = CFG.nav_locations[location]["name"]
+        location_name = CFG.nav_locations.get(location, {}).get("name", "ERROR")
         if location_name == "fixbright":
             location_name = "Classic Portal, to fix screen brightness"
         await send_chat(f"[AutoNavigating to {location_name}!]")
