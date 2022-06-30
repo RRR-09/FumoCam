@@ -127,6 +127,36 @@ def main_to_classic():
     log("")
 
 
+def main_to_classic_fix_bright():
+    log_process("AutoNav")
+    log("Main -> BecomeFumo Classic Portal\n(And back out)")
+    ACFG.move("a", 0.25, raw=True)
+    ACFG.move("s", 4.5, raw=True)
+    ACFG.move("d", 1.75, raw=True)
+    ACFG.move("s", 2.6, raw=True)
+    ACFG.move("a", 1, raw=True)
+    ACFG.move("s", 2.55, raw=True)
+    ACFG.move("d", 1, raw=True)
+    ACFG.move("s", 2.5, raw=True)
+    ACFG.leap(forward_time=0.3, jump_time=0.25, direction_key="s")
+
+    ACFG.move("d", 0.5, raw=True)
+    ACFG.move("s", 0.3, raw=True)
+
+    ACFG.leap(forward_time=0.3, jump_time=0.3, direction_key="s")
+    ACFG.move("d", 0.2, raw=True)
+    ACFG.move("s", 0.275, raw=True)
+    ACFG.leap(forward_time=0.625, jump_time=0.5, direction_key="s")
+    ACFG.leap(forward_time=1, jump_time=0.2, direction_key="d", jump_delay=0.35)
+    ACFG.move("s", 0.225, raw=True)
+    ACFG.leap(forward_time=0.8, jump_time=0.4, direction_key="d", jump_delay=0.3)
+    ACFG.use()
+    sleep(5)
+    ACFG.use()
+    log_process("")
+    log("")
+
+
 def main_to_treehouse():
     log_process("AutoNav")
     log("Main -> Funky Treehouse")

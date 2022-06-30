@@ -662,6 +662,13 @@ class TwitchBot(commands.Bot):
         zoom_key = "o"
         await self.zoom_handler(zoom_key, ctx)
 
+    @commands.command()
+    async def fixbright(self, ctx: commands.Context):
+        await ctx.send("[Trying to navigate to the portal and back out again!]")
+        await ctx.send("[If it didnt work, re-run the command or use !dev!]")
+        action = ActionQueueItem("autonav", {"location": "fixbright"})
+        await CFG.add_action_queue(action)
+
 
 @routines.routine(minutes=10, wait_first=True)
 async def routine_anti_afk():

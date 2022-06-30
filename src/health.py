@@ -16,6 +16,7 @@ from config import OBS, ActionQueueItem
 from navpoints import (  # TODO: Make this better/scalable
     comedy_to_main,
     main_to_classic,
+    main_to_classic_fix_bright,
     main_to_ratcade,
     main_to_shrimp_tree,
     main_to_train,
@@ -613,7 +614,10 @@ async def auto_nav(
     if do_checks:
         await check_active(force_fullscreen=False)
         await async_sleep(0.5)
-        await send_chat(f"[AutoNavigating to {CFG.nav_locations[location]['name']}!]")
+        location_name = CFG.nav_locations[location]["name"]
+        if location_name == "fixbright":
+            location_name = "Classic Portal, to fix screen brightness"
+        await send_chat(f"[AutoNavigating to {location_name}!]")
         if not CFG.collisions_disabled:
             log("Disabling collisions")
             await toggle_collisions()
@@ -647,6 +651,8 @@ async def auto_nav(
         main_to_classic()
     elif location == "treehouse":
         main_to_treehouse()
+    elif location == "fixbright":
+        main_to_classic_fix_bright()
     log("Zooming in to normal scale")
     default_zoom_in_amount = CFG.zoom_max - CFG.zoom_default
     zoom_in_amount = CFG.nav_post_zoom_in.get(location, default_zoom_in_amount)
