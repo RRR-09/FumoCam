@@ -615,7 +615,7 @@ async def auto_nav(
         await check_active(force_fullscreen=False)
         await async_sleep(0.5)
         location_name = CFG.nav_locations.get(location, {}).get("name", "ERROR")
-        if location_name == "fixbright":
+        if location == "fixbright":
             location_name = "Classic Portal, to fix screen brightness"
         await send_chat(f"[AutoNavigating to {location_name}!]")
         if not CFG.collisions_disabled:
@@ -657,8 +657,9 @@ async def auto_nav(
     default_zoom_in_amount = CFG.zoom_max - CFG.zoom_default
     zoom_in_amount = CFG.nav_post_zoom_in.get(location, default_zoom_in_amount)
     ACFG.zoom(zoom_direction_key="i", amount=zoom_in_amount)
+    command = f"!nav {location}" if location != "fixbright" else "!fixbright"
     log(
-        f"Complete! This is experimental, so please re-run \n'!nav {location}' if it didn't work."
+        f"Complete! This is experimental, so please re-run \n'{command}' if it didn't work."
     )
     await async_sleep(3)
 
