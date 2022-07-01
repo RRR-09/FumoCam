@@ -1,7 +1,6 @@
 from json import dumps
 from time import sleep
 
-import pyautogui
 import pydirectinput
 import serial  # pip install pyserial
 import serial.tools.list_ports  # TODO: figure out why not the same as above
@@ -67,8 +66,7 @@ class ArduinoConfig:
         log_process("")
 
     max_serial_wait_time = 10
-    tick_rate = 0.25
-    screen_height_pitch_ratios = {1080: 1080 / 2.596, 720: 720 / 1.73}
+    tick_rate = 0.1
     msg_letter_wait_time = 10 / 1000  # 10ms
     zoom_ratio = 0.013  # 100 = full zoom
     turn_ratio = 124.15  # 360 = 3s = 360 degrees; smaller overshoot, bigger undershoot
@@ -106,11 +104,16 @@ class ArduinoConfig:
         self.arduino_interface(payload, 2)  # Arbitrary max time for safety
 
     def mouse_alt_tab(self):
-        alt_tab_duration = 0.5
-        pyautogui.hotkey("alt", "tab")
-        sleep(alt_tab_duration)
-        pyautogui.hotkey("alt", "tab")
-        sleep(alt_tab_duration * 2)
+        pydirectinput.move(1, 1)
+        pydirectinput.move(-2, -2)
+        pydirectinput.move(1, 1)
+
+        # TODO: Verify above method is as reliable as below method
+        # alt_tab_duration = 0.5
+        # pyautogui.hotkey("alt", "tab")
+        # sleep(alt_tab_duration)
+        # pyautogui.hotkey("alt", "tab")
+        # sleep(alt_tab_duration * 2)
 
     def left_click_software(self, do_click: bool = True):
         """
@@ -135,6 +138,7 @@ class ArduinoConfig:
         jump_time: float,
         direction_key: str = "w",
         jump_delay: float = 0,
+        diagonal_direction_key: str = "0",  # Could probably make conditionals, passing non-value easier
     ):
         payload = {
             "type": "leap",
@@ -142,6 +146,7 @@ class ArduinoConfig:
             "jump_time": jump_time,
             "direction_key": direction_key,
             "jump_delay": jump_delay,
+            "diagonal_direction_key": diagonal_direction_key,
         }
         self.arduino_interface(
             payload,
@@ -160,6 +165,36 @@ class ArduinoConfig:
         }
         self.arduino_interface(payload, turn_amount)
         sleep(0.5)
+
+    def precision_look(
+        self, direction: str, amount: float, raw: bool = False, auto_hide: bool = True
+    ):
+        """
+        Software-only at this time
+        """
+        pydirectinput.moveTo(CFG.screen_res["center_x"], CFG.screen_res["center_y"])
+        self.mouse_alt_tab()
+        pydirectinput.click(button="right")
+        pydirectinput.mouseDown(button="right")
+        turn_amount = amount
+        if not raw:
+            # amount can be assumed "# of degrees to turn"
+            if turn_amount >= 135:
+                # 1798 = 180 degrees for some reason
+                RATIO = 1798 / 180
+            else:
+                # 901 = 90 degrees
+                RATIO = 901 / 90
+
+            turn_amount *= RATIO
+        if direction.upper() == "LEFT":
+            turn_amount *= -1
+
+        pydirectinput.move(int(turn_amount), 0, relative=True)
+        pydirectinput.mouseUp(button="right")
+
+        if auto_hide:
+            self.resetMouse()
 
     def move(self, direction_key: str, amount: float, raw: bool = False):
         move_amount = amount
@@ -184,7 +219,6 @@ class ArduinoConfig:
 
     def moveMouseAbsolute_software(self, x: int, y: int):
         pydirectinput.moveTo(x, y)
-        sleep(2)
 
     def moveMouseRelative(self, x: int, y: int):
         if CFG.mouse_software_emulation:
@@ -202,10 +236,10 @@ class ArduinoConfig:
             self.arduino_interface(payload, 4)  # Arbitrary max time for safety
 
     def pitch(self, amount: float, up: bool, raw: bool = False):
-        ratio = self.screen_height_pitch_ratios[CFG.screen_res["height"]]
+        RATIO = 2080 / 180  # a full top/bottom flip is 180 * this
         pitch_amount = amount
         if not raw:
-            pitch_amount = round((pitch_amount / 180) * ratio, 4)
+            pitch_amount = amount * RATIO
 
         payload = {
             "type": "resetMouse",

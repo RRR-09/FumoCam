@@ -72,7 +72,6 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             if not found_ignore:
                 log_process("Deactivating chat A.I")
                 await deactivate_ocr()
-                sleep(1)
                 log_process("")
         else:
             if (
@@ -104,6 +103,12 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             turn_time = action.values["turn_degrees"]
             log_process(f"{turn_time} degrees {turn_direction.upper()}")
             ACFG.look(direction=turn_direction, amount=turn_time)
+            log_process("")
+        elif action.name == "precision_camera_turn":
+            turn_direction = action.values["turn_direction"]
+            turn_time = action.values["turn_degrees"]
+            log_process(f"{turn_time} degrees {turn_direction.upper()}")
+            ACFG.precision_look(direction=turn_direction, amount=turn_time)
             log_process("")
         elif action.name == "camera_pitch":
             pitch_direction = action.values["pitch_direction"]

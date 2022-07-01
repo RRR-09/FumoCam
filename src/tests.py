@@ -35,6 +35,29 @@ def test_turn_camera(direction="left", amount=45):
     asyncio.get_event_loop().run_until_complete(do_test(direction, amount))
 
 
+def test_turn_camera_precision(direction="left", amount=45):
+    async def do_test(direction, amount):
+        await check_active()
+        # Main spawn calibration
+        # ACFG.precision_look("right", 7, raw=True)
+
+        # Treehouse spawn calibration
+        # ACFG.precision_look("left", 1314, raw=True)
+
+        # Comedy spawn calibration
+        # ACFG.precision_look("right", 469, raw=True)
+
+    asyncio.get_event_loop().run_until_complete(do_test(direction, amount))
+
+
+def test_pitch(direction="left", amount=45):
+    async def do_test(direction, amount):
+        await check_active()
+        ACFG.pitch(179, up=True)
+
+    asyncio.get_event_loop().run_until_complete(do_test(direction, amount))
+
+
 def test_move(direction="w", amount=10):
     async def do_test(direction, amount):
         await check_active()
@@ -305,6 +328,7 @@ def test_window_area():
         total_pixels = white_pixels + non_white_pixels
         percentage = white_pixels / total_pixels
         ui_loaded = percentage > 0.7
+        print(ui_loaded)
 
         cv.imshow("screen", screenshot)
         cv.imwrite("test_screenshot.jpg", screenshot)
@@ -317,10 +341,14 @@ if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
     test_get_cookies_for_browser()
+    # test_character_select_full()
+    # test_toggle_collisions()
+
+    # test_pitch()
     # test_loading_cookies_for_browser()
     # test_get_player_token()
 
-    #test_window_area()
+    # test_window_area()
 
     # test_mute(mute=True)
 

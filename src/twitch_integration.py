@@ -317,6 +317,33 @@ class TwitchBot(commands.Bot):
         )
         await CFG.add_action_queue(action)
 
+    async def precision_camera_turn_handler(
+        self, turn_camera_direction: str, ctx: commands.Context
+    ):
+        turn_degrees: float = 45
+        max_turn_degrees: float = 360
+        args = await self.get_args(ctx)
+        if args:
+            try:
+                turn_degrees = float(args[0])
+                if not (max_turn_degrees >= turn_degrees > 0):
+                    await ctx.send(
+                        f"[{args[0]} is too high/low! Please use an angle between 0 and 360.]"
+                    )
+                    return
+            except Exception:
+                await ctx.send("[Error! Invalid number specified.]")
+                return
+
+        action = ActionQueueItem(
+            "precision_camera_turn",
+            {
+                "turn_direction": turn_camera_direction,
+                "turn_degrees": turn_degrees,
+            },
+        )
+        await CFG.add_action_queue(action)
+
     @commands.command()
     async def left(self, ctx: commands.Context):
         turn_camera_direction = "left"
@@ -324,6 +351,16 @@ class TwitchBot(commands.Bot):
 
     @commands.command()
     async def right(self, ctx: commands.Context):
+        turn_camera_direction = "right"
+        await self.camera_turn_handler(turn_camera_direction, ctx)
+
+    @commands.command()
+    async def pleft(self, ctx: commands.Context):
+        turn_camera_direction = "left"
+        await self.camera_turn_handler(turn_camera_direction, ctx)
+
+    @commands.command()
+    async def pright(self, ctx: commands.Context):
         turn_camera_direction = "right"
         await self.camera_turn_handler(turn_camera_direction, ctx)
 

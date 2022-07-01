@@ -197,7 +197,7 @@ async def check_active(
             except Exception:
                 print(f"ERROR IN MAXIMIZING {window.title}")
             print("[check_active] Switched - Waiting")
-            await async_sleep(0.3)
+            sleep(0.75)
             print("[check_active] Switched - Done Waiting")
             if title_ending is not None:
                 await check_active(title_ending=title_ending)

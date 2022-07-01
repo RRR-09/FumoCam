@@ -24,6 +24,9 @@ void leap(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
   const unsigned long forward_microseconds = (forward_seconds*1000000);
   const char* input_direction_key = payload["direction_key"];
   char direction_key = input_direction_key[0];  
+  const char* input_diagonal_direction_key = payload["diagonal_direction_key"];
+  char diagonal_direction_key = input_diagonal_direction_key[0];
+  const bool diagonal_jump = (diagonal_direction_key != '0');
   const double jump_delay_seconds = payload["jump_delay"];
   const unsigned long jump_delay_microseconds = (jump_delay_seconds*1000000);
   
@@ -33,6 +36,9 @@ void leap(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
       const unsigned long forward_goal = micros() + forward_microseconds;
       const unsigned long jump_delay_goal = micros() + jump_delay_microseconds;
       Keyboard.press(direction_key);
+      if (diagonal_jump) {
+        Keyboard.press(diagonal_direction_key);  
+      }
       while (micros() < jump_delay_goal) {} // Delay jump
       const unsigned long jump_goal = micros() + jump_microseconds;
       Keyboard.press(' ');
@@ -40,15 +46,24 @@ void leap(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
       Keyboard.release(' '); // Release jump
       while (micros() < forward_goal) {} // Forward lasts longer
       Keyboard.release(direction_key); // Release forward
+      if (diagonal_jump) {
+        Keyboard.release(diagonal_direction_key);  
+      }
   } else {
     if (jump_seconds > forward_seconds){
       while (micros() > (micros() + jump_seconds)) {} // If about to overflow, wait
       const unsigned long forward_goal = micros() + forward_microseconds;
       const unsigned long jump_goal = micros() + jump_microseconds;
       Keyboard.press(direction_key);
+      if (diagonal_jump) {
+        Keyboard.press(diagonal_direction_key);  
+      }
       Keyboard.press(' ');
       while (micros() < forward_goal) {} // Forward expires first
       Keyboard.release(direction_key); // Release forward
+      if (diagonal_jump) {
+        Keyboard.release(diagonal_direction_key); 
+      }
       while (micros() < jump_goal) {} // Jump lasts longer
       Keyboard.release(' '); // Release jump
     } else {
@@ -56,11 +71,17 @@ void leap(StaticJsonDocument<MAX_PAYLOAD_LENGTH> payload) {
       const unsigned long jump_goal = micros() + jump_microseconds;
       const unsigned long forward_goal = micros() + forward_microseconds;
       Keyboard.press(direction_key);
+      if (diagonal_jump) {
+        Keyboard.press(diagonal_direction_key);  
+      }
       Keyboard.press(' ');
       while (micros() < jump_goal) {} // Jump expires first
       Keyboard.release(' '); // Release jump
       while (micros() < forward_goal) {} // Forward lasts longer
       Keyboard.release(direction_key); // Release forward
+      if (diagonal_jump) {
+        Keyboard.release(diagonal_direction_key);  
+      }
     }
   }
 }

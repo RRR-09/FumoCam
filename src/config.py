@@ -189,7 +189,7 @@ class MainBotConfig:
     character_select_desired = "Momiji"
     character_select_width = 0.28
     character_select_button_height = 0.035
-    character_select_scan_attempts = 3
+    character_select_scan_attempts = 1
     character_select_max_scroll_attempts = 100
     character_select_max_close_attempts = 10
     character_select_max_click_attempts = 10
@@ -258,10 +258,11 @@ class MainBotConfig:
         "train": {"name": "Train Station"},
         "classic": {"name": "'BecomeF umo: Classic' Portal"},
         "treehouse": {"name": "Funky Treehouse"},
+        "beach": {"name": "Beach"},
     }
     nav_post_zoom_in = {
         "treehouse": 50,
-        "train": 0,
+        "train": 30,
     }
     player_id = os.getenv("PLAYER_ID")
     player_switch_cap = 50

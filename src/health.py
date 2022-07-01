@@ -14,14 +14,18 @@ from actions import respawn_character, send_chat
 from commands import ACFG, CFG
 from config import OBS, ActionQueueItem
 from navpoints import (  # TODO: Make this better/scalable
-    comedy_to_main,
+    comedy_spawn_calibration,
+    main_spawn_calibration,
+    main_to_beach,
     main_to_classic,
     main_to_classic_fix_bright,
     main_to_ratcade,
     main_to_shrimp_tree,
     main_to_train,
-    main_to_treehouse,
-    treehouse_to_main,
+    main_to_treehouse_bench,
+    treehouse_bench_calibration,
+    treehouse_bench_to_treehouse,
+    treehouse_spawn_calibration,
 )
 from spawn_detection import spawn_detection_main
 from utilities import (
@@ -330,8 +334,6 @@ async def check_character_menu(is_open):
 
 
 async def click_character_select_button(check_open_state: Union[bool, None] = None):
-    await async_sleep(0.5)
-
     button_x, button_y = (
         CFG.character_select_button_position["x"],
         CFG.character_select_button_position["y"],
@@ -344,7 +346,7 @@ async def click_character_select_button(check_open_state: Union[bool, None] = No
         log(
             f"Checking that character select is {'open' if check_open_state else 'closed'}"
         )
-        await async_sleep(2)
+        sleep(0.5)
         success = False
         for _ in range(CFG.character_select_max_close_attempts):
             if await check_character_menu(check_open_state):
@@ -362,15 +364,13 @@ async def click_character_select_button(check_open_state: Union[bool, None] = No
             sleep(2)
         log("")
     else:
-        await async_sleep(0.5)
+        sleep(0.5)
 
 
 async def ocr_for_character(character: str = "", click_option: bool = True) -> bool:
     desired_character = (
         CFG.character_select_desired.lower() if not character else character.lower()
     )
-
-    await async_sleep(0.5)
 
     ocr_data = {}
     last_ocr_text = None
@@ -457,7 +457,6 @@ async def ocr_for_character(character: str = "", click_option: bool = True) -> b
     ACFG.moveMouseAbsolute(
         x=CFG.screen_res["center_x"], y=int(desired_character_height)
     )
-    sleep(0.5)
     ACFG.left_click()
     sleep(0.5)
     return True
@@ -482,7 +481,6 @@ async def click_character_in_menu(click_random: bool = False):
 
 async def change_characters(respawn: bool = False):
     await check_active()
-    await async_sleep(1)
     log("Opening character select")
 
     need_zoom_adjust = False
@@ -491,7 +489,6 @@ async def change_characters(respawn: bool = False):
         need_zoom_adjust = True
 
     await click_character_select_button(check_open_state=True)
-    sleep(1)
     if respawn:
         await click_character_in_menu(click_random=True)
         respawn_delay = 12
@@ -506,16 +503,11 @@ async def change_characters(respawn: bool = False):
             x=int(CFG.character_select_scroll_position["x"]),
             y=int(CFG.character_select_scroll_position["y"]),
         )
+        sleep(0.25)
         ACFG.mouse_alt_tab()
         await ocr_for_character()
-    sleep(1)
-    await async_sleep(1)  # I have no idea what causes less errors
     log("Closing character select")
-    await async_sleep(0.5)
-    sleep(0.5)
     await click_character_select_button(check_open_state=False)
-    sleep(1)
-    await async_sleep(0.5)
     ACFG.resetMouse()
     if need_zoom_adjust:
         ACFG.zoom("i", CFG.zoom_out_ui_cv)
@@ -613,7 +605,6 @@ async def auto_nav(
     log_process("AutoNav")
     if do_checks:
         await check_active(force_fullscreen=False)
-        await async_sleep(0.5)
         location_name = CFG.nav_locations.get(location, {}).get("name", "ERROR")
         if location == "fixbright":
             location_name = "Classic Portal, to fix screen brightness"
@@ -621,11 +612,9 @@ async def auto_nav(
         if not CFG.collisions_disabled:
             log("Disabling collisions")
             await toggle_collisions()
-            await async_sleep(0.5)
-        await async_sleep(1)
         log("Respawning")
         await respawn_character(notify_chat=False)
-        await async_sleep(7)
+        sleep(7)
     log("Zooming out to full scale")
     ACFG.zoom(zoom_direction_key="o", amount=105)
 
@@ -636,11 +625,18 @@ async def auto_nav(
         sleep(5)
         return
 
+    # Get ready to navigate from any spawn
     if spawn == "comedy_machine":
-        comedy_to_main()
+        comedy_spawn_calibration()
     elif spawn == "tree_house":
-        treehouse_to_main()
-    await async_sleep(1)
+        if location == "treehouse":
+            treehouse_bench_calibration()
+        else:
+            treehouse_spawn_calibration()
+    elif spawn == "main":
+        main_spawn_calibration()
+
+    # Perform navigation macros
     if location == "shrimp":
         main_to_shrimp_tree()
     elif location == "ratcade":
@@ -650,9 +646,14 @@ async def auto_nav(
     elif location == "classic":
         main_to_classic()
     elif location == "treehouse":
-        main_to_treehouse()
+        if spawn != "tree_house":
+            main_to_treehouse_bench()
+        treehouse_bench_to_treehouse()
     elif location == "fixbright":
         main_to_classic_fix_bright()
+    elif location == "beach":
+        main_to_beach()
+
     log("Zooming in to normal scale")
     default_zoom_in_amount = CFG.zoom_max - CFG.zoom_default
     zoom_in_amount = CFG.nav_post_zoom_in.get(location, default_zoom_in_amount)
@@ -672,8 +673,6 @@ async def check_settings_menu(is_open):
 
 
 async def click_settings_button(check_open_state: Union[bool, None] = None) -> bool:
-    await async_sleep(0.5)
-
     # Bottom center of screen
     button_x, button_y = (
         CFG.settings_button_position["x"],
@@ -687,7 +686,7 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
         log(
             f"Checking that settings menu is {'open' if check_open_state else 'closed'}"
         )
-        await async_sleep(2)
+        sleep(0.5)
         success = False
         for i in range(CFG.settings_menu_max_click_attempts):
             settings_menu_at_desired = await check_settings_menu(check_open_state)
@@ -697,14 +696,13 @@ async def click_settings_button(check_open_state: Union[bool, None] = None) -> b
             else:
                 ACFG.moveMouseAbsolute(x=button_x, y=button_y)
                 ACFG.left_click()
-                await async_sleep(2)
 
         if not success:
             log("Unable to toggle settings menu!")
             await async_sleep(2)
         log("")
     else:
-        await async_sleep(0.5)
+        sleep(0.5)
     return True
 
 
@@ -762,7 +760,6 @@ async def ocr_for_settings(option: str = "", click_option: bool = True) -> bool:
                     return True
         if found_option:
             break
-        await async_sleep(0.25)
 
     if not found_option:
         if click_option:
@@ -789,9 +786,7 @@ async def ocr_for_settings(option: str = "", click_option: bool = True) -> bool:
 
     # Click the option
     ACFG.moveMouseAbsolute(x=int(desired_option_x), y=int(desired_option_y))
-    await async_sleep(0.5)
     ACFG.left_click()
-    await async_sleep(0.5)
     return True
 
 
@@ -801,7 +796,6 @@ async def toggle_collisions() -> bool:
     )
     log("Opening Settings")
     await check_active(force_fullscreen=False)
-    await async_sleep(1)
 
     need_zoom_adjust = False
     if CFG.zoom_level < CFG.zoom_ui_min_cv:
@@ -817,7 +811,6 @@ async def toggle_collisions() -> bool:
         return False
 
     log(f"Finding {CFG.settings_menu_grief_label} option")
-    await async_sleep(1)
     if not await ocr_for_settings():
         notify_admin("Failed to click settings option")
         log("")
@@ -833,7 +826,6 @@ async def toggle_collisions() -> bool:
     output_log("collisions", collisions_msg)
 
     log("Closing Settings")
-    await async_sleep(0.25)
     if not await click_settings_button(check_open_state=False):
         notify_admin("Failed to close settings")
         log("")
@@ -851,7 +843,6 @@ async def toggle_collisions() -> bool:
 
 async def force_respawn_character():
     await check_active()
-    await async_sleep(0.5)
     log_process("Force-Respawning")
     await send_chat("[Respawning!]")
     await change_characters(respawn=True)
@@ -863,7 +854,8 @@ if __name__ == "__main__":
 
     async def test():
         await check_active(force_fullscreen=False)
-        sleep(0.5)
-        await auto_nav("treehouse", do_checks=False, slow_spawn_detect=False)
+        await auto_nav("beach", do_checks=False, slow_spawn_detect=False)
+        # comedy_to_main()
+        # await main_to_train()
 
     asyncio.get_event_loop().run_until_complete(test())
