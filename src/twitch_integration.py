@@ -352,12 +352,12 @@ class TwitchBot(commands.Bot):
     @commands.command()
     async def right(self, ctx: commands.Context):
         turn_camera_direction = "right"
-        await self.camera_turn_handler(turn_camera_direction, ctx)
+        await self.precision_camera_turn_handler(turn_camera_direction, ctx)
 
     @commands.command()
     async def pleft(self, ctx: commands.Context):
         turn_camera_direction = "left"
-        await self.camera_turn_handler(turn_camera_direction, ctx)
+        await self.precision_camera_turn_handler(turn_camera_direction, ctx)
 
     @commands.command()
     async def pright(self, ctx: commands.Context):
