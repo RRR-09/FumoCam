@@ -222,7 +222,7 @@ def treehouse_bench_to_treehouse():
     log("Treehouse Bench -> Funky Treehouse")
 
     ACFG.leap(forward_time=0.65, jump_time=0.5)
-    ACFG.leap(forward_time=1, jump_time=0.2, direction_key="d")
+    ACFG.leap(forward_time=1.5, jump_time=0.2, direction_key="d")
     ACFG.move("w", 0.5)
     ACFG.move("a", 0.8)
     # ACFG.move("s", 1)
