@@ -614,7 +614,7 @@ async def auto_nav(
             await toggle_collisions()
         log("Respawning")
         await respawn_character(notify_chat=False)
-        sleep(7)
+        sleep(5)
     log("Zooming out to full scale")
     ACFG.zoom(zoom_direction_key="o", amount=105)
 
