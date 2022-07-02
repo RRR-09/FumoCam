@@ -8,6 +8,7 @@ import pyautogui
 
 from actions import mute_toggle, respawn_character
 from arduino_integration import ACFG, CFG
+from chat_whitelist import get_censored_string
 from health import (
     change_characters,
     check_character_menu,
@@ -276,6 +277,17 @@ def test_get_player_token():
     asyncio.get_event_loop().run_until_complete(test())
 
 
+def test_censor():
+    async def test():
+        blacklisted_words, censored_string = get_censored_string(
+            CFG, "asdf:asdf", debug=True
+        )
+        print(f"Blacklisted words: [{','.join(blacklisted_words)}]")
+        print(f"Censored string: '{censored_string}'")
+
+    asyncio.get_event_loop().run_until_complete(test())
+
+
 def test_window_area():
     async def test():
         await check_active(force_fullscreen=False)
@@ -340,10 +352,11 @@ def test_window_area():
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
-    test_get_cookies_for_browser()
+    # test_get_cookies_for_browser()
     # test_character_select_full()
     # test_toggle_collisions()
 
+    test_censor()
     # test_pitch()
     # test_loading_cookies_for_browser()
     # test_get_player_token()

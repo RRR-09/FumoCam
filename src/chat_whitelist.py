@@ -26,7 +26,9 @@ def username_in_whitelist(CFG: MainBotConfig, username):
     return True
 
 
-def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str], str]:
+def get_censored_string(
+    CFG: MainBotConfig, string_to_check, debug=False
+) -> Tuple[List[str], str]:
     """
     Returns a tuple of (blacklisted_words, censored_string)
     """
@@ -34,6 +36,11 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
     blacklisted_words = []
     censored_string_assembly = []
     space_bypassed_string = ""
+
+    def print_if_debug(print_str, is_debug):
+        if is_debug:
+            print(print_str)
+
     # punctuation = {"!", "?", ",", ".", ":", ";", "'", '"', "(", ")", "@", "#", "$", "%", "^", "&", "*",}
     for word in string_to_check.split(" "):
         word_is_spaced = False
@@ -42,10 +49,15 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
 
         # Handle people trying to space out non-whitelisted words
         if len(clean_word) == 1:
+            print_if_debug(f"space_bypassed_string: {clean_word} ({word})", debug)
             space_bypassed_string += clean_word
             continue
         elif len(space_bypassed_string) > 0:
             space_bypassed_censored = space_bypassed_string
+            print_if_debug(
+                f"space_bypassed_censored assembly: {space_bypassed_string} ({word})",
+                debug,
+            )
             if (
                 space_bypassed_string.strip() != ""
                 and space_bypassed_string.lower()
@@ -67,8 +79,10 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             not in CFG.chat_whitelist_datasets["whitelisted_words"]
             and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
         ):
+
             suffix_removal_success = False
             if len(clean_word) >= 3:
+                print_if_debug(f"cleanword_suffix_check: {clean_word} ({word})", debug)
                 # Allow suffix-extended characters, like "testtttttttttttttttt" qualifying as "test"
                 offset = 1
                 index = len(clean_word) - offset
@@ -86,21 +100,29 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
                     index = len(clean_word) - offset
 
             if not suffix_removal_success or len(clean_word) < 3:
+                print_if_debug(f"blacklist_action: {clean_word} ({word})", debug)
                 blacklisted_words.append(clean_word.lower())
+                previous_asterisks = original_word.count("*")
                 clean_word = original_word.replace(clean_word, "*" * len(clean_word))
+                if clean_word.count("*") < len(clean_word) - previous_asterisks:
+                    # Theres some weird interjecting symbols and we should just censor the whole word
+                    clean_word = len(original_word) * "*"
         elif word_is_spaced:
             # If we've checked the non-spaced word is fine,
             # retain the spacing
             clean_word = " ".join(clean_word)
+            print_if_debug(f"word_is_spaced: {clean_word} ({word})", debug)
         else:
             # If we're not censoring, leave numbers in
             # clean_word = "".join(char for char in word if char.isalnum())
+            print_if_debug(f"not_censoring: {clean_word} ({word})", debug)
             clean_word = word
 
         censored_string_assembly.append(clean_word)
 
     # Finish adding any single-char last-words
     if len(space_bypassed_string) > 0:
+
         clean_word = space_bypassed_string
         original_word = space_bypassed_string
         if (
@@ -115,6 +137,7 @@ def get_censored_string(CFG: MainBotConfig, string_to_check) -> Tuple[List[str],
             # retain the spacing
             clean_word = " ".join(clean_word)
 
+        print_if_debug(f"single-char last-words: {clean_word} ({original_word})", debug)
         censored_string_assembly.append(clean_word)
 
     return blacklisted_words, " ".join(censored_string_assembly)
