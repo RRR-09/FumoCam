@@ -245,7 +245,7 @@ class MainBotConfig:
     mouse_software_emulation = True
     mouse_blocked_regions = [
         BlockedMouseRegion(name="Chat", x1=0, y1=0, x2=340, y2=240),
-        BlockedMouseRegion(name="Character Select", x1=420, y1=0, x2=850, y2=80),
+        BlockedMouseRegion(name="Character Select", x1=420, y1=0, x2=850, y2=90),
         BlockedMouseRegion(
             name="Settings/Bottom-Right Buttons", x1=0, y1=580, x2=1280, y2=720
         ),
