@@ -301,3 +301,21 @@ def beach_portal_to_dock():
     ACFG.move("s", 3.1, raw=True)
     ACFG.move("d", 1.1, raw=True)
     ACFG.move("s", 1, raw=True)
+
+
+def main_to_miko():
+    log_process("AutoNav")
+    log("-> Miko Borgar")
+
+    ACFG.move("s", 2, raw=True)
+    ACFG.move("a", 1.025, raw=True)
+    ACFG.move("s", 4.2, raw=True)
+    ACFG.move("d", 0.7, raw=True)
+
+    # Right door, after stopping at door frame
+    ACFG.leap(forward_time=2, jump_time=0.3, direction_key="s", jump_delay=1)
+
+    ACFG.precision_look("right", 901, raw=True)
+
+    log_process("")
+    log("")

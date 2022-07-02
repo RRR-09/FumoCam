@@ -259,10 +259,12 @@ class MainBotConfig:
         "classic": {"name": "'BecomeF umo: Classic' Portal"},
         "treehouse": {"name": "Funky Treehouse"},
         "beach": {"name": "Beach"},
+        "miko": {"name": "Miko Borgar"},
     }
     nav_post_zoom_in = {
         "treehouse": 50,
         "train": 30,
+        "miko": 0,
     }
     player_id = os.getenv("PLAYER_ID")
     player_switch_cap = 50

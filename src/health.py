@@ -19,6 +19,7 @@ from navpoints import (  # TODO: Make this better/scalable
     main_to_beach,
     main_to_classic,
     main_to_classic_fix_bright,
+    main_to_miko,
     main_to_ratcade,
     main_to_shrimp_tree,
     main_to_train,
@@ -653,6 +654,8 @@ async def auto_nav(
         main_to_classic_fix_bright()
     elif location == "beach":
         main_to_beach()
+    elif location == "miko":
+        main_to_miko()
 
     log("Zooming in to normal scale")
     default_zoom_in_amount = CFG.zoom_max - CFG.zoom_default
