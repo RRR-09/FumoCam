@@ -87,7 +87,7 @@ def get_censored_string(
                 offset = 1
                 index = len(clean_word) - offset
                 while (index > 2) and clean_word[index] == clean_word[index - 1]:
-                    word_attempt = clean_word[:offset].lower()
+                    word_attempt = clean_word[:index].lower()
                     print(word_attempt)
                     if (
                         word_attempt in CFG.chat_whitelist_datasets["whitelisted_words"]
