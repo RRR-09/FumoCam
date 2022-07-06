@@ -35,11 +35,11 @@ async def send_chat(message: str, ocr=False):
 
 async def do_anti_afk():
     await check_active()
-    ACFG.look(direction="left", amount=45)
+    ACFG.precision_look(direction="left", amount=45)
     await async_sleep(1)
-    ACFG.look(direction="right", amount=90)
+    ACFG.precision_look(direction="right", amount=90)
     await async_sleep(1)
-    ACFG.look(direction="left", amount=45)
+    ACFG.precision_look(direction="left", amount=45)
 
 
 async def do_advert():
