@@ -268,7 +268,7 @@ class MainBotConfig:
     }
     player_id = os.getenv("PLAYER_ID")
     player_switch_cap = 50
-    player_difference_to_switch = 20
+    player_difference_to_switch = 15
     pytesseract_path = os.path.join(
         "C:\\", "Program Files", "Tesseract-OCR", "tesseract.exe"
     )
