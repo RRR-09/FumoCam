@@ -349,7 +349,6 @@ def test_window_area():
     asyncio.get_event_loop().run_until_complete(test())
 
 
-
 def test_move_mouse():
     async def do_test():
         await check_active()

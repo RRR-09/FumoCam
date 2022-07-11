@@ -556,6 +556,12 @@ async def server_spawn() -> bool:
     if not game_loaded:
         return False
 
+    # 2022-07-11 login-message hotfix
+    target_x = 1040
+    target_y = 100
+    ACFG.moveMouseAbsolute(x=target_x, y=target_y)
+    ACFG.left_click()
+
     if CFG.disable_collisions_on_spawn:
         CFG.collisions_disabled = False
         await toggle_collisions()
