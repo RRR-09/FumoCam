@@ -349,6 +349,26 @@ def test_window_area():
     asyncio.get_event_loop().run_until_complete(test())
 
 
+
+def test_move_mouse():
+    async def do_test():
+        await check_active()
+        target_x = 1040
+        target_y = 100
+        ACFG.moveMouseAbsolute(x=target_x, y=target_y)
+        ACFG.left_click()
+        # Main spawn calibration
+        # ACFG.precision_look("right", 7, raw=True)
+
+        # Treehouse spawn calibration
+        # ACFG.precision_look("left", 1314, raw=True)
+
+        # Comedy spawn calibration
+        # ACFG.precision_look("right", 469, raw=True)
+
+    asyncio.get_event_loop().run_until_complete(do_test())
+
+
 if __name__ == "__main__":
     pyautogui.FAILSAFE = False
     # If account banned
@@ -356,7 +376,8 @@ if __name__ == "__main__":
     # test_character_select_full()
     # test_toggle_collisions()
 
-    test_censor()
+    # test_censor()
+    test_move_mouse()
     # test_pitch()
     # test_loading_cookies_for_browser()
     # test_get_player_token()
