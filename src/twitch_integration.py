@@ -131,14 +131,14 @@ class TwitchBot(commands.Bot):
             json.dump(list(CFG.twitch_username_whitelist_requested), f)
         return NameWhitelistRequest.READY_TO_REQUEST
 
-    async def do_discord_log(self, message: TwitchMessage):
+    async def do_discord_log(self, message: TwitchMessage, is_chat=False):
         author = message.author.display_name
         author_url = (
             f"https://www.twitch.tv/popout/becomefumocam/viewercard/{author.lower()}"
         )
         author_avatar = "https://brand.twitch.tv/assets/images/black.png"
         message = message.content
-        await discord_log(message, author, author_avatar, author_url)
+        await discord_log(message, author, author_avatar, author_url, is_chat)
 
     async def get_args(self, ctx: commands.Context):
         msg = ctx.message.content
@@ -546,6 +546,7 @@ class TwitchBot(commands.Bot):
                 "chat_with_name",
                 {"name": f"{ctx.message.author.display_name}:", "msgs": [msg]},
             )
+        await self.do_discord_log(ctx.message, is_chat=True)
         await CFG.add_action_queue(action)
 
     @commands.command()  # Send message in-game

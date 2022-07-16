@@ -336,14 +336,17 @@ async def do_crash_check(do_notify=True) -> bool:
 
 
 async def discord_log(
-    message: str, author: str, author_avatar: str, author_url: str
+    message: str, author: str, author_avatar: str, author_url: str, is_chat_log: bool
 ) -> bool:
     success = False
     screenshot_filename = None
-    if not CFG.action_running:
+    if not CFG.action_running and not is_chat_log:
         screenshot_filename = await take_screenshot()
+
     webhook_urls = [
-        os.getenv("DISCORD_WEBHOOK_CHAT_CHANNEL"),
+        os.getenv("DISCORD_WEBHOOK_CHAT_CHANNEL")
+        if is_chat_log
+        else os.getenv("DISCORD_WEBHOOK_LOG_CHANNEL"),
     ]
 
     webhook_data = {
@@ -358,15 +361,15 @@ async def discord_log(
             }
         ]
     }
-
-    # for all params, see https://discordapp.com/developers/docs/resources/channel#embed-object
-    screenshot_binary = None
-    if screenshot_filename is not None:
-        if os.path.exists(screenshot_filename):
-            with open(screenshot_filename, "rb") as f:
-                screenshot_binary = f.read()
+    if not is_chat_log:
+        # for all params, see https://discordapp.com/developers/docs/resources/channel#embed-object
+        screenshot_binary = None
+        if screenshot_filename is not None:
             if os.path.exists(screenshot_filename):
-                os.remove(screenshot_filename)
+                with open(screenshot_filename, "rb") as f:
+                    screenshot_binary = f.read()
+                if os.path.exists(screenshot_filename):
+                    os.remove(screenshot_filename)
 
     for webhook_url in webhook_urls:
         if webhook_url is None:
@@ -381,21 +384,25 @@ async def discord_log(
         else:
             print(f"[Logged] {message}")
 
-        # Send screenshot
-        if screenshot_binary is not None:
-            post(
-                webhook_url,
-                files={
-                    f"_{screenshot_filename}": (screenshot_filename, screenshot_binary)
-                },
-            )
-            try:
-                result.raise_for_status()
-            except HTTPError as error:
-                print(error)
-                success = False
-            else:
-                print(f"[Logged Screenshot] {message}")
+        if not is_chat_log:
+            # Send screenshot
+            if screenshot_binary is not None:
+                post(
+                    webhook_url,
+                    files={
+                        f"_{screenshot_filename}": (
+                            screenshot_filename,
+                            screenshot_binary,
+                        )
+                    },
+                )
+                try:
+                    result.raise_for_status()
+                except HTTPError as error:
+                    print(error)
+                    success = False
+                else:
+                    print(f"[Logged Screenshot] {message}")
     return success
 
 
