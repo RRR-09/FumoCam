@@ -31,7 +31,7 @@ imutils = "^0.5.4"
 # Dependency security patches
 aiohttp = "^3.7.4"
 # HTML parsing for updates
-lxml = "^4.7.1"
+lxml = "^4.9.1"
 Levenshtein = "^0.16.0"
 
 [tool.poetry.dev-dependencies]

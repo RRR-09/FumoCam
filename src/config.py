@@ -185,7 +185,7 @@ class MainBotConfig:
     character_select_screen_height_to_click = 0
     character_select_scroll_speed = 0.2
 
-    character_select_initial = "Alice"
+    character_select_initial = "BenBen"
     character_select_desired = "Momiji"
     character_select_width = 0.28
     character_select_button_height = 0.035
