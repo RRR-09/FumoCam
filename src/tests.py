@@ -374,9 +374,9 @@ if __name__ == "__main__":
     # test_get_cookies_for_browser()
     # test_character_select_full()
     # test_toggle_collisions()
-
+    test_check_for_better_server()
     # test_censor()
-    test_move_mouse()
+    # test_move_mouse()
     # test_pitch()
     # test_loading_cookies_for_browser()
     # test_get_player_token()

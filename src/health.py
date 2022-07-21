@@ -126,27 +126,30 @@ async def check_if_should_change_servers(
     return False, "[WARN] Could not poll Roblox servers. Is Roblox down?"
 
 
-async def get_current_server_id(game_id: int = CFG.game_id) -> str:
+async def get_current_server_id(game_id: int = CFG.game_id, is_sub_realm=False) -> str:
     current_server_id = "N/A"
     url = f"https://games.roblox.com/v1/games/{game_id}/servers/Public"
     try:
         response = get(url, timeout=10)
     except Exception:
         print(format_exc())
+        print("Returning Error on try")
         return "ERROR"
     if response.status_code == 200:
         response_result = response.json()
         servers = response_result["data"]
         if len(servers) == 0:
             print("No servers found")
+            print("Returning Error on No Servers Found")
             return "ERROR"
         for server in servers:
             if CFG.player_id in server["playerTokens"]:
                 current_server_id = server["id"]
                 break
         if current_server_id != "ERROR":
-            print(current_server_id)
+            print(f"Current Server ID is not error: {current_server_id}")
         return current_server_id
+    print("Returning Error on base")
     return "ERROR"
 
 
@@ -175,13 +178,19 @@ async def check_for_better_server():
         log_process("")
         return True
     if current_server_id == "N/A":
-        for id in list(CFG.game_ids_other.keys()):
-            current_server_id == await get_current_server_id(id)
-            if current_server_id != "N/A":
+        for experience_id, experience_name in CFG.game_ids_other.items():
+            print(f"OTHER ID: {experience_id}")
+            other_server_id = await get_current_server_id(experience_id)
+            print(f"CurrentServerID Output: {other_server_id}")
+            if other_server_id not in {"N/A", "ERROR"}:
+                current_server_id = other_server_id
+                log(f"Success, FumoCam found in other experience ({experience_name})")
+                await async_sleep(3)
                 break
+        print("\n\n\n\n")
         if current_server_id == "N/A":
             log_process("Could not find FumoCam in any servers")
-            await CFG.add_action_queue(ActionQueueItem("handle_crash"))
+            # await CFG.add_action_queue(ActionQueueItem("handle_crash"))
             return False
         else:
             log_process("")
@@ -217,9 +226,10 @@ async def check_for_better_server():
                     break
             if should_change_servers:
                 notify_admin(change_server_status_text)
-                await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
+                # await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
         else:
-            await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
+            pass
+            # await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
     log("")
     log_process("")
 
