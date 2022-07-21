@@ -12,7 +12,7 @@ def word_in_whitelists(CFG: MainBotConfig, word):
         word in CFG.chat_whitelist_datasets["whitelisted_words"]
         or word in CFG.chat_whitelist_datasets["dictionary"]
         or word in CFG.chat_whitelist_datasets["trusted_users"]
-        or word in CFG.chat_whitelist_datasets["whitelisted_users"]
+        or word in CFG.chat_whitelist_datasets["whitelisted_usernames"]
     )
 
 
