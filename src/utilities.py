@@ -260,18 +260,32 @@ def username_whitelist_request(message, username):
 def whitelist_request(
     requests: List[str], message, username, is_username_req=False
 ) -> bool:
-    webhook_url = os.getenv("DISCORD_WEBHOOK_WHITELIST_CHANNEL", None)
+    env_key = (
+        "DISCORD_WEBHOOK_USERNAME_WHITELIST_CHANNEL"
+        if is_username_req
+        else "DISCORD_WEBHOOK_WORD_WHITELIST_CHANNEL"
+    )
+    webhook_url = os.getenv(env_key, None)
     if webhook_url is None:
         return False
-    whitelist_text = [f"`!whitelist {word}`" for word in requests]
-    header_content = (
-        f"** **\n** **\n__Username Request__\n**{username}**\n```{message}```\n** **"
-        if is_username_req
-        else f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n** **"
+
+    user_url = (
+        f"https://www.twitch.tv/popout/becomefumocam/viewercard/{username.lower()}"
     )
+    command = "!userwhitelist" if is_username_req else "!whitelist"
+    whitelist_text = [f"`{command} {word}`" for word in requests]
+    header_content = (
+        f"** **\n** **\n__Username Request__\n**{username}**\n```{message}```\n<{user_url}>\n** **"
+        if is_username_req
+        else f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n<{user_url}>\n** **"
+    )
+    webhook_username = (
+        "User Whitelist Request" if is_username_req else "Word Whitelist Request"
+    )
+
     webhook_data = {
         "content": header_content,
-        "username": Discord.webhook_username,
+        "username": webhook_username,
     }
     result = post(webhook_url, json=webhook_data)
     try:
@@ -283,12 +297,13 @@ def whitelist_request(
 
     MAX_WORDS = 3
     if len(whitelist_text) > MAX_WORDS:
+        # Make it into a single message, newline-seperated
         whitelist_text = ["\n".join(whitelist_text)]
 
     for word in whitelist_text:
         webhook_data = {
             "content": word,
-            "username": Discord.webhook_username,
+            "username": webhook_username,
         }
         result = post(webhook_url, json=webhook_data)
         try:

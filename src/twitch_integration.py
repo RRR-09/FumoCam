@@ -501,6 +501,7 @@ class TwitchBot(commands.Bot):
                 elif (
                     whitelist_requested_status == NameWhitelistRequest.READY_TO_REQUEST
                 ):
+                    # Only send the request after a certain amount of messages, most users do not stick around
                     username_whitelist_request(msg, real_name)
 
             censored_words, censored_message = chat_whitelist.get_censored_string(
@@ -665,6 +666,34 @@ class TwitchBot(commands.Bot):
 
         await ctx.send(
             f"[Added '{word_to_whitelist}' to whitelist! ({before}->{after})]"
+        )
+
+        return False
+
+    @commands.command()
+    async def userwhitelist(self, ctx: commands.Context):
+        if not await self.is_dev(ctx.author):
+            await ctx.send("[You do not have permission!]")
+            return
+
+        args = await self.get_args(ctx)
+        if not args:
+            await ctx.send("[Specify a username to whitelist!]")
+            return
+        before = len(CFG.chat_whitelist_datasets["whitelisted_usernames"])
+
+        word_to_whitelist = args[0].lower()
+
+        CFG.chat_whitelist_datasets["whitelisted_usernames"].add(word_to_whitelist)
+        with open(CFG.chat_whitelist_dataset_paths["whitelisted_usernames"], "w") as f:
+            json.dump(list(CFG.chat_whitelist_datasets["whitelisted_usernames"]), f)
+
+        after = len(
+            CFG.chat_whitelist_datasets["whitelisted_usernames"]
+        )  # Sanity Check
+
+        await ctx.send(
+            f"[Added '{word_to_whitelist}' to username whitelist! ({before}->{after})]"
         )
 
         return False

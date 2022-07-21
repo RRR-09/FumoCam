@@ -7,20 +7,23 @@ def user_is_trusted(CFG: MainBotConfig, username):
     return username.lower() in CFG.chat_whitelist_datasets["trusted_users"]
 
 
+def word_in_whitelists(CFG: MainBotConfig, word):
+    return (
+        word in CFG.chat_whitelist_datasets["whitelisted_words"]
+        or word in CFG.chat_whitelist_datasets["dictionary"]
+        or word in CFG.chat_whitelist_datasets["trusted_users"]
+        or word in CFG.chat_whitelist_datasets["whitelisted_users"]
+    )
+
+
 def username_in_whitelist(CFG: MainBotConfig, username):
     username = username.lower()
-    if (
-        username in CFG.chat_whitelist_datasets["whitelisted_words"]
-        or username in CFG.chat_whitelist_datasets["dictionary"]
-    ):
+    if word_in_whitelists(CFG, username):
         return True
 
     for word in username.split("_"):
         word = word.lower()
-        if (
-            word not in CFG.chat_whitelist_datasets["whitelisted_words"]
-            and word not in CFG.chat_whitelist_datasets["dictionary"]
-        ):
+        if not (word_in_whitelists(CFG, word)):
             return False
 
     return True
@@ -58,12 +61,8 @@ def get_censored_string(
                 f"space_bypassed_censored assembly: {space_bypassed_string} ({word})",
                 debug,
             )
-            if (
-                space_bypassed_string.strip() != ""
-                and space_bypassed_string.lower()
-                not in CFG.chat_whitelist_datasets["whitelisted_words"]
-                and space_bypassed_string.lower()
-                not in CFG.chat_whitelist_datasets["dictionary"]
+            if space_bypassed_string.strip() != "" and not (
+                word_in_whitelists(CFG, space_bypassed_string.lower())
             ):
                 blacklisted_words.append(space_bypassed_string.lower())
                 space_bypassed_censored = space_bypassed_string.replace(
@@ -73,13 +72,9 @@ def get_censored_string(
             censored_string_assembly.append(space_bypassed_censored)
             space_bypassed_string = ""  # Clear space bypass buffer
 
-        if (
-            clean_word.strip() != ""
-            and clean_word.lower()
-            not in CFG.chat_whitelist_datasets["whitelisted_words"]
-            and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
+        if clean_word.strip() != "" and not (
+            word_in_whitelists(CFG, clean_word.lower())
         ):
-
             suffix_removal_success = False
             if len(clean_word) >= 3:
                 print_if_debug(f"cleanword_suffix_check: {clean_word} ({word})", debug)
@@ -89,10 +84,7 @@ def get_censored_string(
                 while (index > 2) and clean_word[index] == clean_word[index - 1]:
                     word_attempt = clean_word[:index].lower()
                     print(word_attempt)
-                    if (
-                        word_attempt in CFG.chat_whitelist_datasets["whitelisted_words"]
-                        or word_attempt in CFG.chat_whitelist_datasets["dictionary"]
-                    ):
+                    if word_in_whitelists(CFG, word_attempt):
                         clean_word = word
                         suffix_removal_success = True
                         break
@@ -122,14 +114,10 @@ def get_censored_string(
 
     # Finish adding any single-char last-words
     if len(space_bypassed_string) > 0:
-
         clean_word = space_bypassed_string
         original_word = space_bypassed_string
-        if (
-            clean_word.strip() != ""
-            and clean_word.lower()
-            not in CFG.chat_whitelist_datasets["whitelisted_words"]
-            and clean_word.lower() not in CFG.chat_whitelist_datasets["dictionary"]
+        if clean_word.strip() != "" and not (
+            word_in_whitelists(CFG, clean_word.lower())
         ):
             blacklisted_words.append(clean_word.lower())
             clean_word = original_word.replace(clean_word, "*" * len(clean_word))
