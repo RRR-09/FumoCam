@@ -190,7 +190,7 @@ async def check_for_better_server():
         print("\n\n\n\n")
         if current_server_id == "N/A":
             log_process("Could not find FumoCam in any servers")
-            # await CFG.add_action_queue(ActionQueueItem("handle_crash"))
+            await CFG.add_action_queue(ActionQueueItem("handle_crash"))
             return False
         else:
             log_process("")
@@ -226,10 +226,10 @@ async def check_for_better_server():
                     break
             if should_change_servers:
                 notify_admin(change_server_status_text)
-                # await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
+                await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
         else:
             pass
-            # await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
+            await CFG.add_action_queue(ActionQueueItem("handle_join_new_server"))
     log("")
     log_process("")
 
