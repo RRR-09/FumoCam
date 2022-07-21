@@ -229,6 +229,7 @@ class MainBotConfig:
         7137029060: "Nil",
         6601613056: "Hinamizawa",
         8129913919: "Lenen",
+        10290646947: "Dark Museum"
     }
     game_instances_url = (
         "https://www.roblox.com/games/6238705697/Become-Fumo#!/game-instances"
