@@ -32,7 +32,7 @@ check_dotenv()
 class Twitch:
     channel_name = os.getenv("TWITCH_CHAT_CHANNEL")
     username = "BecomeFumoCamBot"
-    admins = ["becomefumocam", os.getenv("TWITCH_OWNER_USERNAME")]
+    admins = ["becomefumocam", "becomefumocam2", os.getenv("TWITCH_OWNER_USERNAME")]
 
 
 class OBS:
@@ -78,8 +78,8 @@ class MainBotConfig:
     action_queue: List[ActionQueueItem] = []
     action_running = False
     advertisement = [
-        "This bot is live on T witch! Go to its Roblox profile for a link, or Google:",
-        '"BecomeFumosCam"',
+        "You can control this bot live! Search for 'Become Fumo' on Twitch, or go to the website:",
+-        '"fumboc.live"',
     ]
     birthday_advertisement = [
         "It's FumoCam's birthday! We're live on T witch, go to my Roblox profile for a link,",
@@ -350,6 +350,7 @@ class MainBotConfig:
         "dedegiko",
         "maplemedictv",
         "becomefumocam",
+        "becomefumocam2",
     ]
 
     # Window area for settings menu
