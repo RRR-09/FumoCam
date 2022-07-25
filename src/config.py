@@ -79,7 +79,7 @@ class MainBotConfig:
     action_running = False
     advertisement = [
         "You can control this bot live! Search for 'Become Fumo' on Twitch, or go to the website:",
--        '"fumboc.live"',
+        '"fumboc.live"',
     ]
     birthday_advertisement = [
         "It's FumoCam's birthday! We're live on T witch, go to my Roblox profile for a link,",
