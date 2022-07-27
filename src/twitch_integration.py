@@ -138,6 +138,8 @@ class TwitchBot(commands.Bot):
         )
         author_avatar = "https://brand.twitch.tv/assets/images/black.png"
         message = message.content
+        if is_chat:
+            message = message.replace("!m ", "", 1)
         await discord_log(message, author, author_avatar, author_url, is_chat)
 
     async def get_args(self, ctx: commands.Context):
