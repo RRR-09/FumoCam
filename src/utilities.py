@@ -16,7 +16,7 @@ from pygetwindow import getActiveWindow, getAllWindows
 from requests import post
 from requests.exceptions import HTTPError
 
-from config import CFG, OBS, Discord
+from config import CFG, OBS, Discord, Twitch
 
 
 def check_admin_and_run() -> bool:
@@ -221,7 +221,7 @@ def notify_admin(message: str) -> bool:
     if webhook_url is None:
         return False
     webhook_data = {
-        "content": f"<@{os.getenv('DISCORD_OWNER_ID')}>\n{message}",
+        "content": f"<@{os.getenv('DISCORD_OWNER_ID')}>\n{message}\n<https://twitch.tv/{os.getenv('TWITCH_CHAT_CHANNEL')}>",
         "username": Discord.webhook_username,
     }
     result = post(webhook_url, json=webhook_data)
