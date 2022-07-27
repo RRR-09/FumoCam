@@ -222,7 +222,6 @@ def notify_admin(message: str) -> bool:
         return False
     webhook_data = {
         "content": f"<@{os.getenv('DISCORD_OWNER_ID')}>\n{message}\n<https://twitch.tv/{os.getenv('TWITCH_CHAT_CHANNEL')}>",
-        "username": Discord.webhook_username,
     }
     result = post(webhook_url, json=webhook_data)
     try:
