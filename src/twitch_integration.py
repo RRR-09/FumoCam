@@ -660,7 +660,9 @@ class TwitchBot(commands.Bot):
 
         CFG.chat_whitelist_datasets["whitelisted_words"].add(word_to_whitelist)
         with open(CFG.chat_whitelist_dataset_paths["whitelisted_words"], "w") as f:
-            json.dump(list(CFG.chat_whitelist_datasets["whitelisted_words"]), f)
+            json.dump(
+                sorted(CFG.chat_whitelist_datasets["whitelisted_words"]), f, indent=2
+            )
 
         after = len(CFG.chat_whitelist_datasets["whitelisted_words"])  # Sanity Check
 
@@ -686,7 +688,11 @@ class TwitchBot(commands.Bot):
 
         CFG.chat_whitelist_datasets["whitelisted_usernames"].add(word_to_whitelist)
         with open(CFG.chat_whitelist_dataset_paths["whitelisted_usernames"], "w") as f:
-            json.dump(list(CFG.chat_whitelist_datasets["whitelisted_usernames"]), f)
+            json.dump(
+                sorted(CFG.chat_whitelist_datasets["whitelisted_usernames"]),
+                f,
+                indent=2,
+            )
 
         after = len(
             CFG.chat_whitelist_datasets["whitelisted_usernames"]
