@@ -146,22 +146,14 @@ class MainBotConfig:
     chat_whitelist_resource_path = resources_path / "chat_whitelist"
     chat_whitelist_dataset_paths = {
         "dictionary": chat_whitelist_resource_path / "dictionary.json",
+        "blacklist": chat_whitelist_resource_path / "blacklist.json",
+        "custom": chat_whitelist_resource_path / "custom.json",
         "random_prefixes": chat_whitelist_resource_path / "random_prefixes.json",
         "random_suffixes": chat_whitelist_resource_path / "random_suffixes.json",
-        "rejected_words": chat_whitelist_resource_path / "rejected_words.json",
-        "trusted_users": chat_whitelist_resource_path / "trusted_users.json",
-        "whitelisted_words": chat_whitelist_resource_path / "whitelisted_words.json",
-        "whitelisted_usernames": chat_whitelist_resource_path
-        / "whitelisted_usernames.json",
+        "trusted_usernames": chat_whitelist_resource_path / "trusted_usernames.json",
+        "usernames": chat_whitelist_resource_path / "usernames.json",
     }
-    chat_whitelist_datasets: Dict[str, Set[str]] = {
-        "dictionary": set(),
-        "random_prefixes": set(),
-        "random_suffixes": set(),
-        "rejected_words": set(),
-        "trusted_users": set(),
-        "whitelisted_words": set(),
-    }
+    chat_whitelist_datasets: Dict[str, Set[str]] = {}
 
     for dataset_type in chat_whitelist_dataset_paths:
         dataset_path: Path = chat_whitelist_dataset_paths[dataset_type]
@@ -171,6 +163,17 @@ class MainBotConfig:
                 chat_whitelist_datasets[dataset_type] = set(data)
         except Exception:
             print(f"{dataset_path} malformed or missing")
+
+    # Assemble all json files in `whitelist_data` folder to a single word-dataset
+    _dataset_file_path = Path(chat_whitelist_resource_path, "whitelist_data")
+    chat_whitelist_datasets["whitelist_data"] = set()
+    for dataset_file in _dataset_file_path.glob("*.json"):
+        try:
+            with open(Path(_dataset_file_path, dataset_file), "r") as f:
+                data = json.load(f)
+                chat_whitelist_datasets["whitelist_data"].update(set(data))
+        except Exception:
+            print(f"{dataset_file} malformed or missing")
 
     # Character Select
     character_select_button_position = {"x": screen_res["center_x"], "y": 40}

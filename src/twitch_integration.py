@@ -652,17 +652,15 @@ class TwitchBot(commands.Bot):
         if not args:
             await ctx.send("[Specify a word to whitelist!]")
             return
-        before = len(CFG.chat_whitelist_datasets["whitelisted_words"])
+        before = len(CFG.chat_whitelist_datasets["custom"])
 
         word_to_whitelist = args[0].lower()
 
-        CFG.chat_whitelist_datasets["whitelisted_words"].add(word_to_whitelist)
-        with open(CFG.chat_whitelist_dataset_paths["whitelisted_words"], "w") as f:
-            json.dump(
-                sorted(CFG.chat_whitelist_datasets["whitelisted_words"]), f, indent=2
-            )
+        CFG.chat_whitelist_datasets["custom"].add(word_to_whitelist)
+        with open(CFG.chat_whitelist_dataset_paths["custom"], "w") as f:
+            json.dump(sorted(CFG.chat_whitelist_datasets["custom"]), f, indent=2)
 
-        after = len(CFG.chat_whitelist_datasets["whitelisted_words"])  # Sanity Check
+        after = len(CFG.chat_whitelist_datasets["custom"])  # Sanity Check
 
         await ctx.send(
             f"[Added '{word_to_whitelist}' to whitelist! ({before}->{after})]"
@@ -680,21 +678,19 @@ class TwitchBot(commands.Bot):
         if not args:
             await ctx.send("[Specify a username to whitelist!]")
             return
-        before = len(CFG.chat_whitelist_datasets["whitelisted_usernames"])
+        before = len(CFG.chat_whitelist_datasets["usernames"])
 
         word_to_whitelist = args[0].lower()
 
-        CFG.chat_whitelist_datasets["whitelisted_usernames"].add(word_to_whitelist)
-        with open(CFG.chat_whitelist_dataset_paths["whitelisted_usernames"], "w") as f:
+        CFG.chat_whitelist_datasets["usernames"].add(word_to_whitelist)
+        with open(CFG.chat_whitelist_dataset_paths["usernames"], "w") as f:
             json.dump(
-                sorted(CFG.chat_whitelist_datasets["whitelisted_usernames"]),
+                sorted(CFG.chat_whitelist_datasets["usernames"]),
                 f,
                 indent=2,
             )
 
-        after = len(
-            CFG.chat_whitelist_datasets["whitelisted_usernames"]
-        )  # Sanity Check
+        after = len(CFG.chat_whitelist_datasets["usernames"])  # Sanity Check
 
         await ctx.send(
             f"[Added '{word_to_whitelist}' to username whitelist! ({before}->{after})]"

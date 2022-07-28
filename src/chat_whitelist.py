@@ -4,15 +4,17 @@ from config import MainBotConfig
 
 
 def user_is_trusted(CFG: MainBotConfig, username):
-    return username.lower() in CFG.chat_whitelist_datasets["trusted_users"]
+    return username.lower() in CFG.chat_whitelist_datasets["trusted_usernames"]
 
 
 def word_in_whitelists(CFG: MainBotConfig, word):
+    # Order of max expected size, least to greatest
     return (
-        word in CFG.chat_whitelist_datasets["whitelisted_words"]
+        word in CFG.chat_whitelist_datasets["trusted_usernames"]
+        or word in CFG.chat_whitelist_datasets["usernames"]
+        or word in CFG.chat_whitelist_datasets["whitelist_data"]
+        or word in CFG.chat_whitelist_datasets["custom"]
         or word in CFG.chat_whitelist_datasets["dictionary"]
-        or word in CFG.chat_whitelist_datasets["trusted_users"]
-        or word in CFG.chat_whitelist_datasets["whitelisted_usernames"]
     )
 
 
@@ -148,4 +150,4 @@ def get_random_name(CFG: MainBotConfig, seed_string):
 
 
 def word_in_blacklist(CFG: MainBotConfig, word):
-    return word.lower() in CFG.chat_whitelist_datasets["rejected_words"]
+    return word.lower() in CFG.chat_whitelist_datasets["blacklist"]
