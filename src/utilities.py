@@ -268,16 +268,15 @@ def whitelist_request(
     if webhook_url is None:
         return False
 
-    user_url = (
-        f"https://www.twitch.tv/popout/becomefumocam/viewercard/{username.lower()}"
-    )
+    user_url = f"https://www.twitch.tv/popout/{os.getenv('TWITCH_CHAT_CHANNEL')}/viewercard/{username.lower()}"
     command = "!userwhitelist" if is_username_req else "!whitelist"
     whitelist_text = [f"`{command} {word}`" for word in requests]
-    header_content = (
-        f"** **\n** **\n__Username Request__\n**{username}**\n```{message}```\n<{user_url}>\n** **"
+    message_title = (
+        f"__Username Request__\n**{username}**"
         if is_username_req
-        else f"** **\n** **\n__Whitelist Request from {username}__\n```{message}```\n<{user_url}>\n** **"
+        else f"__Whitelist Request from {username}__"
     )
+    header_content = f"** **\n** **\n{message_title}\n```{message}```\n<{user_url}>\n<https://twitch.tv/{os.getenv('TWITCH_CHAT_CHANNEL')}>\n** **"
     webhook_username = (
         "User Whitelist Request" if is_username_req else "Word Whitelist Request"
     )
