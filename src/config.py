@@ -408,5 +408,8 @@ class MainBotConfig:
         print("Attempted to add action queue item too early!")
         print(item)
 
+    async def do_process_queue(self):
+        print("Attempted to process queue too early!")
+
 
 CFG = MainBotConfig()  # Instantiate the config for use between files

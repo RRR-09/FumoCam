@@ -46,8 +46,6 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
     remove_duplicates = False
     while len(CFG.action_queue) > 0:
         print(f"Running Action Queue:\n{[item.name for item in CFG.action_queue]}\n")
-        await check_active()
-        await async_sleep(0.1)
         try:
             action = CFG.action_queue[0]
         except IndexError:
@@ -59,6 +57,9 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             log("")
             log_process("")
             return
+
+        await check_active()
+
         if CFG.chat_ocr_active:
             for func_name in CFG.chat_block_functions:
                 if func_name == action.name:
@@ -258,7 +259,6 @@ async def do_process_queue():  # TODO: Investigate benefits of multithreading ov
             for action_queue_item in original_queue:
                 if action_queue_item.name == action.name:
                     CFG.action_queue.remove(action_queue_item)
-    await async_sleep(0.1)
     CFG.action_running = False
 
 
@@ -328,6 +328,7 @@ def main():
     output_log("change_server_status_text", "")
     CFG.anti_afk_runs = 0
     CFG.add_action_queue = add_action_queue
+    CFG.do_process_queue = do_process_queue
     CFG.async_main = async_main
     twitch_main()
 

@@ -771,6 +771,12 @@ async def routine_clock():
     output_log("clock", f"Day {CFG.days_since_creation}\n{current_time}")
 
 
+@routines.routine(seconds=1, wait_first=True)
+async def routine_unstuck_queue():
+    # This is a bad solution
+    await CFG.do_process_queue()
+
+
 @routines.routine(seconds=3, wait_first=True)
 async def routine_ocr():
     if (
