@@ -16,7 +16,7 @@ from pygetwindow import getActiveWindow, getAllWindows
 from requests import post
 from requests.exceptions import HTTPError
 
-from config import CFG, OBS, Discord, Twitch
+from config import CFG, OBS
 
 
 def check_admin_and_run() -> bool:
@@ -268,7 +268,7 @@ def whitelist_request(
     if webhook_url is None:
         return False
 
-    user_url = f"https://www.twitch.tv/popout/{os.getenv('TWITCH_CHAT_CHANNEL')}/viewercard/{username.lower()}"
+    user_url = f"https://twitch.tv/popout/{os.getenv('TWITCH_CHAT_CHANNEL')}/viewercard/{username.lower()}"
     command = "!userwhitelist" if is_username_req else "!whitelist"
     whitelist_text = [f"`{command} {word}`" for word in requests]
     message_title = (

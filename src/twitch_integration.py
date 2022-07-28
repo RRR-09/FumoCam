@@ -133,9 +133,7 @@ class TwitchBot(commands.Bot):
 
     async def do_discord_log(self, message: TwitchMessage, is_chat=False):
         author = message.author.display_name
-        author_url = (
-            f"https://www.twitch.tv/popout/becomefumocam/viewercard/{author.lower()}"
-        )
+        author_url = f"https://twitch.tv/popout/{getenv('TWITCH_CHAT_CHANNEL')}/viewercard/{author.lower()}"
         author_avatar = "https://brand.twitch.tv/assets/images/black.png"
         message = message.content
         if is_chat:
@@ -481,7 +479,7 @@ class TwitchBot(commands.Bot):
                 return
 
         # Chat with CamDev Tag
-        elif ctx.message.author.display_name == "BecomeFumoCam":
+        elif ctx.message.author.display_name == getenv("TWITCH_CHAT_CHANNEL"):
             action = ActionQueueItem(
                 "chat_with_name", {"name": "[CamDev]:", "msgs": [msg]}
             )
@@ -586,10 +584,8 @@ class TwitchBot(commands.Bot):
             " The dev has already been notified]"
         )
 
-        mod_url = f"<https://www.twitch.tv/popout/becomefumocam/viewercard/{ctx.message.author.name.lower()}>"
-        target_url = (
-            f"<https://www.twitch.tv/popout/becomefumocam/viewercard/{name.lower()}>"
-        )
+        mod_url = f"<https://twitch.tv/popout/{getenv('TWITCH_CHAT_CHANNEL')}/viewercard/{ctx.message.author.name.lower()}>"
+        target_url = f"<https://twitch.tv/popout/{getenv('TWITCH_CHAT_CHANNEL')}/viewercard/{name.lower()}>"
 
         notify_admin(
             f"{ctx.message.author.name} has blacklisted {name}\n{mod_url}\n{target_url}"

@@ -2,7 +2,9 @@
 
 A 24/7, interactive, in-game Twitch bot.
 
-Twitch: https://www.twitch.tv/becomefumocam
+Twitch 1: https://twitch.tv/becomefumocam
+
+Twitch 2: https://twitch.tv/becomefumocam2
 
 # Writeup
 

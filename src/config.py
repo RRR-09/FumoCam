@@ -42,10 +42,6 @@ class OBS:
     muted_icon_name = "muted_icon.png"
 
 
-class Discord:
-    webhook_username = "BecomeFumoCam"
-
-
 class ActionQueueItem:
     def __init__(self, name: str, values: dict = {}):
         self.name = name
@@ -82,8 +78,8 @@ class MainBotConfig:
         '"fumboc.live"',
     ]
     birthday_advertisement = [
-        "It's FumoCam's birthday! We're live on T witch, go to my Roblox profile for a link,",
-        ' or Google: "BecomeFumosCam"',
+        "It's this bot's birthday! Search for 'Become Fumo' on Twitch, or go to the website:",
+        '"fumboc.live"',
     ]
     audio_muted = False
     backpack_button_position = (0.87, 0.89)
