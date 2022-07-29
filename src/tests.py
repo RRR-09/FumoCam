@@ -280,7 +280,7 @@ def test_get_player_token():
 def test_censor():
     async def test():
         blacklisted_words, censored_string = get_censored_string(
-            CFG, "asdf:asdf", debug=True
+            CFG, "death", debug=True
         )
         print(f"Blacklisted words: [{','.join(blacklisted_words)}]")
         print(f"Censored string: '{censored_string}'")
@@ -374,8 +374,8 @@ if __name__ == "__main__":
     # test_get_cookies_for_browser()
     # test_character_select_full()
     # test_toggle_collisions()
-    test_check_for_better_server()
-    # test_censor()
+    # test_check_for_better_server()
+    test_censor()
     # test_move_mouse()
     # test_pitch()
     # test_loading_cookies_for_browser()

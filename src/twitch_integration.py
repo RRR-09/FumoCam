@@ -504,12 +504,8 @@ class TwitchBot(commands.Bot):
                     # Only send the request after a certain amount of messages, most users do not stick around
                     username_whitelist_request(msg, real_name)
 
-            censored_words, censored_message = chat_whitelist.get_censored_string(
-                CFG, msg
-            )
-
             blacklisted_words = []
-            for word in censored_words:
+            for word in msg.encode("ascii", "ignore").decode("ascii").split(" "):
                 if chat_whitelist.word_in_blacklist(CFG, word):
                     blacklisted_words.append(word)
 
@@ -523,6 +519,10 @@ class TwitchBot(commands.Bot):
                     f"Blacklisted Words: `{', '.join(blacklisted_words)}`"
                 )
                 return
+
+            censored_words, censored_message = chat_whitelist.get_censored_string(
+                CFG, msg
+            )
 
             if censored_words:
                 await ctx.send(
